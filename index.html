@@ -203,19 +203,20 @@
         }
 
 
-        /* Estilos para a lista de participantes */
+        /* Estilos para a lista de participantes - compactação */
         #participantList {
             width: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: grid; /* Usar grid para melhor compactação e responsividade */
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 280px ou mais, preenche com quantos couberem */
+            gap: 15px; /* Reduzir o gap */
+            padding: 0 10px; /* Pequeno padding para os cantos */
         }
 
         .participant-card {
             background-color: #f9f9f9;
-            padding: 20px;
+            padding: 15px; /* Reduzir padding */
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Sombra mais suave */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -227,20 +228,20 @@
         /* Estilo para o participante ativo */
         .participant-card.active-timer {
             border-color: #007bff;
-            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2); /* Sombra mais suave */
         }
 
         .participant-card h2 {
             color: #007bff;
             margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.8em;
+            margin-bottom: 10px; /* Reduzir margem */
+            font-size: 1.6em; /* Reduzir tamanho do nome */
         }
 
         .participant-card .display {
-            font-size: 3em;
+            font-size: 2.5em; /* Reduzir tamanho dos dígitos */
             font-weight: bold;
-            margin: 15px 0;
+            margin: 10px 0; /* Reduzir margem */
             color: #28a745; /* Cor padrão verde para o display */
             letter-spacing: 1px;
         }
@@ -261,17 +262,17 @@
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
-            margin: 0 5px;
-            border-radius: 8px;
+            padding: 8px 15px; /* Reduzir padding */
+            margin: 0 4px; /* Reduzir margem */
+            border-radius: 6px; /* Reduzir borda */
             cursor: pointer;
-            font-size: 1em;
+            font-size: 0.9em; /* Reduzir fonte */
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         .participant-card .controls button:hover {
             background-color: #0056b3;
-            transform: translateY(-2px);
+            transform: translateY(-1px); /* Menor movimento */
         }
 
         .participant-card .controls button:active {
@@ -285,9 +286,9 @@
 
         /* Botões de ajuste de tempo */
         .adjust-time-buttons {
-            margin-top: 15px;
+            margin-top: 10px; /* Reduzir margem */
             display: flex;
-            gap: 10px;
+            gap: 8px; /* Reduzir gap */
             justify-content: center;
         }
 
@@ -295,10 +296,10 @@
             background-color: #17a2b8; /* Cor azul claro */
             color: white;
             border: none;
-            padding: 8px 15px;
-            border-radius: 8px;
+            padding: 6px 12px; /* Reduzir padding */
+            border-radius: 6px; /* Reduzir borda */
             cursor: pointer;
-            font-size: 0.9em;
+            font-size: 0.85em; /* Reduzir fonte */
             transition: background-color 0.3s ease;
         }
         .adjust-time-buttons button:hover {
@@ -310,11 +311,11 @@
             background-color: #dc3545;
             color: white;
             border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
+            padding: 4px 8px; /* Reduzir padding */
+            border-radius: 4px; /* Reduzir borda */
             cursor: pointer;
-            font-size: 0.8em;
-            margin-top: 15px;
+            font-size: 0.75em; /* Reduzir fonte */
+            margin-top: 10px; /* Reduzir margem */
         }
         .remove-participant-btn:hover {
             background-color: #c82333;
@@ -499,10 +500,10 @@
                 startButton: document.getElementById(`start-${id}`),
                 pauseButton: document.getElementById(`pause-${id}`),
                 resetButton: document.getElementById(`reset-${id}`),
-                addMinButton: document.getElementById(`add-min-${id}`), // Novo
-                subMinButton: document.getElementById(`sub-min-${id}`), // Novo
+                addMinButton: document.getElementById(`add-min-${id}`),
+                subMinButton: document.getElementById(`sub-min-${id}`),
                 cardElement: participantCard,
-                alertedZero: false // Para o alerta de tempo esgotado
+                alertedZero: false
             };
 
             timers.push(timer);
@@ -510,9 +511,12 @@
             timer.startButton.addEventListener('click', () => startTimer(timer));
             timer.pauseButton.addEventListener('click', () => pauseTimer(timer));
             timer.resetButton.addEventListener('click', () => resetTimer(timer));
-            timer.addMinButton.addEventListener('click', () => adjustTime(timer, 60)); // +60 segundos
-            timer.subMinButton.addEventListener('click', () => adjustTime(timer, -60)); // -60 segundos
+            timer.addMinButton.addEventListener('click', () => adjustTime(timer, 60));
+            timer.subMinButton.addEventListener('click', () => adjustTime(timer, -60));
             participantCard.querySelector('.remove-participant-btn').addEventListener('click', () => removeParticipant(id));
+
+            // Garante que a cor inicial seja aplicada ao cartão do participante
+            timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
 
             // Reseta para os valores padrão após adicionar um participante
             participantNameInput.value = '';
@@ -525,24 +529,24 @@
                 timer.startButton.disabled = startDisabled;
                 timer.pauseButton.disabled = pauseDisabled;
                 timer.resetButton.disabled = resetDisabled;
-                // Botões de ajuste só devem estar ativos quando o timer está a correr ou pausado em um tempo válido
                 const adjustDisabled = timer.isPaused && timer.timeLeft === timer.initialTime && timer.initialTime > 0;
-                // Ou, se o timer está a correr ou está pausado, mas não está no estado inicial
                 timer.addMinButton.disabled = adjustDisabled;
                 timer.subMinButton.disabled = adjustDisabled;
             }
         }
 
-        // Função para ajustar o tempo de um temporizador ativo
         function adjustTime(timer, secondsToAdd) {
             if (activeTimer && activeTimer.id === timer.id) {
                 timer.timeLeft += secondsToAdd;
-                // Garante que o tempo não vai abaixo de -99 minutos para evitar formatos estranhos
-                if (timer.timeLeft < -5940) { // -99 * 60 = -5940
+                if (timer.timeLeft < -5940) {
                     timer.timeLeft = -5940;
                 }
                 timer.displayElement.textContent = formatTime(timer.timeLeft);
-                timer.alertedZero = false; // Resetar alerta ao ajustar tempo
+                // Atualiza a cor do display do cartão do participante imediatamente
+                timer.displayElement.classList.remove('red', 'yellow', 'green');
+                timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
+
+                timer.alertedZero = false;
                 updateClocks(timer);
                 console.log(`Main: Tempo ajustado para ${timer.name}. Novo tempo: ${timer.timeLeft}`);
             } else {
@@ -565,18 +569,16 @@
                 timer.isPaused = false;
                 toggleTimerButtons(timer, true, false, false);
 
-                // Força uma atualização imediata para o pop-out
                 updateClocks(timer);
 
                 timer.intervalId = setInterval(() => {
                     timer.timeLeft--;
                     timer.displayElement.textContent = formatTime(timer.timeLeft);
 
-                    // Adiciona/remove classes de cor no display do participante
                     timer.displayElement.classList.remove('red', 'yellow', 'green');
                     timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
 
-                    updateClocks(timer); // Atualiza ambos os relógios a cada segundo
+                    updateClocks(timer);
 
                     if (timer.timeLeft === 0 && !timer.alertedZero) {
                         alert(`Tempo esgotado para ${timer.name}!`);
@@ -602,7 +604,6 @@
             timer.isPaused = true;
             timer.timeLeft = timer.initialTime;
             timer.displayElement.textContent = formatTime(timer.timeLeft);
-            // Garante que a cor do display volte ao padrão no reset
             timer.displayElement.classList.remove('red', 'yellow', 'green');
             timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
             
@@ -638,7 +639,7 @@
 
         // --- Funções de Atualização dos Relógios (Local e Pop-out) ---
         function updateClocks(timer = null) {
-            const displayColor = timer ? getDisplayColor(timer.timeLeft) : 'green'; // Cor padrão verde
+            const displayColor = timer ? getDisplayColor(timer.timeLeft) : 'green';
 
             // Atualiza o relógio flutuante local
             if (floatingClockWindow.style.display === 'block') {
@@ -649,7 +650,6 @@
                     floatingClockParticipantName.textContent = "Nenhum Ativo";
                     mainClockDisplay.textContent = "00:00";
                 }
-                // Adiciona/remove classes de cor no display principal
                 mainClockDisplay.classList.remove('red', 'yellow', 'green');
                 mainClockDisplay.classList.add(displayColor);
             }
@@ -662,7 +662,7 @@
                         type: 'updateClock',
                         name: timer ? timer.name : "Nenhum Ativo",
                         timeLeft: timer ? timer.timeLeft : 0,
-                        color: displayColor // Envia a cor para o pop-out
+                        color: displayColor
                     }, window.location.origin);
                     pendingPopoutUpdate = null;
                 } else {
@@ -670,7 +670,7 @@
                     pendingPopoutUpdate = {
                         name: timer ? timer.name : "Nenhum Ativo",
                         timeLeft: timer ? timer.timeLeft : 0,
-                        color: displayColor // Armazena a cor também
+                        color: displayColor
                     };
                 }
             } else {
@@ -737,10 +737,10 @@
             const val = parseInt(yellowTimeInput.value);
             if (!isNaN(val) && val >= 0) {
                 YELLOW_THRESHOLD_SECONDS = val;
-                if (activeTimer) updateClocks(activeTimer); // Atualiza imediatamente se houver um timer ativo
+                if (activeTimer) updateClocks(activeTimer);
                 console.log(`Main: Tempo para Amarelo definido para ${YELLOW_THRESHOLD_SECONDS}s.`);
             } else {
-                yellowTimeInput.value = YELLOW_THRESHOLD_SECONDS; // Reverte se for inválido
+                yellowTimeInput.value = YELLOW_THRESHOLD_SECONDS;
             }
         });
 
@@ -748,10 +748,10 @@
             const val = parseInt(redTimeInput.value);
             if (!isNaN(val) && val >= 0) {
                 RED_THRESHOLD_SECONDS = val;
-                if (activeTimer) updateClocks(activeTimer); // Atualiza imediatamente se houver um timer ativo
+                if (activeTimer) updateClocks(activeTimer);
                 console.log(`Main: Tempo para Vermelho definido para ${RED_THRESHOLD_SECONDS}s.`);
             } else {
-                redTimeInput.value = RED_THRESHOLD_SECONDS; // Reverte se for inválido
+                redTimeInput.value = RED_THRESHOLD_SECONDS;
             }
         });
 
@@ -793,7 +793,7 @@
                         type: 'updateClock',
                         name: pendingPopoutUpdate.name,
                         timeLeft: pendingPopoutUpdate.timeLeft,
-                        color: pendingPopoutUpdate.color // Envia a cor também
+                        color: pendingPopoutUpdate.color
                     }, window.location.origin);
                     pendingPopoutUpdate = null;
                  } else if (activeTimer) {
