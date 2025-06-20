@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Multi-Temporizador com Relógio Flutuante</title>
+    <title>Multi-Temporizador</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
@@ -14,269 +14,218 @@
             min-height: 100vh;
             background-color: #f0f2f5;
             margin: 0;
-            padding: 30px 0;
+            padding: 20px 0; /* Padding reduzido */
             color: #333;
         }
 
         .container {
             background-color: #fff;
-            padding: 30px 40px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px 30px; /* Padding reduzido */
+            border-radius: 10px; /* Borda mais suave */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
             width: 100%;
-            max-width: 600px;
-            margin-bottom: 30px;
+            max-width: 900px; /* Aumentado para usar mais largura */
+            margin-bottom: 20px; /* Margem reduzida */
             position: relative;
         }
 
         h1 {
             color: #007bff;
-            margin-bottom: 25px;
-            font-size: 2.2em;
+            margin-bottom: 20px; /* Margem reduzida */
+            font-size: 2em; /* Tamanho reduzido */
         }
 
-        /* Botões para ativar o relógio flutuante e o pop-out */
+        /* Botões superiores */
         .top-buttons {
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Margem reduzida */
             display: flex;
-            gap: 15px;
+            gap: 10px; /* Gap reduzido */
             justify-content: center;
+            flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
         }
         .top-buttons button {
             background-color: #6c757d;
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 8px 12px; /* Padding reduzido */
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 1em;
+            font-size: 0.9em; /* Tamanho reduzido */
             transition: background-color 0.3s ease;
         }
         .top-buttons button:hover {
             background-color: #5a6268;
         }
 
-        /* Janela Flutuante (agora para uso interno, caso queira manter) */
-        #floatingClockWindow {
-            display: none; /* Inicia oculto */
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: #333;
-            color: white;
-            padding: 25px 20px;
-            border-radius: 15px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            min-width: 280px;
-            text-align: center;
-            cursor: grab;
-            border: 2px solid #007bff;
-            overflow: hidden;
-            touch-action: none;
-        }
-
-        #floatingClockWindow.dragging {
-            cursor: grabbing;
-        }
-
-        #closeFloatingClockBtn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.5em;
-            cursor: pointer;
-            line-height: 1;
-            padding: 0 5px;
-            transition: color 0.2s ease;
-        }
-        #closeFloatingClockBtn:hover {
-            color: #dc3545;
-        }
-
-        #floatingClockParticipantName {
-            font-size: 1.8em;
-            color: #f8f9fa;
-            margin-bottom: 10px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-            line-height: 1.2;
-        }
-
-        #mainClockDisplay {
-            font-size: 6em;
-            font-weight: bold;
-            color: #28a745;
-            letter-spacing: 3px;
-            margin: 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-        }
-
-        /* Estilos para o formulário de adicionar participante */
+        /* Formulário de adicionar participante */
         .add-participant-form {
             display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 30px;
+            flex-wrap: wrap; /* Permite quebrar linha */
+            gap: 10px; /* Gap reduzido */
+            margin-bottom: 20px; /* Margem reduzida */
             justify-content: center;
             align-items: flex-end;
         }
 
         .add-participant-form div {
-            flex-grow: 1;
-            min-width: 100px;
+            flex: 1 1 auto; /* Flexível para se ajustar */
+            min-width: 80px; /* Min-width menor */
         }
 
         .add-participant-form label {
             display: block;
-            margin-bottom: 8px;
+            margin-bottom: 5px; /* Margem reduzida */
             font-weight: bold;
-            font-size: 1em;
+            font-size: 0.9em; /* Tamanho reduzido */
             text-align: left;
         }
 
         .add-participant-form input[type="text"],
         .add-participant-form input[type="number"] {
-            width: calc(100% - 20px);
-            padding: 10px;
+            width: calc(100% - 16px); /* Padding ajustado */
+            padding: 8px; /* Padding reduzido */
             border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 1em;
+            border-radius: 6px;
+            font-size: 0.9em; /* Tamanho reduzido */
             text-align: center;
             -moz-appearance: textfield;
-        }
-
-        .add-participant-form input::-webkit-outer-spin-button,
-        .add-participant-form input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
         }
 
         .add-participant-form button {
             background-color: #28a745;
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 8px 15px; /* Padding reduzido */
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 1.1em;
+            font-size: 1em; /* Tamanho ligeiramente reduzido */
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
         .add-participant-form button:hover {
             background-color: #218838;
-            transform: translateY(-2px);
+            transform: translateY(-1px);
         }
 
-        /* Novas configurações para cores de alerta */
-        .color-settings {
+        /* Configurações de alerta de cor */
+        .color-settings, .message-settings {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
-            margin-top: 20px;
-            margin-bottom: 30px;
+            gap: 10px; /* Gap reduzido */
+            margin-top: 15px; /* Margem reduzida */
+            margin-bottom: 20px; /* Margem reduzida */
             justify-content: center;
             align-items: flex-end;
-            padding: 15px;
+            padding: 10px 15px; /* Padding reduzido */
             border: 1px solid #eee;
-            border-radius: 10px;
-            background-color: #f0f8ff; /* Fundo mais claro para destaque */
+            border-radius: 8px;
+            background-color: #f8fbff; /* Fundo mais claro */
         }
-        .color-settings label {
+        .color-settings label, .message-settings label {
             font-weight: bold;
-            font-size: 0.9em;
+            font-size: 0.85em; /* Tamanho reduzido */
             margin-bottom: 5px;
         }
         .color-settings input[type="number"] {
-            width: 80px; /* Ajuste para caber melhor */
+            width: 60px; /* Ajuste para caber melhor */
         }
-        .color-settings h3 {
+        .color-settings h3, .message-settings h3 {
             width: 100%;
             text-align: center;
             color: #007bff;
-            margin-bottom: 15px;
+            margin-bottom: 10px; /* Margem reduzida */
             margin-top: 0;
+            font-size: 1.2em; /* Tamanho reduzido */
+        }
+        .message-settings textarea {
+            width: calc(100% - 16px); /* Padding ajustado */
+            min-height: 50px; /* Altura mínima */
+            padding: 8px; /* Padding reduzido */
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 0.9em;
+            resize: vertical; /* Permite redimensionar verticalmente */
+        }
+        .message-settings button {
+            background-color: #007bff; /* Azul para enviar mensagem */
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .message-settings button:hover {
+            background-color: #0056b3;
         }
 
 
-        /* Estilos para a lista de participantes - compactação */
+        /* Estilos para a lista de participantes - mais compacta */
         #participantList {
             width: 100%;
-            display: grid; /* Usar grid para melhor compactação e responsividade */
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); /* 280px ou mais, preenche com quantos couberem */
-            gap: 15px; /* Reduzir o gap */
-            padding: 0 10px; /* Pequeno padding para os cantos */
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Min-width ainda menor */
+            gap: 10px; /* Gap ainda menor */
+            padding: 0 5px; /* Padding ainda menor */
         }
 
         .participant-card {
             background-color: #f9f9f9;
-            padding: 15px; /* Reduzir padding */
-            border-radius: 10px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); /* Sombra mais suave */
+            padding: 10px; /* Padding ainda mais reduzido */
+            border-radius: 8px; /* Borda mais suave */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06); /* Sombra mais suave */
             display: flex;
             flex-direction: column;
             align-items: center;
             text-align: center;
             border: 1px solid #eee;
-            transition: border-color 0.3s ease;
         }
 
-        /* Estilo para o participante ativo */
         .participant-card.active-timer {
             border-color: #007bff;
-            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.2); /* Sombra mais suave */
+            box-shadow: 0 3px 10px rgba(0, 123, 255, 0.15);
         }
 
         .participant-card h2 {
             color: #007bff;
             margin-top: 0;
-            margin-bottom: 10px; /* Reduzir margem */
-            font-size: 1.6em; /* Reduzir tamanho do nome */
+            margin-bottom: 8px; /* Margem reduzida */
+            font-size: 1.4em; /* Tamanho ainda menor */
+            white-space: nowrap; /* Evita quebra de linha no nome */
+            overflow: hidden; /* Oculta overflow */
+            text-overflow: ellipsis; /* Adiciona "..." */
+            max-width: 100%; /* Garante que o texto não ultrapasse */
         }
 
         .participant-card .display {
-            font-size: 2.5em; /* Reduzir tamanho dos dígitos */
+            font-size: 2.2em; /* Tamanho ainda menor */
             font-weight: bold;
-            margin: 10px 0; /* Reduzir margem */
-            color: #28a745; /* Cor padrão verde para o display */
-            letter-spacing: 1px;
+            margin: 8px 0; /* Margem reduzida */
+            color: #28a745;
+            letter-spacing: 0.5px; /* Espaçamento reduzido */
         }
 
-        /* Cores dinâmicas para o display */
-        .participant-card .display.red {
-            color: #dc3545; /* Vermelho para tempo esgotado/negativo */
-        }
-        .participant-card .display.yellow {
-            color: #ffc107; /* Amarelo para aviso */
-        }
-         .participant-card .display.green {
-            color: #28a745; /* Verde para tempo positivo e não urgente */
-        }
-
+        /* Cores dinâmicas */
+        .participant-card .display.red { color: #dc3545; }
+        .participant-card .display.yellow { color: #ffc107; }
+        .participant-card .display.green { color: #28a745; }
 
         .participant-card .controls button {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 8px 15px; /* Reduzir padding */
-            margin: 0 4px; /* Reduzir margem */
-            border-radius: 6px; /* Reduzir borda */
+            padding: 6px 10px; /* Padding ainda mais reduzido */
+            margin: 0 3px; /* Margem ainda mais reduzida */
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 0.9em; /* Reduzir fonte */
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            font-size: 0.8em; /* Tamanho ainda menor */
         }
 
         .participant-card .controls button:hover {
             background-color: #0056b3;
-            transform: translateY(-1px); /* Menor movimento */
-        }
-
-        .participant-card .controls button:active {
-            transform: translateY(0);
+            transform: translateY(-0.5px);
         }
 
         .participant-card .controls button:disabled {
@@ -286,74 +235,111 @@
 
         /* Botões de ajuste de tempo */
         .adjust-time-buttons {
-            margin-top: 10px; /* Reduzir margem */
+            margin-top: 8px; /* Margem reduzida */
             display: flex;
-            gap: 8px; /* Reduzir gap */
+            gap: 6px; /* Gap ainda mais reduzido */
             justify-content: center;
         }
 
         .adjust-time-buttons button {
-            background-color: #17a2b8; /* Cor azul claro */
+            background-color: #17a2b8;
             color: white;
             border: none;
-            padding: 6px 12px; /* Reduzir padding */
-            border-radius: 6px; /* Reduzir borda */
+            padding: 5px 10px; /* Padding ainda mais reduzido */
+            border-radius: 5px;
             cursor: pointer;
-            font-size: 0.85em; /* Reduzir fonte */
-            transition: background-color 0.3s ease;
+            font-size: 0.8em; /* Tamanho ainda menor */
         }
         .adjust-time-buttons button:hover {
             background-color: #138496;
         }
 
-
         .remove-participant-btn {
             background-color: #dc3545;
             color: white;
             border: none;
-            padding: 4px 8px; /* Reduzir padding */
-            border-radius: 4px; /* Reduzir borda */
+            padding: 3px 6px; /* Padding ainda mais reduzido */
+            border-radius: 3px;
             cursor: pointer;
-            font-size: 0.75em; /* Reduzir fonte */
-            margin-top: 10px; /* Reduzir margem */
+            font-size: 0.7em; /* Tamanho ainda menor */
+            margin-top: 8px; /* Margem reduzida */
         }
         .remove-participant-btn:hover {
             background-color: #c82333;
+        }
+
+        /* Media queries para telas menores (opcional, para mobile) */
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px 20px;
+            }
+            h1 {
+                font-size: 1.8em;
+            }
+            .add-participant-form, .color-settings, .message-settings {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .add-participant-form input,
+            .color-settings input,
+            .message-settings textarea {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .add-participant-form div, .color-settings div {
+                min-width: unset;
+            }
+            .top-buttons button, .add-participant-form button, .message-settings button {
+                width: 100%;
+                box-sizing: border-box;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Multi-Temporizador de Participantes</h1>
+        <h1>Multi-Temporizador</h1>
         <div class="top-buttons">
-            <button id="showFloatingClockBtn">Mostrar Relógio Local</button>
-            <button id="openPopoutClockBtn">Abrir Relógio em Nova Janela</button>
+            <button id="showFloatingClockBtn">Relógio Local</button>
+            <button id="openPopoutClockBtn">Abrir Pop-up</button>
         </div>
 
         <div class="add-participant-form">
             <div>
-                <label for="participantName">Nome do Participante:</label>
+                <label for="participantName">Nome:</label>
                 <input type="text" id="participantName" placeholder="Ex: João" required>
             </div>
             <div>
-                <label for="initialMinutes">Minutos:</label>
-                <input type="number" id="initialMinutes" value="10" min="0"> </div>
+                <label for="initialMinutes">Min:</label>
+                <input type="number" id="initialMinutes" value="10" min="0">
+            </div>
             <div>
-                <label for="initialSeconds">Segundos:</label>
-                <input type="number" id="initialSeconds" value="0" min="0" max="59"> </div>
-            <button id="addParticipantButton">Adicionar Participante</button>
+                <label for="initialSeconds">Seg:</label>
+                <input type="number" id="initialSeconds" value="0" min="0" max="59">
+            </div>
+            <button id="addParticipantButton">Adicionar</button>
         </div>
 
         <div class="color-settings">
-            <h3>Definições de Alerta de Tempo</h3>
+            <h3>Alertas de Cor</h3>
             <div>
-                <label for="yellowTime">Amarelo em (segundos):</label>
+                <label for="yellowTime">Amarelo (seg):</label>
                 <input type="number" id="yellowTime" value="60" min="0">
             </div>
             <div>
-                <label for="redTime">Vermelho em (segundos):</label>
+                <label for="redTime">Vermelho (seg):</label>
                 <input type="number" id="redTime" value="10" min="0">
             </div>
+        </div>
+
+        <div class="message-settings">
+            <h3>Mensagem Palestrante</h3>
+            <div>
+                <label for="speakerMessageInput">Mensagem:</label>
+                <textarea id="speakerMessageInput" placeholder="Ex: Faltam 2 minutos!"></textarea>
+            </div>
+            <button id="sendMessageButton">Enviar Mensagem</button>
+            <button id="clearMessageButton">Limpar Mensagem</button>
         </div>
     </div>
 
@@ -384,20 +370,25 @@
         const floatingClockParticipantName = document.getElementById('floatingClockParticipantName');
         const mainClockDisplay = document.getElementById('mainClockDisplay');
 
-        // Novos elementos para as configurações de cor
         const yellowTimeInput = document.getElementById('yellowTime');
         const redTimeInput = document.getElementById('redTime');
+
+        // Novos elementos para a mensagem do palestrante
+        const speakerMessageInput = document.getElementById('speakerMessageInput');
+        const sendMessageButton = document.getElementById('sendMessageButton');
+        const clearMessageButton = document.getElementById('clearMessageButton');
+
 
         let timers = [];
         let nextId = 0;
         let activeTimer = null;
         let popoutWindow = null;
         let popoutReady = false;
-        let pendingPopoutUpdate = null;
+        let pendingPopoutUpdate = null; // Para o tempo e cor
+        let pendingMessageUpdate = null; // Para a mensagem
 
-        // Configurações de tempo para alerta de cor (agora variáveis globais)
-        let YELLOW_THRESHOLD_SECONDS = 60; // 1 minuto
-        let RED_THRESHOLD_SECONDS = 10;   // 10 segundos
+        let YELLOW_THRESHOLD_SECONDS = 60;
+        let RED_THRESHOLD_SECONDS = 10;
 
         // --- Funções Auxiliares ---
         function formatTime(seconds) {
@@ -413,7 +404,6 @@
             return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
         }
 
-        // Função para determinar a cor do display com base no tempo restante
         function getDisplayColor(timeLeft) {
             if (timeLeft <= RED_THRESHOLD_SECONDS) {
                 return 'red';
@@ -481,8 +471,8 @@
                     <button id="reset-${id}" disabled>Reiniciar</button>
                 </div>
                 <div class="adjust-time-buttons">
-                    <button id="add-min-${id}">+1 Minuto</button>
-                    <button id="sub-min-${id}">-1 Minuto</button>
+                    <button id="add-min-${id}">+1 Min</button>
+                    <button id="sub-min-${id}">-1 Min</button>
                 </div>
                 <button class="remove-participant-btn" data-id="${id}">Remover</button>
             `;
@@ -515,10 +505,8 @@
             timer.subMinButton.addEventListener('click', () => adjustTime(timer, -60));
             participantCard.querySelector('.remove-participant-btn').addEventListener('click', () => removeParticipant(id));
 
-            // Garante que a cor inicial seja aplicada ao cartão do participante
             timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
 
-            // Reseta para os valores padrão após adicionar um participante
             participantNameInput.value = '';
             initialMinutesInput.value = '10';
             initialSecondsInput.value = '0';
@@ -542,7 +530,6 @@
                     timer.timeLeft = -5940;
                 }
                 timer.displayElement.textContent = formatTime(timer.timeLeft);
-                // Atualiza a cor do display do cartão do participante imediatamente
                 timer.displayElement.classList.remove('red', 'yellow', 'green');
                 timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
 
@@ -641,7 +628,6 @@
         function updateClocks(timer = null) {
             const displayColor = timer ? getDisplayColor(timer.timeLeft) : 'green';
 
-            // Atualiza o relógio flutuante local
             if (floatingClockWindow.style.display === 'block') {
                 if (timer) {
                     floatingClockParticipantName.textContent = timer.name;
@@ -654,10 +640,8 @@
                 mainClockDisplay.classList.add(displayColor);
             }
 
-            // Lógica para atualizar o relógio pop-out
             if (popoutWindow && !popoutWindow.closed) {
                 if (popoutReady) {
-                    console.log(`Main: Enviando updateClock para pop-out. Timer: ${timer ? timer.name : 'Nenhum'} (Tempo: ${timer ? timer.timeLeft : 'N/A'}). Cor: ${displayColor}`);
                     popoutWindow.postMessage({
                         type: 'updateClock',
                         name: timer ? timer.name : "Nenhum Ativo",
@@ -666,7 +650,6 @@
                     }, window.location.origin);
                     pendingPopoutUpdate = null;
                 } else {
-                    console.debug(`Main: Pop-out existe mas ainda não está pronto para receber mensagens. (Tentativa: ${timer ? timer.timeLeft : 'N/A'}). Dados pendentes.`);
                     pendingPopoutUpdate = {
                         name: timer ? timer.name : "Nenhum Ativo",
                         timeLeft: timer ? timer.timeLeft : 0,
@@ -674,14 +657,28 @@
                     };
                 }
             } else {
-                if (pendingPopoutUpdate) {
-                    console.log('Main: Pop-out não está aberto/existe. Limpando atualização pendente.');
-                }
                 pendingPopoutUpdate = null;
             }
         }
 
-        // Limpa o foco dos relógios (local e pop-out) e remove o destaque do cartão
+        // Nova função para enviar mensagem ao palestrante
+        function sendMessageToSpeaker(message) {
+            if (popoutWindow && !popoutWindow.closed) {
+                if (popoutReady) {
+                    popoutWindow.postMessage({
+                        type: 'updateMessage',
+                        message: message
+                    }, window.location.origin);
+                    pendingMessageUpdate = null;
+                } else {
+                    pendingMessageUpdate = message; // Armazena para enviar depois
+                }
+            } else {
+                alert("A janela do pop-up não está aberta ou foi fechada.");
+                pendingMessageUpdate = null;
+            }
+        }
+
         function clearClocksFocus() {
             console.log('Main: Limpando foco dos relógios.');
             if (activeTimer) {
@@ -702,19 +699,26 @@
 
             popoutReady = false;
             pendingPopoutUpdate = null;
+            pendingMessageUpdate = null; // Limpar mensagem pendente antiga
 
-            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=400,height=300,resizable,scrollbars=no,status=no,toolbar=no,menubar=no');
+            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=500,height=600,resizable,scrollbars=no,status=no,toolbar=no,menubar=no'); // Tamanho inicial maior
 
             if (!popoutWindow) {
                 alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
             } else {
                 console.log('Main: Pop-out aberto com sucesso.');
+                // Adicione um pequeno atraso (setTimeout) para dar tempo à janela de iniciar
                 setTimeout(() => {
-                    if (popoutWindow && !popoutWindow.closed && activeTimer) {
-                         console.log('Main: Forçando sincronização inicial do pop-out após atraso.');
-                         updateClocks(activeTimer);
-                    } else if (popoutWindow && !popoutWindow.closed) {
-                        updateClocks(null);
+                    if (popoutWindow && !popoutWindow.closed) {
+                        // Sincroniza o relógio e a mensagem logo que o pop-up estiver pronto
+                        if (activeTimer) {
+                            updateClocks(activeTimer);
+                        } else {
+                            updateClocks(null);
+                        }
+                        if (speakerMessageInput.value.trim() !== '') {
+                            sendMessageToSpeaker(speakerMessageInput.value.trim());
+                        }
                     }
                 }, 100);
             }
@@ -732,13 +736,11 @@
             if (e.key === 'Enter') addParticipant();
         });
 
-        // Listeners para as novas configurações de tempo de alerta
         yellowTimeInput.addEventListener('change', () => {
             const val = parseInt(yellowTimeInput.value);
             if (!isNaN(val) && val >= 0) {
                 YELLOW_THRESHOLD_SECONDS = val;
                 if (activeTimer) updateClocks(activeTimer);
-                console.log(`Main: Tempo para Amarelo definido para ${YELLOW_THRESHOLD_SECONDS}s.`);
             } else {
                 yellowTimeInput.value = YELLOW_THRESHOLD_SECONDS;
             }
@@ -749,46 +751,50 @@
             if (!isNaN(val) && val >= 0) {
                 RED_THRESHOLD_SECONDS = val;
                 if (activeTimer) updateClocks(activeTimer);
-                console.log(`Main: Tempo para Vermelho definido para ${RED_THRESHOLD_SECONDS}s.`);
             } else {
                 redTimeInput.value = RED_THRESHOLD_SECONDS;
             }
         });
 
+        // Listeners para os novos botões de mensagem
+        sendMessageButton.addEventListener('click', () => {
+            const message = speakerMessageInput.value.trim();
+            sendMessageToSpeaker(message);
+        });
+
+        clearMessageButton.addEventListener('click', () => {
+            speakerMessageInput.value = '';
+            sendMessageToSpeaker(''); // Envia mensagem vazia para limpar no pop-up
+        });
 
         showFloatingClockBtn.addEventListener('click', () => {
             floatingClockWindow.style.display = floatingClockWindow.style.display === 'block' ? 'none' : 'block';
             updateClocks(activeTimer);
-            console.log(`Main: Relógio local ${floatingClockWindow.style.display === 'block' ? 'mostrado' : 'oculto'}.`);
         });
 
         openPopoutClockBtn.addEventListener('click', openPopoutClock);
 
         closeFloatingClockBtn.addEventListener('click', () => {
             floatingClockWindow.style.display = 'none';
-            console.log('Main: Relógio local fechado.');
         });
 
-        // Listener para mensagens da janela pop-out
         window.addEventListener('message', (event) => {
             if (event.origin !== window.location.origin) {
                 console.warn('Main: Mensagem bloqueada de origem desconhecida:', event.origin);
                 return;
             }
-            console.log('Main: Mensagem recebida do pop-out:', event.data.type, event.data);
 
             if (event.data && event.data.type === 'popoutClosed') {
                 popoutWindow = null;
                 popoutReady = false;
                 pendingPopoutUpdate = null;
-                console.log('Main: Pop-out fechado, referência e flags resetados.');
+                pendingMessageUpdate = null;
             }
             if (event.data && event.data.type === 'popoutReady') {
                  popoutReady = true;
-                 console.log('Main: Pop-out está pronto! Verificando atualizações pendentes...');
 
+                 // Envia as atualizações pendentes (relógio e mensagem)
                  if (pendingPopoutUpdate) {
-                    console.log('Main: Encontrada atualização pendente. Enviando para pop-out.');
                     popoutWindow.postMessage({
                         type: 'updateClock',
                         name: pendingPopoutUpdate.name,
@@ -796,12 +802,20 @@
                         color: pendingPopoutUpdate.color
                     }, window.location.origin);
                     pendingPopoutUpdate = null;
-                 } else if (activeTimer) {
+                 } else if (activeTimer) { // Se não havia pendência, envia o estado atual
                     updateClocks(activeTimer);
-                    console.log('Main: Temporizador ativo sincronizado com o pop-out (sem pendências).');
                  } else {
                     updateClocks(null);
-                    console.log('Main: Pop-out definido para "Nenhum Ativo".');
+                 }
+
+                 if (pendingMessageUpdate !== null) { // Se havia mensagem pendente
+                     popoutWindow.postMessage({
+                        type: 'updateMessage',
+                        message: pendingMessageUpdate
+                    }, window.location.origin);
+                    pendingMessageUpdate = null;
+                 } else if (speakerMessageInput.value.trim() !== '') { // Envia a mensagem atual se não havia pendência
+                    sendMessageToSpeaker(speakerMessageInput.value.trim());
                  }
             }
         });
@@ -811,7 +825,6 @@
             noParticipantsMessage.style.display = 'block';
         }
         updateClocks(null);
-        console.log('Main: Aplicação inicializada.');
     </script>
 </body>
 </html>
