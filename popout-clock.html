@@ -17,7 +17,7 @@
             overflow: hidden; /* Remove barras de rolagem */
             padding: 10px;
             box-sizing: border-box;
-            transition: background-color 0.1s ease-in-out; /* Para transição suave do flash */
+            transition: background-color 0.4s ease-in-out; /* Transição mais lenta para o flash */
         }
 
         #floatingClockParticipantName {
@@ -66,8 +66,9 @@
         #mainClockDisplay.green { color: #28a745; }
 
         /* Estilos para o efeito de piscar */
-        body.flash-red { background-color: #550000; } /* Vermelho mais escuro para o flash */
-        body.flash-dark { background-color: #222; } /* Volta para o preto padrão */
+        body.flash-active {
+            background-color: #550000; /* Um vermelho escuro */
+        }
 
 
         #speakerMessageDisplay {
@@ -110,7 +111,7 @@
         const body = document.body;
 
         let flashInterval = null;
-        let isFlashingRed = false;
+        let isFlashingActive = false; // Flag para controlar o estado do flash
 
         function formatTime(seconds) {
             const isNegative = seconds < 0;
@@ -121,50 +122,24 @@
             return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
         }
 
-        function startFlashing() {
-            if (flashInterval) return; // Already flashing
-            let flashCount = 0;
+        function startContinuousFlashing() {
+            if (flashInterval) return; // Já está piscando
+
             flashInterval = setInterval(() => {
-                if (flashCount < 2) { // Flash two times (red, dark, red, dark)
-                    if (isFlashingRed) {
-                        body.classList.remove('flash-red');
-                        body.classList.add('flash-dark');
-                    } else {
-                        body.classList.remove('flash-dark');
-                        body.classList.add('flash-red');
-                    }
-                    isFlashingRed = !isFlashingRed;
-                    flashCount++;
-                } else {
-                    stopFlashing(); // Stop after 2 flashes
-                    // Optionally, restart after a longer delay if needed for a continuous subtle alert
-                }
-            }, 500); // Flash every 0.5 seconds for the rapid part
+                // Alterna a classe 'flash-active' para o efeito de piscar
+                body.classList.toggle('flash-active');
+            }, 800); // Pisca a cada 0.8 segundos (total de 1.6s para um ciclo completo)
+            isFlashingActive = true;
         }
 
         function stopFlashing() {
-            clearInterval(flashInterval);
-            flashInterval = null;
-            body.classList.remove('flash-red', 'flash-dark');
-            isFlashingRed = false;
-            body.style.backgroundColor = '#222'; // Ensure it's reset to default
-        }
-
-        let delayedFlashTimeout = null;
-
-        function scheduleDelayedFlash(isTimeNegative) {
-            clearTimeout(delayedFlashTimeout); // Clear any previous scheduled flash
-
-            if (isTimeNegative) {
-                // Schedule a flash to happen every 10 seconds
-                delayedFlashTimeout = setTimeout(() => {
-                    startFlashing();
-                    // After the quick flashes, reschedule the next delayed flash
-                    delayedFlashTimeout = setTimeout(() => scheduleDelayedFlash(true), 10000); // 10 seconds
-                }, 1000); // Initial delay to show time change before first flash
-            } else {
-                stopFlashing(); // Ensure no flashing if time is positive
+            if (flashInterval) {
+                clearInterval(flashInterval);
+                flashInterval = null;
             }
+            body.classList.remove('flash-active'); // Garante que o fundo volte ao normal
+            body.style.backgroundColor = '#222'; // Resetar para a cor padrão
+            isFlashingActive = false;
         }
 
         window.addEventListener('message', (event) => {
@@ -184,10 +159,11 @@
                 }
 
                 if (timeLeft < 0) {
-                    scheduleDelayedFlash(true);
+                    if (!isFlashingActive) { // Só inicia se já não estiver piscando
+                        startContinuousFlashing();
+                    }
                 } else {
-                    scheduleDelayedFlash(false); // Stop any flashing if time goes positive
-                    stopFlashing(); // Ensure it's off immediately
+                    stopFlashing(); // Para o piscar se o tempo for positivo
                 }
             } else if (event.data && event.data.type === 'updateMessage') {
                 const { message } = event.data;
@@ -209,8 +185,7 @@
                 const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*';
                 window.opener.postMessage({ type: 'popoutClosed' }, targetOrigin);
             }
-            stopFlashing(); // Clear intervals on close
-            clearTimeout(delayedFlashTimeout);
+            stopFlashing(); // Garante que o intervalo seja limpo ao fechar
         });
     </script>
 </body>
