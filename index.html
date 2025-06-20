@@ -57,6 +57,24 @@
             flex-direction: column;
         }
 
+        /* Novo estilo para o container da lista de participantes */
+        .participant-list-container {
+            display: flex; /* Permite que as sub-colunas fiquem lado a lado */
+            gap: 20px; /* Espaçamento entre as sub-colunas */
+            flex-grow: 1; /* Ocupa o espaço disponível */
+            overflow-y: auto; /* Adiciona scroll apenas se necessário */
+            max-height: calc(100vh - 280px); /* Ajuste para caber na tela sem scroll excessivo */
+            /* Altura estimada: Altura da viewport - altura do header - padding - altura do título - altura do botão de limpar */
+        }
+        
+        /* Estilos para as sub-colunas de participantes */
+        .participant-sub-column {
+            display: flex;
+            flex-direction: column;
+            flex: 1; /* Faz com que cada sub-coluna ocupe o mesmo espaço */
+            min-width: 0; /* Permite o encolhimento correto em telas pequenas */
+        }
+
         h2 {
             color: #ffffff; /* Títulos dentro das colunas: Branco puro */
             margin-top: 0;
@@ -216,6 +234,7 @@
             border-radius: 5px;
             margin-top: 20px;
             background-color: #2a2a2a; /* O mesmo fundo das colunas */
+            display: none; /* Escondido por padrão, JavaScript o mostrará se necessário */
         }
 
         .session-controls {
@@ -238,15 +257,15 @@
         }
 
         .message-box {
-            margin-top: auto;
+            margin-top: auto; /* Empurra a caixa de mensagem para o fundo da coluna */
             padding-top: 20px;
             border-top: 1px solid #555; /* Borda de separação para mensagem: mais escura */
         }
 
-        /* Novo estilo para o botão de limpar tudo na coluna do meio */
+        /* Estilo para o botão de limpar tudo na base da coluna do meio */
         #clearAllParticipantsButton {
             background-color: #e74c3c; /* Vermelho para ação de apagar */
-            margin-top: 15px;
+            margin-top: auto; /* Empurra o botão para o fundo da coluna */
             width: 100%; /* Ocupa a largura total da coluna */
         }
         #clearAllParticipantsButton:hover {
@@ -260,6 +279,9 @@
             }
             .column {
                 margin-bottom: 20px;
+            }
+            .participant-list-container {
+                flex-direction: column; /* Em telas menores, as sub-colunas ficam empilhadas */
             }
         }
     </style>
@@ -317,8 +339,12 @@
 
         <div class="column" style="flex-grow: 1;">
             <h2>Participantes Ativos</h2>
-            <div id="participantList">
-                <p id="noParticipantsMessage">Nenhum participante adicionado ainda.</p>
+            <div class="participant-list-container">
+                <div class="participant-sub-column" id="participantColumn1">
+                    <p id="noParticipantsMessage">Nenhum participante adicionado ainda.</p>
+                </div>
+                <div class="participant-sub-column" id="participantColumn2">
+                    </div>
             </div>
             <button id="clearAllParticipantsButton">Limpar Todos os Participantes</button>
         </div>
@@ -355,7 +381,8 @@
         const initialMinutesInput = document.getElementById('initialMinutes');
         const initialSecondsInput = document.getElementById('initialSeconds');
         const addParticipantButton = document.getElementById('addParticipantButton');
-        const participantList = document.getElementById('participantList');
+        const participantColumn1 = document.getElementById('participantColumn1'); // Nova referência
+        const participantColumn2 = document.getElementById('participantColumn2'); // Nova referência
         const noParticipantsMessage = document.getElementById('noParticipantsMessage');
 
         const openPopoutClockBtn = document.getElementById('openPopoutClockBtn');
@@ -381,22 +408,23 @@
         const loadSelectedSessionButton = document.getElementById('loadSelectedSessionButton');
         const deleteSelectedSessionButton = document.getElementById('deleteSelectedSessionButton');
 
-        // Referência ao botão de limpar tudo
         const clearAllParticipantsButton = document.getElementById('clearAllParticipantsButton');
 
         let timers = [];
         let nextParticipantNumber = 1;
-        let activeTimer = null; // Refere-se ao timer que está atualmente em contagem decrescente
+        let activeTimer = null;
         let popoutWindow = null;
         let popoutReady = false;
         let pendingPopoutUpdate = null;
         let pendingMessageUpdate = null;
 
-        // Estes serão os valores padrão e também os que aparecem nos inputs de configuração
         let GLOBAL_YELLOW_THRESHOLD_SECONDS = 60;
         let GLOBAL_RED_THRESHOLD_SECONDS = 10;
 
         let conferenceSessions = {};
+
+        // Variável para controlar o número de participantes por coluna
+        const PARTICIPANTS_PER_COLUMN = 8;
 
         function formatTime(seconds) {
             const isNegative = seconds < 0;
@@ -411,9 +439,7 @@
             return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
         }
 
-        // Função auxiliar para obter a cor de exibição
         function getDisplayColorCustom(timeLeft, yellow, red) {
-            // Usa os thresholds passados ou os globais como fallback
             yellow = yellow !== undefined ? yellow : GLOBAL_YELLOW_THRESHOLD_SECONDS;
             red = red !== undefined ? red : GLOBAL_RED_THRESHOLD_SECONDS;
 
@@ -434,39 +460,34 @@
             currentTimeMain.textContent = `${hours}:${minutes}:${seconds}`;
         }
 
-        // Função addParticipant agora tem um parâmetro 'fromSession' para controlar o auto-incremento
         function addParticipant(data = {}, fromSession = false) {
             let name = data.name || participantNameInput.value.trim();
-            // Verifica se os valores são nulos/vazios e se são convertíveis para número.
-            // Se ambos os inputs de minutos e segundos forem 0 (ou vazios/não numéricos), não permite adicionar.
             const minutesValue = parseInt(initialMinutesInput.value);
             const secondsValue = parseInt(initialSecondsInput.value);
-
-            // Se não vem de uma sessão, faz a validação dos inputs
+            
+            // Validação de tempo (apenas se não vier de sessão)
             if (!fromSession) {
-                if (isNaN(minutesValue) && isNaN(secondsValue)) {
-                    // Se ambos são NaN, significa que estão vazios ou inválidos
-                    return; // Não faz nada
+                const totalEnteredSeconds = calculateTotalSeconds(initialMinutesInput.value, initialSecondsInput.value);
+                if (totalEnteredSeconds <= 0 && name === '') {
+                    // Se tempo é 0 ou vazio E nome é vazio, não faz nada
+                    return;
                 }
-                if (minutesValue === 0 && secondsValue === 0 && (initialMinutesInput.value === '0' && initialSecondsInput.value === '0')) {
-                    // Se ambos são 0 e foram explicitamente digitados como '0', permite
-                } else if ((isNaN(minutesValue) || minutesValue === 0) && (isNaN(secondsValue) || secondsValue === 0) && (name === '')) {
-                     // Se ambos os tempos são 0/vazios E o nome está vazio, não adiciona (impede participantes vazios com tempo 0)
+                if (isNaN(minutesValue) && isNaN(secondsValue) && name === '') {
+                     // Se ambos os campos de tempo são NaN/vazios E nome é vazio, não faz nada
                      return;
                 }
             }
-
-
+            
             let initialTotalSeconds = data.initialTime || calculateTotalSeconds(initialMinutesInput.value, initialSecondsInput.value);
-            let customYellow = data.yellow; // Pode vir de uma sessão
-            let customRed = data.red;     // Pode vir de uma sessão
+            let customYellow = data.yellow;
+            let customRed = data.red;
 
             if (!name) {
                 name = `Participante ${nextParticipantNumber}`;
-                if (!fromSession) { // Só incrementa se não veio de sessão e o nome foi gerado automaticamente
+                if (!fromSession) {
                      nextParticipantNumber++;
                 }
-            } else if (!fromSession) { // Se veio do formulário e tem nome, incrementa para o próximo nome padrão
+            } else if (!fromSession) {
                  const match = name.match(/Participante (\d+)/);
                  if (match && parseInt(match[1]) >= nextParticipantNumber) {
                      nextParticipantNumber = parseInt(match[1]) + 1;
@@ -474,11 +495,9 @@
                      nextParticipantNumber++;
                  }
             }
-            // Se fromSession é true, nextParticipantNumber é gerido pela loadSession
 
             noParticipantsMessage.style.display = 'none';
 
-            // Usa Date.now() + um número aleatório para IDs mais únicos e evitar colisões rápidas
             const id = Date.now() + Math.floor(Math.random() * 1000); 
             const participantCard = document.createElement('div');
             participantCard.className = 'participant-card';
@@ -503,7 +522,12 @@
                 </div>
             `;
 
-            participantList.appendChild(participantCard);
+            // Decide em qual coluna adicionar o participante
+            if (timers.length < PARTICIPANTS_PER_COLUMN) {
+                participantColumn1.appendChild(participantCard);
+            } else {
+                participantColumn2.appendChild(participantCard);
+            }
 
             const timer = {
                 id: id,
@@ -520,7 +544,6 @@
                 subMinButton: document.getElementById(`sub-min-${id}`),
                 cardElement: participantCard,
                 alertedZero: false,
-                // Prioriza o custom, senão usa o global atual
                 yellowThreshold: customYellow !== undefined ? customYellow : GLOBAL_YELLOW_THRESHOLD_SECONDS,
                 redThreshold: customRed !== undefined ? customRed : GLOBAL_RED_THRESHOLD_SECONDS
             };
@@ -534,28 +557,23 @@
             timer.subMinButton.addEventListener('click', () => adjustTime(timer, -60));
             participantCard.querySelector('.remove-participant-btn').addEventListener('click', () => removeParticipant(id));
 
-            // Define a cor inicial corretamente
             timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
 
-            // Limpar os campos do formulário apenas se a adição veio do formulário (não de uma carga de sessão)
             if (!fromSession) {
                 participantNameInput.value = '';
-                initialMinutesInput.value = '';
-                initialSecondsInput.value = '';
+                initialMinutesInput.value = '5'; // Reseta para o valor padrão
+                initialSecondsInput.value = '0';  // Reseta para o valor padrão
             }
         }
 
-        // Atualiza o estado dos botões de TODOS os temporizadores
         function updateAllTimerButtons() {
             timers.forEach(t => {
                 if (activeTimer && activeTimer.id === t.id) {
-                    toggleTimerButtons(t, true, false, false); // Temporizador ativo: Start desabilitado, Pause/Reset habilitados
-                    // Botões de ajuste: sempre habilitados para o timer ativo
+                    toggleTimerButtons(t, true, false, false);
                     t.addMinButton.disabled = false;
                     t.subMinButton.disabled = false;
                 } else {
-                    toggleTimerButtons(t, false, true, true); // Temporizador inativo: Start habilitado, Pause/Reset desabilitados
-                    // Botões de ajuste: habilitados apenas se o timer está pausado E no seu tempo inicial
+                    toggleTimerButtons(t, false, true, true);
                     t.addMinButton.disabled = !(t.isPaused && t.timeLeft === t.initialTime);
                     t.subMinButton.disabled = !(t.isPaused && t.timeLeft === t.initialTime);
                 }
@@ -571,26 +589,21 @@
         }
 
         function adjustTime(timer, secondsToAdd) {
-            // Permite ajuste se for o temporizador ativo OU se estiver pausado e no tempo inicial
             if ((activeTimer && activeTimer.id === timer.id) || (timer.isPaused && timer.timeLeft === timer.initialTime)) {
                 timer.timeLeft += secondsToAdd;
-                if (timer.timeLeft < -5940) { // Limite mínimo para evitar números absurdos
+                if (timer.timeLeft < -5940) {
                     timer.timeLeft = -5940;
                 }
                 timer.displayElement.textContent = formatTime(timer.timeLeft);
                 timer.displayElement.classList.remove('red', 'yellow', 'green');
                 timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
                 timer.alertedZero = false;
-                updateClocks(timer); // Atualiza o pop-up com o novo tempo
-            } else {
-                 // Nenhuma ação, apenas mantém o comportamento.
-                 // alert("Ajuste de tempo só é possível para o temporizador ativo ou para um temporizador parado no seu tempo inicial.");
+                updateClocks(timer);
             }
         }
 
         function startTimer(timerToStart) {
             if (timerToStart.isPaused) {
-                // Se já há um temporizador ativo diferente, pausa-o e remove o destaque
                 if (activeTimer && activeTimer.id !== timerToStart.id) {
                     pauseTimer(activeTimer);
                     activeTimer.cardElement.classList.remove('active-timer');
@@ -601,19 +614,18 @@
 
                 timerToStart.isPaused = false;
                 
-                updateAllTimerButtons(); // Atualiza o estado de todos os botões imediatamente
+                updateAllTimerButtons();
 
-                updateClocks(timerToStart); // Envia update inicial para o pop-up
+                updateClocks(timerToStart);
 
                 timerToStart.intervalId = setInterval(() => {
                     timerToStart.timeLeft--;
                     timerToStart.displayElement.textContent = formatTime(timerToStart.timeLeft);
 
-                    // Re-calcula e aplica a cor baseada nos thresholds *do próprio timer*
                     timerToStart.displayElement.classList.remove('red', 'yellow', 'green');
                     timerToStart.displayElement.classList.add(getDisplayColorCustom(timerToStart.timeLeft, timerToStart.yellowThreshold, timerToStart.redThreshold));
 
-                    updateClocks(timerToStart); // Envia o timer atualizado para o pop-up
+                    updateClocks(timerToStart);
                 }, 1000);
             }
         }
@@ -622,8 +634,8 @@
             if (!timerToPause.isPaused) {
                 timerToPause.isPaused = true;
                 clearInterval(timerToPause.intervalId);
-                updateAllTimerButtons(); // Atualiza o estado de todos os botões imediatamente
-                updateClocks(timerToPause); // Atualiza o pop-up com o estado de pausa
+                updateAllTimerButtons();
+                updateClocks(timerToPause);
             }
         }
 
@@ -633,40 +645,36 @@
             timerToReset.timeLeft = timerToReset.initialTime;
             timerToReset.displayElement.textContent = formatTime(timerToReset.timeLeft);
 
-            // Re-calcula e aplica a cor baseada nos thresholds *do próprio timer*
             timerToReset.displayElement.classList.remove('red', 'yellow', 'green');
             timerToReset.displayElement.classList.add(getDisplayColorCustom(timerToReset.timeLeft, timerToReset.yellowThreshold, timerToReset.redThreshold));
             
             timerToReset.alertedZero = false;
             if (activeTimer && activeTimer.id === timerToReset.id) {
-                clearClocksFocus(); // Se o timer resetado era o ativo, limpa o foco
+                clearClocksFocus();
             } else {
-                 updateAllTimerButtons(); // Se não era o ativo, apenas atualiza os botões
+                 updateAllTimerButtons();
             }
         }
 
         function removeParticipant(id) {
-            const cardToRemove = document.querySelector(`.participant-card[data-id="${id}"]`);
-            if (cardToRemove) {
-                participantList.removeChild(cardToRemove);
-            }
-
             timers = timers.filter(timer => {
                 if (timer.id === id) {
                     clearInterval(timer.intervalId);
                     if (activeTimer && activeTimer.id === timer.id) {
-                        clearClocksFocus(); // Se o removido era o ativo, limpa o foco
+                        clearClocksFocus();
                     }
+                    timer.cardElement.remove(); // Remove o elemento HTML
                     return false;
                 }
                 return true;
             });
 
+            reorderParticipantsInColumns(); // Reorganiza os participantes após remoção
+
             if (timers.length === 0) {
                 noParticipantsMessage.style.display = 'block';
-                nextParticipantNumber = 1; // Reseta a contagem padrão se a lista está vazia
+                nextParticipantNumber = 1;
             } else {
-                // Recalcula o nextParticipantNumber com base no maior número encontrado
                 let maxNum = 0;
                 timers.forEach(timer => {
                     const match = timer.name.match(/Participante (\d+)/);
@@ -679,35 +687,57 @@
                 });
                 nextParticipantNumber = maxNum + 1;
             }
-            updateAllTimerButtons(); // Atualiza os botões após a remoção
+            updateAllTimerButtons();
         }
 
-        // Nova função para limpar todos os participantes (sem confirmação)
+        // Nova função para reorganizar os participantes nas colunas
+        function reorderParticipantsInColumns() {
+            participantColumn1.innerHTML = ''; // Limpa as colunas
+            participantColumn2.innerHTML = '';
+            
+            // Re-adiciona a mensagem de "nenhum participante" se a lista estiver vazia
+            if (timers.length === 0) {
+                participantColumn1.appendChild(noParticipantsMessage);
+                noParticipantsMessage.style.display = 'block';
+            } else {
+                noParticipantsMessage.style.display = 'none';
+            }
+
+            timers.forEach((timer, index) => {
+                if (index < PARTICIPANTS_PER_COLUMN) {
+                    participantColumn1.appendChild(timer.cardElement);
+                } else {
+                    participantColumn2.appendChild(timer.cardElement);
+                }
+            });
+        }
+
+
         function clearAllParticipants() {
             timers.forEach(timer => {
-                clearInterval(timer.intervalId); // Para qualquer timer em execução
-                timer.cardElement.remove(); // Remove o elemento HTML
+                clearInterval(timer.intervalId);
+                timer.cardElement.remove();
             });
-            timers = []; // Esvazia o array de timers
-            activeTimer = null; // Reseta o timer ativo
-            nextParticipantNumber = 1; // Reseta a contagem padrão
+            timers = [];
+            activeTimer = null;
+            nextParticipantNumber = 1;
 
-            participantList.innerHTML = ''; // Limpa completamente o HTML da lista
-            noParticipantsMessage.style.display = 'block'; // Mostra a mensagem
-            updateClocks(null); // Atualiza o pop-up para "Nenhum Ativo"
-            updateAllTimerButtons(); // Atualiza o estado dos botões
+            participantColumn1.innerHTML = ''; // Limpa completamente o HTML das sub-colunas
+            participantColumn2.innerHTML = '';
+            participantColumn1.appendChild(noParticipantsMessage); // Adiciona a mensagem de volta na primeira coluna
+            noParticipantsMessage.style.display = 'block';
+            updateClocks(null);
+            updateAllTimerButtons();
         }
 
-        // A função updateClocks agora sempre envia os dados do activeTimer, ou nulo se nenhum estiver ativo.
         function updateClocks(timerToDisplay = null) {
-            const displayTimer = timerToDisplay || activeTimer; // Prioriza o timer explicitamente passado, senão usa o ativo
+            const displayTimer = timerToDisplay || activeTimer;
             
             const name = displayTimer ? displayTimer.name : "Nenhum Ativo";
             const timeLeft = displayTimer ? displayTimer.timeLeft : 0;
-            // Usa os thresholds do displayTimer, ou os globais se displayTimer for nulo
             const color = displayTimer ? 
                           getDisplayColorCustom(displayTimer.timeLeft, displayTimer.yellowThreshold, displayTimer.redThreshold) : 
-                          getDisplayColorCustom(0, GLOBAL_YELLOW_THRESHOLD_SECONDS, GLOBAL_RED_THRESHOLD_SECONDS); // Se nenhum ativo, usa 0s para determinar a cor inicial do pop-up (geralmente verde)
+                          getDisplayColorCustom(0, GLOBAL_YELLOW_THRESHOLD_SECONDS, GLOBAL_RED_THRESHOLD_SECONDS);
 
             if (popoutWindow && !popoutWindow.closed) {
                 if (popoutReady) {
@@ -739,19 +769,18 @@
                     pendingMessageUpdate = message;
                 }
             } else {
-                // alert("A janela do pop-up não está aberta ou foi fechada.");
                 pendingMessageUpdate = null;
             }
         }
 
         function clearClocksFocus() {
             if (activeTimer) {
-                pauseTimer(activeTimer); // Pausa o temporizador ativo atual
-                activeTimer.cardElement.classList.remove('active-timer'); // Remove a classe de destaque
-                activeTimer = null; // Limpa a referência ao temporizador ativo
+                pauseTimer(activeTimer);
+                activeTimer.cardElement.classList.remove('active-timer');
+                activeTimer = null;
             }
-            updateClocks(null); // Atualiza o pop-up para mostrar "Nenhum Ativo"
-            updateAllTimerButtons(); // Garante que todos os botões de Iniciar fiquem ativos
+            updateClocks(null);
+            updateAllTimerButtons();
         }
 
         function openPopoutClock() {
@@ -769,12 +798,10 @@
             let width = screen.width;
             let height = screen.height;
 
-            // Tenta abrir a nova janela numa segunda tela, se disponível e a principal estiver na primeira
             if (window.screenX === 0 && window.screenY === 0 && window.screen.isExtended) {
-                screenX = screen.availWidth; // Coloca na largura disponível da primeira tela
+                screenX = screen.availWidth;
                 screenY = 0;
             } else {
-                // Senão, abre na tela atual, no lado direito
                 screenX = window.screenX + (window.innerWidth / 2);
                 screenY = window.screenY;
             }
@@ -804,10 +831,9 @@
                     }
                 });
 
-                // Pequeno delay para garantir que a janela está pronta antes de enviar mensagens
                 setTimeout(() => {
                     if (popoutWindow && !popoutWindow.closed) {
-                        updateClocks(activeTimer); // Envia o estado atual do activeTimer
+                        updateClocks(activeTimer);
                         if (speakerMessageInput.value.trim() !== '') {
                             sendMessageToSpeaker(speakerMessageInput.value.trim());
                         }
@@ -857,22 +883,20 @@
                 return;
             }
 
-            // Os thresholds globais serão salvos como os *padrões* da sessão
             const currentGlobalYellow = parseInt(yellowTimeInput.value || GLOBAL_YELLOW_THRESHOLD_SECONDS);
             const currentGlobalRed = parseInt(redTimeInput.value || GLOBAL_RED_THRESHOLD_SECONDS);
 
             const sessionParticipants = timers.map(timer => ({
                 name: timer.name,
                 initialTime: timer.initialTime,
-                // Salva os thresholds específicos do timer, se existirem, senão os globais
                 yellow: timer.yellowThreshold !== undefined ? timer.yellowThreshold : currentGlobalYellow,
                 red: timer.redThreshold !== undefined ? timer.redThreshold : currentGlobalRed
             }));
 
             conferenceSessions[sessionName] = {
                 participants: sessionParticipants,
-                globalYellow: currentGlobalYellow, // Salva o threshold amarelo global para a sessão
-                globalRed: currentGlobalRed     // Salva o threshold vermelho global para a sessão
+                globalYellow: currentGlobalYellow,
+                globalRed: currentGlobalRed
             };
             saveSessionsToLocalStorage();
             populateSessionSelect();
@@ -893,32 +917,28 @@
                 return;
             }
 
-            // --- Limpeza Completa Antes de Carregar ---
             timers.forEach(timer => {
                 clearInterval(timer.intervalId);
-                timer.cardElement.remove(); // Remove o elemento HTML
+                timer.cardElement.remove();
             });
-            timers = []; // Esvazia o array de timers
-            activeTimer = null; // Garante que nenhum timer está ativo
-            nextParticipantNumber = 1; // Reseta para a contagem padrão, será ajustada
+            timers = [];
+            activeTimer = null;
+            nextParticipantNumber = 1;
 
-            participantList.innerHTML = ''; // Limpa completamente a lista HTML
-            noParticipantsMessage.style.display = 'block'; // Mostra a mensagem até que os participantes sejam adicionados
+            participantColumn1.innerHTML = '';
+            participantColumn2.innerHTML = '';
+            participantColumn1.appendChild(noParticipantsMessage); // Adiciona a mensagem de volta na primeira coluna
+            noParticipantsMessage.style.display = 'block';
 
-            // Carrega os thresholds globais da sessão, se existirem, senão mantém os padrões
             GLOBAL_YELLOW_THRESHOLD_SECONDS = sessionDataToLoad.globalYellow !== undefined ? sessionDataToLoad.globalYellow : 60;
             GLOBAL_RED_THRESHOLD_SECONDS = sessionDataToLoad.globalRed !== undefined ? sessionDataToLoad.globalRed : 10;
             
-            // Atualiza os inputs de configuração da interface principal
             yellowTimeInput.value = GLOBAL_YELLOW_THRESHOLD_SECONDS;
             redTimeInput.value = GLOBAL_RED_THRESHOLD_SECONDS;
 
-            // --- Reconstrução dos Participantes ---
             let maxNumInSession = 0;
             sessionDataToLoad.participants.forEach(p => {
-                // Adiciona o participante usando a função existente, passando os dados e marcando como "fromSession"
                 addParticipant({ name: p.name, initialTime: p.initialTime, yellow: p.yellow, red: p.red }, true);
-                // Atualiza nextParticipantNumber com base nos nomes da sessão para evitar colisões futuras
                 const match = p.name.match(/Participante (\d+)/);
                 if (match) {
                     const num = parseInt(match[1]);
@@ -927,14 +947,15 @@
                     }
                 }
             });
-            nextParticipantNumber = maxNumInSession + 1; // Define o próximo número disponível
+            nextParticipantNumber = maxNumInSession + 1;
 
             if (timers.length > 0) {
                 noParticipantsMessage.style.display = 'none';
             }
+            reorderParticipantsInColumns(); // Garante que estejam nas colunas corretas após o carregamento
 
-            updateClocks(null); // Atualiza o pop-up para "Nenhum Ativo"
-            updateAllTimerButtons(); // Garante que todos os botões de iniciar estão em estado correto
+            updateClocks(null);
+            updateAllTimerButtons();
             alert(`Sessão "${selectedSessionName}" carregada com sucesso!`);
         }
 
@@ -954,7 +975,7 @@
         }
 
         // --- LISTENERS DE EVENTOS ---
-        addParticipantButton.addEventListener('click', () => addParticipant({}, false)); // Passa false explicitamente
+        addParticipantButton.addEventListener('click', () => addParticipant({}, false));
         participantNameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addParticipant({}, false);
         });
@@ -983,8 +1004,8 @@
         });
 
         clearTimeInputsBtn.addEventListener('click', () => {
-            initialMinutesInput.value = '';
-            initialSecondsInput.value = '';
+            initialMinutesInput.value = '5'; // Volta para o padrão
+            initialSecondsInput.value = '0'; // Volta para o padrão
             initialMinutesInput.focus();
         });
 
@@ -993,7 +1014,6 @@
             if (!isNaN(val) && val >= 0) {
                 GLOBAL_YELLOW_THRESHOLD_SECONDS = val;
                 timers.forEach(timer => {
-                    // Se o timer não tem um yellowThreshold customizado, atualiza para o global
                     if (timer.yellowThreshold === undefined || timer.yellowThreshold === null) {
                         timer.yellowThreshold = val;
                     }
@@ -1011,7 +1031,6 @@
             if (!isNaN(val) && val >= 0) {
                 GLOBAL_RED_THRESHOLD_SECONDS = val;
                 timers.forEach(timer => {
-                    // Se o timer não tem um redThreshold customizado, atualiza para o global
                     if (timer.redThreshold === undefined || timer.redThreshold === null) {
                         timer.redThreshold = val;
                     }
@@ -1031,8 +1050,8 @@
         });
 
         speakerMessageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { // Permite Shift+Enter para nova linha
-                e.preventDefault(); // Impede a quebra de linha normal
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 const message = speakerMessageInput.value.trim();
                 sendMessageToSpeaker(message);
             }
@@ -1045,7 +1064,6 @@
 
         openPopoutClockBtn.addEventListener('click', openPopoutClock);
 
-        // Listener para o novo botão de limpar todos os participantes
         clearAllParticipantsButton.addEventListener('click', clearAllParticipants);
 
 
@@ -1120,8 +1138,8 @@
         if (timers.length === 0) {
             noParticipantsMessage.style.display = 'block';
         }
-        updateClocks(null); // Garante que o pop-up começa com "Nenhum Ativo"
-        updateAllTimerButtons(); // Garante o estado correto dos botões ao carregar a página
+        updateClocks(null);
+        updateAllTimerButtons();
     </script>
 </body>
 </html>
