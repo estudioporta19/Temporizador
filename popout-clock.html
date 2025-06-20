@@ -1,169 +1,138 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relógio Pop-out</title>
+    <title>Ecrã do Palestrante</title>
     <style>
         body {
+            display: flex;
+            flex-direction: column;
+            /* Alterado para space-between para empurrar o conteúdo para as extremidades, */
+            /* mas combinado com padding-bottom, ajuda a levantar a mensagem. */
+            justify-content: space-between; 
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #2c3e50; /* Cor de fundo escura para contraste */
+            color: #ecf0f1;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* Remove scrollbars */
+            padding-bottom: 5vh; /* Adiciona um padding na parte inferior do body */
+            box-sizing: border-box; /* Garante que o padding seja incluído na altura total */
+        }
+
+        .timer-display-container {
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #222;
-            color: white;
-            overflow: hidden; /* Remove barras de rolagem */
-            padding: 10px;
-            box-sizing: border-box;
-            transition: background-color 0.4s ease-in-out; /* Transição mais lenta para o flash */
-            position: relative; /* Para posicionar a hora atual */
+            justify-content: center;
+            flex-grow: 1; /* Ocupa o espaço disponível, empurrando a mensagem para baixo */
+            width: 100%;
+            padding-top: 5vh; /* Adiciona um padding no topo para o relógio/nome */
         }
 
-        #currentTimePopout { /* Estilo para a hora atual no pop-up */
+        #speakerName {
+            font-size: 8vw; /* Tamanho responsivo para o nome */
+            font-weight: bold;
+            margin-bottom: 2vh; /* Espaço abaixo do nome */
+            color: #ffffff;
+            text-align: center;
+            padding: 0 2vw; /* Pequeno padding para evitar que toque nas bordas */
+            word-break: break-word; /* Quebra palavras longas */
+        }
+
+        #clockDisplay {
+            font-size: 25vw; /* Tamanho responsivo para o relógio */
+            font-weight: bold;
+            text-align: center;
+            padding: 0 2vw;
+            border-radius: 20px; /* Bordas arredondadas para o display */
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5); /* Sombra suave */
+            transition: background-color 0.5s ease, color 0.5s ease; /* Transição suave de cores */
+            min-width: 90vw; /* Garante que o relógio não fique muito pequeno */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40vh; /* Altura fixa para o display do relógio */
+            box-sizing: border-box; /* Inclui padding e border na largura/altura */
+        }
+
+        #clockDisplay.green { background-color: #28a745; color: white; } /* Verde vibrante */
+        #clockDisplay.yellow { background-color: #ffc107; color: #333; } /* Amarelo vibrante */
+        #clockDisplay.red { background-color: #dc3545; color: white; } /* Vermelho vibrante */
+
+        #speakerMessage {
+            font-size: 5vw; /* Tamanho responsivo para a mensagem */
+            /* Removido margin-top, a posição será controlada pelo justify-content e padding-bottom do body */
+            color: #ffffff;
+            text-align: center;
+            padding: 0 3vw;
+            word-wrap: break-word; /* Quebra de linha para mensagens longas */
+            min-height: 10vh; /* Altura mínima para a mensagem */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Adicionado um pouco de margem inferior para levantar mais */
+            margin-bottom: 2vh; 
+        }
+        
+        #currentTimePopout {
             position: absolute;
             top: 20px;
-            left: 20px;
-            font-size: 3.8em; /* **Ajustado para ser similar ao nome do participante** */
-            color: #eee;
-            font-weight: bolder;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-            z-index: 10;
+            right: 20px;
+            font-size: 3vw;
+            color: rgba(255, 255, 255, 0.7);
         }
 
-        #floatingClockParticipantName {
-            font-size: 3.5em; /* Tamanho do nome do participante */
-            font-weight: bold;
-            color: #f8f9fa;
-            margin-top: 80px; /* **Ajustado para dar espaço à hora** */
-            margin-bottom: 5px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
-            text-align: center;
-            line-height: 1.2;
-            flex-shrink: 0;
-            padding: 0 15px;
-            box-sizing: border-box;
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 15vh; /* Ocupa 15% da altura da viewport */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        /* Media queries para ajustar tamanhos de fonte em telas muito pequenas ou muito grandes */
+        @media (max-width: 600px) {
+            #speakerName { font-size: 10vw; }
+            #clockDisplay { font-size: 30vw; }
+            #speakerMessage { font-size: 6vw; }
+            #currentTimePopout { font-size: 4vw; }
         }
 
-        #mainClockDisplay {
-            font-size: 25vw; /* ENORME: 25% da largura da viewport para o relógio */
-            line-height: 1em; /* Garante que os dígitos caibam */
-            font-weight: bold;
-            color: #28a745;
-            letter-spacing: 5px;
-            margin: 0;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
-            transition: color 0.3s ease;
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            height: 60vh; /* Relógio ocupa 60% da altura da viewport */
-            max-height: 60vh;
-            box-sizing: border-box;
-        }
-
-        /* Classes de cor para o display do pop-up */
-        #mainClockDisplay.red { color: #dc3545; }
-        #mainClockDisplay.yellow { color: #ffc107; }
-        #mainClockDisplay.green { color: #28a745; }
-
-        /* Estilos para o efeito de piscar */
-        body.flash-active {
-            background-color: #550000; /* Um vermelho escuro */
-        }
-
-        #speakerMessageDisplay {
-            width: 100%;
-            background-color: #444;
-            color: #eee;
-            padding: 15px 20px;
-            border-top: 2px solid #666;
-            text-align: center;
-            font-size: 4vw; /* Mensagem responsiva à largura da viewport */
-            font-weight: 500;
-            height: 25vh; /* Ocupa 25% da altura da viewport */
-            max-height: 25vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-sizing: border-box;
-            word-wrap: break-word;
-            overflow: auto; /* Adiciona barra de rolagem se a mensagem for muito longa */
-            line-height: 1.4;
-        }
-
-        /* Ajustes para quando a janela é muito pequena, garantindo legibilidade mínima */
-        @media (max-width: 600px), (max-height: 500px) {
-            #currentTimePopout {
-                font-size: 2.5em; /* **Ajuste responsivo para telas menores** */
-                top: 10px;
-                left: 10px;
-            }
-            #floatingClockParticipantName {
-                font-size: 2em;
-                margin-top: 60px; /* **Ajustado para telas menores** */
-            }
-            #mainClockDisplay { font-size: 20vw; letter-spacing: 2px; }
-            #speakerMessageDisplay { font-size: 3vw; padding: 10px; }
+        @media (min-width: 1920px) {
+            #speakerName { font-size: 6vw; }
+            #clockDisplay { font-size: 18vw; }
+            #speakerMessage { font-size: 4vw; }
+            #currentTimePopout { font-size: 2vw; }
         }
     </style>
 </head>
 <body>
-    <div id="currentTimePopout"></div>
-    <p id="floatingClockParticipantName">Nenhum Ativo</p>
-    <div id="mainClockDisplay">00:00</div>
-    <div id="speakerMessageDisplay"></div>
+    <div id="currentTimePopout">00:00:00</div>
+    <div class="timer-display-container">
+        <div id="speakerName">Nenhum Ativo</div>
+        <div id="clockDisplay" class="green">00:00</div>
+    </div>
+    <div id="speakerMessage"></div>
 
     <script>
-        const floatingClockParticipantName = document.getElementById('floatingClockParticipantName');
-        const mainClockDisplay = document.getElementById('mainClockDisplay');
-        const speakerMessageDisplay = document.getElementById('speakerMessageDisplay');
-        const body = document.body;
+        const speakerNameDisplay = document.getElementById('speakerName');
+        const clockDisplay = document.getElementById('clockDisplay');
+        const speakerMessageDisplay = document.getElementById('speakerMessage');
         const currentTimePopout = document.getElementById('currentTimePopout');
 
-        let flashInterval = null;
-        let isFlashingActive = false;
+        let intervalId = null;
 
-        function formatTime(seconds) {
-            const isNegative = seconds < 0;
-            const absSeconds = Math.abs(seconds);
-            const minutes = Math.floor(absSeconds / 60);
-            const remainingSeconds = absSeconds % 60;
-            const sign = isNegative ? '-' : '';
-            return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        function updateClockDisplay(name, timeLeft, colorClass) {
+            speakerNameDisplay.textContent = name;
+            const minutes = Math.floor(Math.abs(timeLeft) / 60);
+            const seconds = Math.abs(timeLeft) % 60;
+            const sign = timeLeft < 0 ? '-' : '';
+            clockDisplay.textContent = `${sign}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            
+            clockDisplay.classList.remove('green', 'yellow', 'red');
+            clockDisplay.classList.add(colorClass);
         }
 
-        function startContinuousFlashing() {
-            if (flashInterval) return;
-
-            flashInterval = setInterval(() => {
-                body.classList.toggle('flash-active');
-            }, 800);
-            isFlashingActive = true;
+        function updateSpeakerMessage(message) {
+            speakerMessageDisplay.textContent = message;
         }
 
-        function stopFlashing() {
-            if (flashInterval) {
-                clearInterval(flashInterval);
-                flashInterval = null;
-            }
-            body.classList.remove('flash-active');
-            body.style.backgroundColor = '#222';
-            isFlashingActive = false;
-        }
-
-        function updateCurrentTimeDisplay() {
+        function updateCurrentTimePopout() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -174,52 +143,29 @@
         window.addEventListener('message', (event) => {
             const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
             if (!isLocalOrigin && !event.origin.startsWith('file://')) {
-                console.warn('Pop-out: Mensagem bloqueada de origem desconhecida:', event.origin);
+                console.warn('Popout: Mensagem bloqueada de origem desconhecida:', event.origin);
                 return;
             }
 
             if (event.data && event.data.type === 'updateClock') {
-                const { name, timeLeft, color } = event.data;
-                floatingClockParticipantName.textContent = name;
-                mainClockDisplay.textContent = formatTime(timeLeft);
-                mainClockDisplay.classList.remove('red', 'yellow', 'green');
-                if (color) {
-                    mainClockDisplay.classList.add(color);
-                }
-
-                if (timeLeft < 0) {
-                    if (!isFlashingActive) {
-                        startContinuousFlashing();
-                    }
-                } else {
-                    stopFlashing();
-                }
+                updateClockDisplay(event.data.name, event.data.timeLeft, event.data.color);
             } else if (event.data && event.data.type === 'updateMessage') {
-                const { message } = event.data;
-                speakerMessageDisplay.textContent = message;
+                updateSpeakerMessage(event.data.message);
             } else if (event.data && event.data.type === 'updateCurrentTime') {
                 currentTimePopout.textContent = event.data.time;
             }
         });
 
-        window.addEventListener('DOMContentLoaded', () => {
-            if (window.opener) {
-                const isLocalOrigin = ['null', window.opener.location.origin].includes(window.location.origin);
-                const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*';
-                window.opener.postMessage({ type: 'popoutReady' }, targetOrigin);
-            }
-            // Iniciar a atualização da hora atual no pop-up
-            updateCurrentTimeDisplay();
-            setInterval(updateCurrentTimeDisplay, 1000);
+        window.addEventListener('beforeunload', () => {
+            window.opener.postMessage({ type: 'popoutClosed' }, window.location.origin);
         });
 
-        window.addEventListener('beforeunload', () => {
-            if (window.opener) {
-                const isLocalOrigin = ['null', window.opener.location.origin].includes(window.location.origin);
-                const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*';
-                window.opener.postMessage({ type: 'popoutClosed' }, targetOrigin);
+        document.addEventListener('DOMContentLoaded', () => {
+             updateCurrentTimePopout(); // Atualiza uma vez ao carregar
+             setInterval(updateCurrentTimePopout, 1000); // Atualiza a cada segundo
+             if (window.opener) {
+                window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
             }
-            stopFlashing();
         });
     </script>
 </body>
