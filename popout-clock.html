@@ -23,12 +23,12 @@
 
         #currentTimePopout { /* NOVO ESTILO para a hora atual no pop-up */
             position: absolute;
-            top: 10px;
+            top: 20px; /* **Ajustado para mais espaço** */
             left: 20px;
-            font-size: 1.5em; /* Um pouco maior para visibilidade */
-            color: #ccc;
-            font-weight: bold;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            font-size: 8vw; /* **Muito maior, adaptável à largura da tela** */
+            color: #eee;
+            font-weight: bolder; /* **Ainda mais forte** */
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.7); /* **Sombra para melhor contraste** */
             z-index: 10; /* Garante que fique por cima de outros elementos */
         }
 
@@ -106,8 +106,8 @@
         /* Ajustes para quando a janela é muito pequena, garantindo legibilidade mínima */
         @media (max-width: 600px), (max-height: 500px) {
             #currentTimePopout {
-                font-size: 1em;
-                top: 5px;
+                font-size: 4vw; /* **Ajuste responsivo para telas menores** */
+                top: 10px;
                 left: 10px;
             }
             #floatingClockParticipantName { font-size: 2em; }
@@ -117,7 +117,8 @@
     </style>
 </head>
 <body>
-    <div id="currentTimePopout"></div> <p id="floatingClockParticipantName">Nenhum Ativo</p>
+    <div id="currentTimePopout"></div>
+    <p id="floatingClockParticipantName">Nenhum Ativo</p>
     <div id="mainClockDisplay">00:00</div>
     <div id="speakerMessageDisplay"></div>
 
@@ -126,7 +127,7 @@
         const mainClockDisplay = document.getElementById('mainClockDisplay');
         const speakerMessageDisplay = document.getElementById('speakerMessageDisplay');
         const body = document.body;
-        const currentTimePopout = document.getElementById('currentTimePopout'); // NOVO ELEMENTO
+        const currentTimePopout = document.getElementById('currentTimePopout');
 
         let flashInterval = null;
         let isFlashingActive = false;
@@ -159,7 +160,7 @@
             isFlashingActive = false;
         }
 
-        function updateCurrentTimeDisplay() { // NOVA FUNÇÃO
+        function updateCurrentTimeDisplay() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
@@ -193,7 +194,7 @@
             } else if (event.data && event.data.type === 'updateMessage') {
                 const { message } = event.data;
                 speakerMessageDisplay.textContent = message;
-            } else if (event.data && event.data.type === 'updateCurrentTime') { // NOVO HANDLER
+            } else if (event.data && event.data.type === 'updateCurrentTime') {
                 currentTimePopout.textContent = event.data.time;
             }
         });
