@@ -293,7 +293,6 @@
             margin-top: 15px;
             padding-top: 10px;
             text-align: center;
-            /* 5) Ajuste: Removed border-top here, it will be added to the message-box */
         }
         .popout-control button {
             padding: 8px 12px;
@@ -317,9 +316,6 @@
             font-size: 0.9em;
         }
         
-        /* Remove o antigo botão de limpar todos os participantes */
-        /* #clearAllParticipantsButton será movido e estilizado ao lado do h2 */
-
         /* Responsividade básica */
         @media (max-width: 1024px) {
             .main-layout {
@@ -1002,7 +998,7 @@
 
             updateClocks(null);
             updateAllTimerButtons();
-            alert(`Sessão "${selectedSessionName}" carregada com sucesso!`);
+            // REMOVIDO: alert(`Sessão "${selectedSessionName}" carregada com sucesso!`);
         }
 
         function deleteSession() {
