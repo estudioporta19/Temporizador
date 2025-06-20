@@ -178,7 +178,7 @@
         }
 
 
-        .color-settings, .message-settings {
+        .color-settings, .message-settings, .session-management { /* Adicionado .session-management */
             display: flex;
             flex-wrap: wrap;
             gap: 10px;
@@ -191,7 +191,7 @@
             border-radius: 8px;
             background-color: #333; /* Fundo da seção */
         }
-        .color-settings label, .message-settings label {
+        .color-settings label, .message-settings label, .session-management label {
             font-weight: bold;
             font-size: 0.85em;
             margin-bottom: 5px;
@@ -205,7 +205,7 @@
             padding: 8px;
             border-radius: 6px;
         }
-        .color-settings h3, .message-settings h3 {
+        .color-settings h3, .message-settings h3, .session-management h3 {
             width: 100%;
             text-align: center;
             color: #0099ff;
@@ -224,7 +224,7 @@
             background-color: #3a3a3a;
             color: #f8f8f8;
         }
-        .message-settings button {
+        .message-settings button, .session-management button {
             background-color: #007bff;
             color: white;
             border: none;
@@ -234,9 +234,46 @@
             font-size: 0.9em;
             transition: background-color 0.3s ease;
         }
-        .message-settings button:hover {
+        .message-settings button:hover, .session-management button:hover {
             background-color: #0056b3;
         }
+
+        .session-management select { /* Estilo para o dropdown de sessões */
+            width: calc(100% - 16px);
+            padding: 8px;
+            border: 1px solid #555;
+            border-radius: 6px;
+            font-size: 0.9em;
+            background-color: #3a3a3a;
+            color: #f8f8f8;
+            margin-bottom: 5px;
+            appearance: none; /* Remove estilo padrão do navegador */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http://www.w3.org/2000/svg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23cccccc%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-6.5%200-12.1%203.2-15.3%208.4-3.2%205.2-3.6%2011.3-1.1%2017.5l128%20128c3.5%203.5%208%205.4%2013%205.4s9.5-1.9%2013-5.4l128-128c2.6-2.6%203.9-6%203.9-9.5s-1.3-6.9-3.9-9.5z%22/%3E%3C/svg%3E'); /* Ícone de seta para dropdown */
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+            padding-right: 30px; /* Espaço para o ícone */
+        }
+        .session-management .session-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            width: 100%;
+        }
+        .session-management .session-buttons button {
+            flex-grow: 1;
+            padding: 8px 10px;
+            font-size: 0.85em;
+        }
+        .session-management .session-buttons button.delete-session-btn {
+            background-color: #dc3545; /* Vermelho para deletar */
+        }
+        .session-management .session-buttons button.delete-session-btn:hover {
+            background-color: #c82333;
+        }
+
 
         /* ESTILOS PARA A NOVA LISTA DE PARTICIPANTES HORIZONTAL */
         #participantList {
@@ -370,13 +407,14 @@
             h1 {
                 padding-right: 60px;
             }
-            .top-buttons, .add-participant-form, .color-settings, .message-settings {
+            .top-buttons, .add-participant-form, .color-settings, .message-settings, .session-management {
                 flex-direction: column;
                 align-items: stretch;
             }
             .add-participant-form input,
             .color-settings input,
-            .message-settings textarea {
+            .message-settings textarea,
+            .session-management select { /* Adicionado select aqui */
                 width: 100%;
                 box-sizing: border-box;
             }
@@ -384,6 +422,10 @@
                 min-width: unset;
             }
             .top-buttons button, .add-participant-form button, .message-settings button {
+                width: 100%;
+                box-sizing: border-box;
+            }
+            .session-management .session-buttons button { /* Botões da sessão em coluna */
                 width: 100%;
                 box-sizing: border-box;
             }
@@ -454,7 +496,24 @@
                 <button id="sendMessageButton">Enviar Mensagem</button>
                 <button id="clearMessageButton">Limpar Mensagem</button>
             </div>
-        </div>
+
+            <div class="session-management">
+                <h3>Gestão de Sessões</h3>
+                <label for="sessionNameInput">Nome da Sessão:</label>
+                <input type="text" id="sessionNameInput" placeholder="Ex: Sessão 1 - Dia 1">
+                <div class="session-buttons">
+                    <button id="saveSessionButton">Salvar Sessão</button>
+                </div>
+                <label for="loadSessionSelect">Carregar Sessão:</label>
+                <select id="loadSessionSelect">
+                    <option value="">-- Selecione uma sessão --</option>
+                </select>
+                <div class="session-buttons">
+                    <button id="loadSelectedSessionButton">Carregar</button>
+                    <button id="deleteSelectedSessionButton" class="delete-session-btn">Apagar</button>
+                </div>
+            </div>
+            </div>
 
         <div class="right-panel">
             <h2>Participantes Ativos</h2>
@@ -465,6 +524,8 @@
     </div>
 
     <script>
+        // ... (o código existente no seu script vai aqui, até as declarações de variáveis)
+
         const participantNameInput = document.getElementById('participantName');
         const initialMinutesInput = document.getElementById('initialMinutes');
         const initialSecondsInput = document.getElementById('initialSeconds');
@@ -489,6 +550,13 @@
 
         const currentTimeMain = document.getElementById('currentTimeMain');
 
+        // NOVAS VARIÁVEIS PARA GESTÃO DE SESSÕES
+        const sessionNameInput = document.getElementById('sessionNameInput');
+        const saveSessionButton = document.getElementById('saveSessionButton');
+        const loadSessionSelect = document.getElementById('loadSessionSelect');
+        const loadSelectedSessionButton = document.getElementById('loadSelectedSessionButton');
+        const deleteSelectedSessionButton = document.getElementById('deleteSelectedSessionButton');
+
         let timers = [];
         let nextParticipantNumber = 1;
         let activeTimer = null;
@@ -499,6 +567,12 @@
 
         let YELLOW_THRESHOLD_SECONDS = 60;
         let RED_THRESHOLD_SECONDS = 10;
+
+        // Armazenamento das sessões
+        // Formato: { "Nome da Sessão": [{ name: "...", initialTime: ..., yellow: ..., red: ... }, ...], ... }
+        let conferenceSessions = {};
+
+        // --- FUNÇÕES EXISTENTES (MANTIDAS) ---
 
         function formatTime(seconds) {
             const isNegative = seconds < 0;
@@ -531,20 +605,35 @@
             currentTimeMain.textContent = `${hours}:${minutes}:${seconds}`;
         }
 
-        function addParticipant() {
-            let name = participantNameInput.value.trim();
-            const initialMinutes = parseInt(initialMinutesInput.value || '0');
-            const initialSeconds = parseInt(initialSecondsInput.value || '0');
+        // Função addParticipant modificada para aceitar dados pré-definidos
+        function addParticipant(name = '', initialTotalSeconds = 0, customYellow = null, customRed = null) {
+            // Se chamado sem argumentos (do formulário), pega os valores dos inputs
+            if (!name && !initialTotalSeconds) {
+                name = participantNameInput.value.trim();
+                const initialMinutes = parseInt(initialMinutesInput.value || '0');
+                const initialSeconds = parseInt(initialSecondsInput.value || '0');
+                initialTotalSeconds = calculateTotalSeconds(initialMinutes, initialSeconds);
+            }
 
             if (!name) {
                 name = `Participante ${nextParticipantNumber++}`;
+            } else {
+                // Se um nome foi fornecido, verifica se já é um participante numerado para não incrementar duas vezes
+                const match = name.match(/Participante (\d+)/);
+                if (match) {
+                    const num = parseInt(match[1]);
+                    if (num >= nextParticipantNumber) {
+                        nextParticipantNumber = num + 1;
+                    }
+                } else {
+                     nextParticipantNumber++; // Incrementa para novos nomes
+                }
             }
 
-            let initialTotalSeconds = calculateTotalSeconds(initialMinutes, initialSeconds);
 
             noParticipantsMessage.style.display = 'none';
 
-            const id = Date.now();
+            const id = Date.now(); // Usa timestamp para garantir ID único
             const participantCard = document.createElement('div');
             participantCard.className = 'participant-card';
             participantCard.setAttribute('data-id', id);
@@ -584,7 +673,9 @@
                 addMinButton: document.getElementById(`add-min-${id}`),
                 subMinButton: document.getElementById(`sub-min-${id}`),
                 cardElement: participantCard,
-                alertedZero: false
+                alertedZero: false,
+                yellowThreshold: customYellow !== null ? customYellow : YELLOW_THRESHOLD_SECONDS,
+                redThreshold: customRed !== null ? customRed : RED_THRESHOLD_SECONDS
             };
 
             timers.push(timer);
@@ -598,9 +689,12 @@
 
             timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
 
-            participantNameInput.value = '';
-            initialMinutesInput.value = '';
-            initialSecondsInput.value = '';
+            // Limpar os campos do formulário apenas se a adição veio do formulário
+            if (!arguments.length) {
+                participantNameInput.value = '';
+                initialMinutesInput.value = '';
+                initialSecondsInput.value = '';
+            }
         }
 
         function toggleTimerButtons(timer, startDisabled, pauseDisabled, resetDisabled) {
@@ -615,6 +709,10 @@
         }
 
         function adjustTime(timer, secondsToAdd) {
+            // Usa os thresholds do próprio timer para cor, se definidos
+            const currentYellow = timer.yellowThreshold !== undefined ? timer.yellowThreshold : YELLOW_THRESHOLD_SECONDS;
+            const currentRed = timer.redThreshold !== undefined ? timer.redThreshold : RED_THRESHOLD_SECONDS;
+
             if ((activeTimer && activeTimer.id === timer.id) || (timer.isPaused && timer.timeLeft === timer.initialTime)) {
                 timer.timeLeft += secondsToAdd;
                 if (timer.timeLeft < -5940) { // Limite mínimo para evitar números absurdos
@@ -622,8 +720,7 @@
                 }
                 timer.displayElement.textContent = formatTime(timer.timeLeft);
                 timer.displayElement.classList.remove('red', 'yellow', 'green');
-                timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
-
+                timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, currentYellow, currentRed)); // Usa a nova função
                 timer.alertedZero = false;
                 updateClocks(timer);
             } else {
@@ -644,14 +741,18 @@
                 timer.isPaused = false;
                 toggleTimerButtons(timer, true, false, false);
 
-                updateClocks(timer);
+                updateClocks(timer); // Envia update inicial para o pop-up
+
+                // Usa os thresholds do próprio timer para cor, se definidos
+                const currentYellow = timer.yellowThreshold !== undefined ? timer.yellowThreshold : YELLOW_THRESHOLD_SECONDS;
+                const currentRed = timer.redThreshold !== undefined ? timer.redThreshold : RED_THRESHOLD_SECONDS;
 
                 timer.intervalId = setInterval(() => {
                     timer.timeLeft--;
                     timer.displayElement.textContent = formatTime(timer.timeLeft);
 
                     timer.displayElement.classList.remove('red', 'yellow', 'green');
-                    timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
+                    timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, currentYellow, currentRed)); // Usa a nova função
 
                     updateClocks(timer);
                 }, 1000);
@@ -672,8 +773,12 @@
             timer.isPaused = true;
             timer.timeLeft = timer.initialTime;
             timer.displayElement.textContent = formatTime(timer.timeLeft);
+
+            // Usa os thresholds do próprio timer para cor, se definidos
+            const currentYellow = timer.yellowThreshold !== undefined ? timer.yellowThreshold : YELLOW_THRESHOLD_SECONDS;
+            const currentRed = timer.redThreshold !== undefined ? timer.redThreshold : RED_THRESHOLD_SECONDS;
             timer.displayElement.classList.remove('red', 'yellow', 'green');
-            timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
+            timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, currentYellow, currentRed)); // Usa a nova função
             
             timer.alertedZero = false;
             toggleTimerButtons(timer, false, true, true);
@@ -705,8 +810,20 @@
             }
         }
 
+        // Nova função para obter cor usando thresholds customizados
+        function getDisplayColorCustom(timeLeft, yellow, red) {
+            if (timeLeft <= red) {
+                return 'red';
+            } else if (timeLeft <= yellow) {
+                return 'yellow';
+            } else {
+                return 'green';
+            }
+        }
+
         function updateClocks(timer = null) {
-            const displayColor = timer ? getDisplayColor(timer.timeLeft) : 'green';
+            // Usa os thresholds do próprio timer para a cor do pop-up
+            const displayColor = timer ? getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold) : 'green';
 
             if (popoutWindow && !popoutWindow.closed) {
                 if (popoutReady) {
@@ -766,47 +883,38 @@
             pendingPopoutUpdate = null;
             pendingMessageUpdate = null;
 
-            // **Melhoria para abrir no segundo monitor**
-            // Tenta obter as dimensões de todos os ecrãs disponíveis.
-            // Esta API (screen.getPrimaryDisplay(), screen.getDisplays()) não é amplamente suportada em browsers web.
-            // Para browsers padrão, window.screenLeft/screenY e window.outerWidth/outerHeight são usados.
             let screenX = 0;
             let screenY = 0;
             let width = screen.width;
             let height = screen.height;
 
-            // Heurística para o segundo monitor:
-            // Se o ecrã atual não começa em (0,0), assume-se que está num multi-monitor setup
-            // e tenta-se abrir na posição (0,0) do monitor primário ou num monitor adjacente.
-            // Isto é uma suposição baseada em como os sistemas operativos geralmente organizam os ecrãs.
-            if (window.screenX !== 0 || window.screenY !== 0) {
-                // Se a janela principal já não está no monitor primário (0,0),
-                // tenta abrir o pop-up no monitor primário.
-                screenX = 0;
+            // Tentativa de abrir no segundo monitor:
+            // Se o ecrã atual da janela principal é o primário (0,0), tenta abrir o pop-up à direita.
+            // Caso contrário (se a janela principal já está num ecrã secundário), tenta abrir o pop-up no ecrã primário (0,0).
+            if (window.screenX === 0 && window.screenY === 0) {
+                screenX = screen.width; // Mover para o lado direito do ecrã atual
                 screenY = 0;
             } else {
-                // Se a janela principal está no monitor primário (0,0),
-                // tenta abrir o pop-up à direita do monitor principal.
-                // Isso funciona bem para setups onde o segundo monitor está à direita.
-                screenX = screen.width; // Mova para a direita do monitor atual
-                screenY = 0; // Mantenha no topo
+                screenX = 0; // Mover para o ecrã primário
+                screenY = 0;
             }
-            // Definir largura e altura para preencher o novo ecrã
-            width = screen.width;
-            height = screen.height;
+            
+            // Certifique-se de que a largura e altura correspondem ao novo ecrã (idealmente)
+            // No entanto, window.open features só podem usar screen.width/height do ecrã atual.
+            // Para controlar o tamanho e posição em múltiplos ecrãs, é mais complexo e depende do browser.
+            // As propriedades left/top com width/height são as melhores para tentar.
 
-            const features = `width=${width},height=${height},left=${screenX},top=${screenY},resizable,scrollbars=no,status=no,toolbar=no,menubar=no,fullscreen=yes`;
+            const features = `width=${width},height=${height},left=${screenX},top=${screenY},resizable,scrollbars=no,status=no,toolbar=no,menubar=no`; // Removido fullscreen=yes daqui, será tentado via JS
 
             popoutWindow = window.open('popout-clock.html', 'PopoutClock', features);
 
             if (!popoutWindow) {
                 alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
             } else {
-                // Tenta maximizar a janela após um pequeno atraso
-                popoutWindow.onload = () => {
+                // Ao carregar o pop-up, tenta colocar em tela cheia
+                popoutWindow.addEventListener('load', () => {
                     if (popoutWindow && !popoutWindow.closed) {
                         try {
-                            // Tenta ativar o modo fullscreen (pode requerer interação do usuário)
                             if (popoutWindow.document.documentElement.requestFullscreen) {
                                 popoutWindow.document.documentElement.requestFullscreen();
                             } else if (popoutWindow.document.documentElement.mozRequestFullScreen) { /* Firefox */
@@ -820,9 +928,8 @@
                             console.warn("Falha ao tentar colocar em fullscreen. Provavelmente bloqueado pelo navegador.", e);
                         }
                     }
-                };
+                });
 
-                // Pequeno delay para garantir que a janela esteja pronta para receber mensagens
                 setTimeout(() => {
                     if (popoutWindow && !popoutWindow.closed) {
                         if (activeTimer) {
@@ -837,6 +944,134 @@
                 }, 100);
             }
         }
+
+        // --- NOVAS FUNÇÕES PARA GESTÃO DE SESSÕES ---
+
+        function loadSessionsFromLocalStorage() {
+            const storedSessions = localStorage.getItem('conferenceSessions');
+            if (storedSessions) {
+                conferenceSessions = JSON.parse(storedSessions);
+            } else {
+                conferenceSessions = {};
+            }
+            populateSessionSelect();
+        }
+
+        function saveSessionsToLocalStorage() {
+            localStorage.setItem('conferenceSessions', JSON.stringify(conferenceSessions));
+        }
+
+        function populateSessionSelect() {
+            loadSessionSelect.innerHTML = '<option value="">-- Selecione uma sessão --</option>';
+            for (const sessionName in conferenceSessions) {
+                const option = document.createElement('option');
+                option.value = sessionName;
+                option.textContent = sessionName;
+                loadSessionSelect.appendChild(option);
+            }
+            // Habilita/desabilita botões de carregar/apagar se há sessões
+            const hasSessions = Object.keys(conferenceSessions).length > 0;
+            loadSelectedSessionButton.disabled = !hasSessions;
+            deleteSelectedSessionButton.disabled = !hasSessions;
+            loadSessionSelect.disabled = !hasSessions;
+        }
+
+        function saveCurrentSession() {
+            const sessionName = sessionNameInput.value.trim();
+            if (!sessionName) {
+                alert("Por favor, digite um nome para a sessão.");
+                return;
+            }
+
+            if (timers.length === 0) {
+                alert("Não há participantes para salvar nesta sessão.");
+                return;
+            }
+
+            // Para salvar os thresholds de cor atuais da interface principal
+            const currentYellow = parseInt(yellowTimeInput.value || YELLOW_THRESHOLD_SECONDS);
+            const currentRed = parseInt(redTimeInput.value || RED_THRESHOLD_SECONDS);
+
+            const sessionParticipants = timers.map(timer => ({
+                name: timer.name,
+                initialTime: timer.initialTime,
+                yellow: timer.yellowThreshold !== undefined ? timer.yellowThreshold : currentYellow,
+                red: timer.redThreshold !== undefined ? timer.redThreshold : currentRed
+            }));
+
+            conferenceSessions[sessionName] = sessionParticipants;
+            saveSessionsToLocalStorage();
+            populateSessionSelect();
+            alert(`Sessão "${sessionName}" salva com sucesso!`);
+            sessionNameInput.value = ''; // Limpa o campo de nome
+        }
+
+        function loadSession() {
+            const selectedSessionName = loadSessionSelect.value;
+            if (!selectedSessionName) {
+                alert("Por favor, selecione uma sessão para carregar.");
+                return;
+            }
+
+            const sessionToLoad = conferenceSessions[selectedSessionName];
+            if (!sessionToLoad) {
+                alert("Sessão não encontrada.");
+                return;
+            }
+
+            // Pausar e remover todos os timers ativos
+            timers.forEach(timer => {
+                clearInterval(timer.intervalId);
+                timer.cardElement.remove();
+            });
+            timers = [];
+            activeTimer = null;
+            nextParticipantNumber = 1; // Reseta a contagem para novos participantes
+
+            // Carregar os participantes da sessão
+            sessionToLoad.forEach(p => {
+                // Adiciona o participante usando a função existente, passando os dados
+                addParticipant(p.name, p.initialTime, p.yellow, p.red);
+            });
+
+            // Atualiza os thresholds de cor na interface principal para corresponder à sessão carregada,
+            // se o primeiro participante da sessão tiver thresholds específicos
+            if (sessionToLoad.length > 0) {
+                 yellowTimeInput.value = sessionToLoad[0].yellow !== undefined ? sessionToLoad[0].yellow : YELLOW_THRESHOLD_SECONDS;
+                 redTimeInput.value = sessionToLoad[0].red !== undefined ? sessionToLoad[0].red : RED_THRESHOLD_SECONDS;
+                 YELLOW_THRESHOLD_SECONDS = parseInt(yellowTimeInput.value);
+                 RED_THRESHOLD_SECONDS = parseInt(redTimeInput.value);
+            } else {
+                 // Se a sessão carregada estiver vazia, resetar para os valores padrão
+                 yellowTimeInput.value = 60;
+                 redTimeInput.value = 10;
+                 YELLOW_THRESHOLD_SECONDS = 60;
+                 RED_THRESHOLD_SECONDS = 10;
+            }
+
+            if (timers.length === 0) {
+                noParticipantsMessage.style.display = 'block';
+            }
+            updateClocks(null); // Atualiza o pop-up, se aberto
+            alert(`Sessão "${selectedSessionName}" carregada com sucesso!`);
+        }
+
+        function deleteSession() {
+            const selectedSessionName = loadSessionSelect.value;
+            if (!selectedSessionName) {
+                alert("Por favor, selecione uma sessão para apagar.");
+                return;
+            }
+
+            if (confirm(`Tem certeza que deseja apagar a sessão "${selectedSessionName}"?`)) {
+                delete conferenceSessions[selectedSessionName];
+                saveSessionsToLocalStorage();
+                populateSessionSelect();
+                alert(`Sessão "${selectedSessionName}" apagada.`);
+            }
+        }
+
+        // --- LISTENERS DE EVENTOS EXISTENTES (MANTIDOS) ---
 
         addParticipantButton.addEventListener('click', addParticipant);
         participantNameInput.addEventListener('keypress', (e) => {
@@ -871,7 +1106,6 @@
             initialSecondsInput.value = '';
             initialMinutesInput.focus();
         });
-
 
         yellowTimeInput.addEventListener('change', () => {
             const val = parseInt(yellowTimeInput.value);
@@ -929,7 +1163,6 @@
             if (event.data && event.data.type === 'popoutReady') {
                  popoutReady = true;
 
-                 // Enviar hora atual para o pop-up assim que estiver pronto
                  updateCurrentTimePopout();
 
                  if (pendingPopoutUpdate) {
@@ -971,13 +1204,16 @@
             }
         }
 
-        // Inicializar e atualizar a hora atual a cada segundo na janela principal
+        // --- NOVOS LISTENERS PARA GESTÃO DE SESSÕES ---
+        saveSessionButton.addEventListener('click', saveCurrentSession);
+        loadSelectedSessionButton.addEventListener('click', loadSession);
+        deleteSelectedSessionButton.addEventListener('click', deleteSession);
+
+        // Inicialização
+        loadSessionsFromLocalStorage(); // Carrega as sessões salvas ao iniciar
         updateCurrentTimeMain();
         setInterval(updateCurrentTimeMain, 1000);
-
-        // Inicializar e atualizar a hora atual a cada segundo no pop-up (se estiver aberto)
         setInterval(updateCurrentTimePopout, 1000);
-
 
         if (timers.length === 0) {
             noParticipantsMessage.style.display = 'block';
