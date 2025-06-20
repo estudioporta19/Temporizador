@@ -112,10 +112,16 @@
         }
 
         window.addEventListener('message', (event) => {
-            if (event.origin !== window.opener.location.origin) {
+            // Verificar a origem da mensagem para segurança
+            // No ambiente local, event.origin pode ser 'null' ou 'file://'.
+            // Para GitHub Pages, será o URL completo.
+            // Para simplificar para o ambiente de desenvolvimento/teste, permitimos 'null' ou o 'file://' se for o caso.
+            const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
+            if (!isLocalOrigin && !event.origin.startsWith('file://')) {
                 console.warn('Pop-out: Mensagem bloqueada de origem desconhecida:', event.origin);
                 return;
             }
+
 
             if (event.data && event.data.type === 'updateClock') {
                 const { name, timeLeft, color } = event.data;
@@ -133,13 +139,19 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             if (window.opener) {
-                window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
+                // Verificar a origem antes de enviar a mensagem de volta
+                const isLocalOrigin = ['null', window.opener.location.origin].includes(window.location.origin);
+                const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*'; // Usar '*' para local ou a origem específica
+                window.opener.postMessage({ type: 'popoutReady' }, targetOrigin);
             }
         });
 
         window.addEventListener('beforeunload', () => {
             if (window.opener) {
-                window.opener.postMessage({ type: 'popoutClosed' }, window.location.origin);
+                // Verificar a origem antes de enviar a mensagem de volta
+                const isLocalOrigin = ['null', window.opener.location.origin].includes(window.location.origin);
+                const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*'; // Usar '*' para local ou a origem específica
+                window.opener.postMessage({ type: 'popoutClosed' }, targetOrigin);
             }
         });
     </script>
