@@ -524,8 +524,6 @@
     </div>
 
     <script>
-        // ... (o código existente no seu script vai aqui, até as declarações de variáveis)
-
         const participantNameInput = document.getElementById('participantName');
         const initialMinutesInput = document.getElementById('initialMinutes');
         const initialSecondsInput = document.getElementById('initialSeconds');
@@ -588,13 +586,8 @@
         }
 
         function getDisplayColor(timeLeft) {
-            if (timeLeft <= RED_THRESHOLD_SECONDS) {
-                return 'red';
-            } else if (timeLeft <= YELLOW_THRESHOLD_SECONDS) {
-                return 'yellow';
-            } else {
-                return 'green';
-            }
+            // Esta função agora é um invólucro para getDisplayColorCustom com os thresholds globais
+            return getDisplayColorCustom(timeLeft, YELLOW_THRESHOLD_SECONDS, RED_THRESHOLD_SECONDS);
         }
 
         function updateCurrentTimeMain() {
@@ -605,32 +598,26 @@
             currentTimeMain.textContent = `${hours}:${minutes}:${seconds}`;
         }
 
-        // Função addParticipant modificada para aceitar dados pré-definidos
-        function addParticipant(name = '', initialTotalSeconds = 0, customYellow = null, customRed = null) {
-            // Se chamado sem argumentos (do formulário), pega os valores dos inputs
-            if (!name && !initialTotalSeconds) {
-                name = participantNameInput.value.trim();
-                const initialMinutes = parseInt(initialMinutesInput.value || '0');
-                const initialSeconds = parseInt(initialSecondsInput.value || '0');
-                initialTotalSeconds = calculateTotalSeconds(initialMinutes, initialSeconds);
-            }
+        // Função addParticipant modificada para aceitar dados pré-definidos OU do formulário
+        function addParticipant(data = {}) { // Adiciona um argumento 'data' opcional com valor padrão vazio
+            let name = data.name || participantNameInput.value.trim();
+            let initialTotalSeconds = data.initialTime || calculateTotalSeconds(initialMinutesInput.value, initialSecondsInput.value);
+            let customYellow = data.yellow;
+            let customRed = data.red;
 
             if (!name) {
                 name = `Participante ${nextParticipantNumber++}`;
             } else {
-                // Se um nome foi fornecido, verifica se já é um participante numerado para não incrementar duas vezes
+                // Se um nome foi fornecido e NÃO veio de uma carga de sessão, verifica se já é um participante numerado para não incrementar duas vezes
+                // Aumenta o nextParticipantNumber se o nome é um "Participante X" e X é >= ao valor atual
                 const match = name.match(/Participante (\d+)/);
-                if (match) {
-                    const num = parseInt(match[1]);
-                    if (num >= nextParticipantNumber) {
-                        nextParticipantNumber = num + 1;
-                    }
-                } else {
-                     nextParticipantNumber++; // Incrementa para novos nomes
+                if (match && parseInt(match[1]) >= nextParticipantNumber) {
+                    nextParticipantNumber = parseInt(match[1]) + 1;
+                } else if (!match) { // Se não for "Participante X" (nome customizado), apenas incrementa para o próximo nome padrão
+                     nextParticipantNumber++;
                 }
             }
-
-
+            
             noParticipantsMessage.style.display = 'none';
 
             const id = Date.now(); // Usa timestamp para garantir ID único
@@ -674,8 +661,8 @@
                 subMinButton: document.getElementById(`sub-min-${id}`),
                 cardElement: participantCard,
                 alertedZero: false,
-                yellowThreshold: customYellow !== null ? customYellow : YELLOW_THRESHOLD_SECONDS,
-                redThreshold: customRed !== null ? customRed : RED_THRESHOLD_SECONDS
+                yellowThreshold: customYellow !== undefined ? customYellow : YELLOW_THRESHOLD_SECONDS, // Prioriza o customYellow
+                redThreshold: customRed !== undefined ? customRed : RED_THRESHOLD_SECONDS // Prioriza o customRed
             };
 
             timers.push(timer);
@@ -687,10 +674,10 @@
             timer.subMinButton.addEventListener('click', () => adjustTime(timer, -60));
             participantCard.querySelector('.remove-participant-btn').addEventListener('click', () => removeParticipant(id));
 
-            timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
+            timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold)); // Usa a nova função
 
-            // Limpar os campos do formulário apenas se a adição veio do formulário
-            if (!arguments.length) {
+            // Limpar os campos do formulário apenas se a adição veio do formulário (sem o 'data' objeto)
+            if (!data.name && !data.initialTime) {
                 participantNameInput.value = '';
                 initialMinutesInput.value = '';
                 initialSecondsInput.value = '';
@@ -806,12 +793,17 @@
 
             if (timers.length === 0) {
                 noParticipantsMessage.style.display = 'block';
+                // Resetar nextParticipantNumber apenas se a lista ficar vazia por remoção manual
                 nextParticipantNumber = 1;
             }
         }
 
         // Nova função para obter cor usando thresholds customizados
         function getDisplayColorCustom(timeLeft, yellow, red) {
+            // Garante que yellow e red sejam números e não undefined/null
+            yellow = yellow !== undefined ? yellow : YELLOW_THRESHOLD_SECONDS;
+            red = red !== undefined ? red : RED_THRESHOLD_SECONDS;
+
             if (timeLeft <= red) {
                 return 'red';
             } else if (timeLeft <= yellow) {
@@ -888,30 +880,21 @@
             let width = screen.width;
             let height = screen.height;
 
-            // Tentativa de abrir no segundo monitor:
-            // Se o ecrã atual da janela principal é o primário (0,0), tenta abrir o pop-up à direita.
-            // Caso contrário (se a janela principal já está num ecrã secundário), tenta abrir o pop-up no ecrã primário (0,0).
             if (window.screenX === 0 && window.screenY === 0) {
-                screenX = screen.width; // Mover para o lado direito do ecrã atual
+                screenX = screen.width;
                 screenY = 0;
             } else {
-                screenX = 0; // Mover para o ecrã primário
+                screenX = 0;
                 screenY = 0;
             }
             
-            // Certifique-se de que a largura e altura correspondem ao novo ecrã (idealmente)
-            // No entanto, window.open features só podem usar screen.width/height do ecrã atual.
-            // Para controlar o tamanho e posição em múltiplos ecrãs, é mais complexo e depende do browser.
-            // As propriedades left/top com width/height são as melhores para tentar.
-
-            const features = `width=${width},height=${height},left=${screenX},top=${screenY},resizable,scrollbars=no,status=no,toolbar=no,menubar=no`; // Removido fullscreen=yes daqui, será tentado via JS
+            const features = `width=${width},height=${height},left=${screenX},top=${screenY},resizable,scrollbars=no,status=no,toolbar=no,menubar=no`;
 
             popoutWindow = window.open('popout-clock.html', 'PopoutClock', features);
 
             if (!popoutWindow) {
                 alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
             } else {
-                // Ao carregar o pop-up, tenta colocar em tela cheia
                 popoutWindow.addEventListener('load', () => {
                     if (popoutWindow && !popoutWindow.closed) {
                         try {
@@ -963,12 +946,13 @@
 
         function populateSessionSelect() {
             loadSessionSelect.innerHTML = '<option value="">-- Selecione uma sessão --</option>';
-            for (const sessionName in conferenceSessions) {
+            const sessionNames = Object.keys(conferenceSessions).sort(); // Ordenar alfabeticamente
+            sessionNames.forEach(sessionName => {
                 const option = document.createElement('option');
                 option.value = sessionName;
                 option.textContent = sessionName;
                 loadSessionSelect.appendChild(option);
-            }
+            });
             // Habilita/desabilita botões de carregar/apagar se há sessões
             const hasSessions = Object.keys(conferenceSessions).length > 0;
             loadSelectedSessionButton.disabled = !hasSessions;
@@ -988,15 +972,16 @@
                 return;
             }
 
-            // Para salvar os thresholds de cor atuais da interface principal
-            const currentYellow = parseInt(yellowTimeInput.value || YELLOW_THRESHOLD_SECONDS);
-            const currentRed = parseInt(redTimeInput.value || RED_THRESHOLD_SECONDS);
+            // Para salvar os thresholds de cor globais atuais da interface principal
+            const currentYellowInput = parseInt(yellowTimeInput.value || YELLOW_THRESHOLD_SECONDS);
+            const currentRedInput = parseInt(redTimeInput.value || RED_THRESHOLD_SECONDS);
 
             const sessionParticipants = timers.map(timer => ({
                 name: timer.name,
                 initialTime: timer.initialTime,
-                yellow: timer.yellowThreshold !== undefined ? timer.yellowThreshold : currentYellow,
-                red: timer.redThreshold !== undefined ? timer.redThreshold : currentRed
+                // Salva os thresholds específicos do timer, se existirem, senão os globais da interface
+                yellow: timer.yellowThreshold !== undefined ? timer.yellowThreshold : currentYellowInput,
+                red: timer.redThreshold !== undefined ? timer.redThreshold : currentRedInput
             }));
 
             conferenceSessions[sessionName] = sessionParticipants;
@@ -1031,23 +1016,22 @@
             // Carregar os participantes da sessão
             sessionToLoad.forEach(p => {
                 // Adiciona o participante usando a função existente, passando os dados
-                addParticipant(p.name, p.initialTime, p.yellow, p.red);
+                addParticipant({ name: p.name, initialTime: p.initialTime, yellow: p.yellow, red: p.red });
             });
 
-            // Atualiza os thresholds de cor na interface principal para corresponder à sessão carregada,
-            // se o primeiro participante da sessão tiver thresholds específicos
+            // Atualiza os thresholds de cor na interface principal para corresponder à sessão carregada
+            // Se a sessão tem pelo menos um participante, usa os thresholds do PRIMEIRO participante
+            // Caso contrário, volta aos valores padrão globais
             if (sessionToLoad.length > 0) {
-                 yellowTimeInput.value = sessionToLoad[0].yellow !== undefined ? sessionToLoad[0].yellow : YELLOW_THRESHOLD_SECONDS;
-                 redTimeInput.value = sessionToLoad[0].red !== undefined ? sessionToLoad[0].red : RED_THRESHOLD_SECONDS;
-                 YELLOW_THRESHOLD_SECONDS = parseInt(yellowTimeInput.value);
-                 RED_THRESHOLD_SECONDS = parseInt(redTimeInput.value);
+                 YELLOW_THRESHOLD_SECONDS = sessionToLoad[0].yellow !== undefined ? sessionToLoad[0].yellow : 60;
+                 RED_THRESHOLD_SECONDS = sessionToLoad[0].red !== undefined ? sessionToLoad[0].red : 10;
             } else {
-                 // Se a sessão carregada estiver vazia, resetar para os valores padrão
-                 yellowTimeInput.value = 60;
-                 redTimeInput.value = 10;
                  YELLOW_THRESHOLD_SECONDS = 60;
                  RED_THRESHOLD_SECONDS = 10;
             }
+            yellowTimeInput.value = YELLOW_THRESHOLD_SECONDS;
+            redTimeInput.value = RED_THRESHOLD_SECONDS;
+
 
             if (timers.length === 0) {
                 noParticipantsMessage.style.display = 'block';
@@ -1063,7 +1047,7 @@
                 return;
             }
 
-            if (confirm(`Tem certeza que deseja apagar a sessão "${selectedSessionName}"?`)) {
+            if (confirm(`Tem certeza que deseja apagar a sessão "${selectedSessionName}"? Esta ação não pode ser desfeita.`)) {
                 delete conferenceSessions[selectedSessionName];
                 saveSessionsToLocalStorage();
                 populateSessionSelect();
@@ -1071,17 +1055,17 @@
             }
         }
 
-        // --- LISTENERS DE EVENTOS EXISTENTES (MANTIDOS) ---
-
-        addParticipantButton.addEventListener('click', addParticipant);
+        // --- LISTENERS DE EVENTOS ---
+        // Ação para adicionar participante diretamente do formulário
+        addParticipantButton.addEventListener('click', () => addParticipant({})); // Chama addParticipant sem dados, para usar os inputs
         participantNameInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addParticipant();
+            if (e.key === 'Enter') addParticipant({});
         });
         initialMinutesInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addParticipant();
+            if (e.key === 'Enter') addParticipant({});
         });
         initialSecondsInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') addParticipant();
+            if (e.key === 'Enter') addParticipant({});
         });
 
         add1MinuteBtn.addEventListener('click', () => {
@@ -1111,7 +1095,14 @@
             const val = parseInt(yellowTimeInput.value);
             if (!isNaN(val) && val >= 0) {
                 YELLOW_THRESHOLD_SECONDS = val;
-                if (activeTimer) updateClocks(activeTimer);
+                // Atualiza os thresholds de TODOS os timers ativos para o novo valor global
+                timers.forEach(timer => {
+                    timer.yellowThreshold = val;
+                    // Força a atualização da cor no display do timer, se for o ativo
+                    timer.displayElement.classList.remove('red', 'yellow', 'green');
+                    timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
+                });
+                if (activeTimer) updateClocks(activeTimer); // Atualiza também o pop-up
             } else {
                 yellowTimeInput.value = YELLOW_THRESHOLD_SECONDS;
             }
@@ -1121,11 +1112,19 @@
             const val = parseInt(redTimeInput.value);
             if (!isNaN(val) && val >= 0) {
                 RED_THRESHOLD_SECONDS = val;
-                if (activeTimer) updateClocks(activeTimer);
+                // Atualiza os thresholds de TODOS os timers ativos para o novo valor global
+                timers.forEach(timer => {
+                    timer.redThreshold = val;
+                    // Força a atualização da cor no display do timer, se for o ativo
+                    timer.displayElement.classList.remove('red', 'yellow', 'green');
+                    timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
+                });
+                if (activeTimer) updateClocks(activeTimer); // Atualiza também o pop-up
             } else {
                 redTimeInput.value = RED_THRESHOLD_SECONDS;
             }
         });
+
 
         sendMessageButton.addEventListener('click', () => {
             const message = speakerMessageInput.value.trim();
