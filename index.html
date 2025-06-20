@@ -136,6 +136,30 @@
             transform: translateY(-1px);
         }
 
+        .quick-time-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px; /* Espaço abaixo dos botões rápidos */
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444; /* Linha divisória */
+        }
+
+        .quick-time-buttons button {
+            background-color: #007bff; /* Azul para botões de tempo rápido */
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s ease;
+        }
+        .quick-time-buttons button:hover {
+            background-color: #0056b3;
+        }
+
+
         .color-settings, .message-settings {
             display: flex;
             flex-wrap: wrap;
@@ -336,6 +360,9 @@
             .participant-card .controls button, .adjust-time-buttons button {
                 width: 100%;
             }
+            .quick-time-buttons {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -361,6 +388,12 @@
                     <input type="number" id="initialSeconds" value="0" min="0" max="59">
                 </div>
                 <button id="addParticipantButton">Adicionar</button>
+            </div>
+
+            <div class="quick-time-buttons">
+                <button id="add5Minutes">Adic. 5 Min</button>
+                <button id="add10Minutes">Adic. 10 Min</button>
+                <button id="add30Minutes">Adic. 30 Min</button>
             </div>
 
             <div class="color-settings">
@@ -402,14 +435,11 @@
         const participantList = document.getElementById('participantList');
         const noParticipantsMessage = document.getElementById('noParticipantsMessage');
 
-        // Botão do relógio local removido
-        // const showFloatingClockBtn = document.getElementById('showFloatingClockBtn');
         const openPopoutClockBtn = document.getElementById('openPopoutClockBtn');
-        // Floating clock window and its elements removed
-        // const floatingClockWindow = document.getElementById('floatingClockWindow');
-        // const closeFloatingClockBtn = document.getElementById('closeFloatingClockBtn');
-        // const localFloatingClockParticipantName = floatingClockWindow.querySelector('#floatingClockParticipantName');
-        // const localMainClockDisplay = floatingClockWindow.querySelector('#mainClockDisplay');
+
+        const add5MinutesBtn = document.getElementById('add5Minutes');
+        const add10MinutesBtn = document.getElementById('add10Minutes');
+        const add30MinutesBtn = document.getElementById('add30Minutes');
 
         const yellowTimeInput = document.getElementById('yellowTime');
         const redTimeInput = document.getElementById('redTime');
@@ -419,7 +449,7 @@
         const clearMessageButton = document.getElementById('clearMessageButton');
 
         let timers = [];
-        let nextId = 0;
+        let nextParticipantNumber = 1; // Para nomes automáticos
         let activeTimer = null;
         let popoutWindow = null;
         let popoutReady = false;
@@ -452,23 +482,20 @@
             }
         }
 
-        // Draggable logic for local floating clock is now removed since the clock itself is removed.
-
         function addParticipant() {
-            const name = participantNameInput.value.trim();
+            let name = participantNameInput.value.trim();
             const initialMinutes = parseInt(initialMinutesInput.value) || 0;
             const initialSeconds = parseInt(initialSecondsInput.value) || 0;
 
             if (!name) {
-                alert("Por favor, insira o nome do participante.");
-                return;
+                name = `Participante ${nextParticipantNumber++}`; // Nome automático
             }
 
             let initialTotalSeconds = calculateTotalSeconds(initialMinutes, initialSeconds);
 
             noParticipantsMessage.style.display = 'none';
 
-            const id = nextId++;
+            const id = Date.now(); // Usar timestamp para ID único
             const participantCard = document.createElement('div');
             participantCard.className = 'participant-card';
             participantCard.setAttribute('data-id', id);
@@ -532,37 +559,33 @@
                 timer.startButton.disabled = startDisabled;
                 timer.pauseButton.disabled = pauseDisabled;
                 timer.resetButton.disabled = resetDisabled;
-                const adjustDisabled = timer.isPaused && timer.timeLeft === timer.initialTime && timer.initialTime > 0;
+                // Permitir ajuste de tempo apenas para o timer ativo, a menos que esteja resetado.
+                const adjustDisabled = !(activeTimer && activeTimer.id === timer.id) && !(timer.isPaused && timer.timeLeft === timer.initialTime);
                 timer.addMinButton.disabled = adjustDisabled;
                 timer.subMinButton.disabled = adjustDisabled;
             }
         }
 
         function adjustTime(timer, secondsToAdd) {
-            // Only allow adjustment if the timer is the active one
-            if (activeTimer && activeTimer.id === timer.id) {
+            // Permite ajustar tempo se o timer está ativo OU se ele está resetado (parado no tempo inicial)
+            if ((activeTimer && activeTimer.id === timer.id) || (timer.isPaused && timer.timeLeft === timer.initialTime)) {
                 timer.timeLeft += secondsToAdd;
-                // Prevent time from going extremely negative, cap at -99:00
-                if (timer.timeLeft < -5940) { // -99 minutes * 60 seconds/minute
+                if (timer.timeLeft < -5940) { // Limite inferior para -99:00
                     timer.timeLeft = -5940;
                 }
                 timer.displayElement.textContent = formatTime(timer.timeLeft);
-                // Update color immediately
                 timer.displayElement.classList.remove('red', 'yellow', 'green');
                 timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
 
-                // Reset alertedZero flag if time becomes positive again
                 timer.alertedZero = false;
-                updateClocks(timer); // Update pop-out immediately
+                updateClocks(timer);
             } else {
-                 // Optionally, provide feedback that adjustment is only for active timer
-                 alert("Ajuste de tempo só é possível para o temporizador ativo.");
+                 alert("Ajuste de tempo só é possível para o temporizador ativo, ou para um temporizador parado no seu tempo inicial.");
             }
         }
 
         function startTimer(timer) {
             if (timer.isPaused) {
-                // Pause any currently active timer before starting a new one
                 if (activeTimer && activeTimer !== timer) {
                     pauseTimer(activeTimer);
                     activeTimer.cardElement.classList.remove('active-timer');
@@ -572,22 +595,18 @@
                 activeTimer.cardElement.classList.add('active-timer');
 
                 timer.isPaused = false;
-                toggleTimerButtons(timer, true, false, false); // Disable Start, Enable Pause/Reset
+                toggleTimerButtons(timer, true, false, false); // Desabilita Inic., Habilita Pausar/Reset
 
-                updateClocks(timer); // Update pop-out immediately
+                updateClocks(timer);
 
                 timer.intervalId = setInterval(() => {
                     timer.timeLeft--;
                     timer.displayElement.textContent = formatTime(timer.timeLeft);
 
-                    // Update color based on remaining time
                     timer.displayElement.classList.remove('red', 'yellow', 'green');
                     timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
 
-                    updateClocks(timer); // Update pop-out with new time and color
-
-                    // REMOVED: alert(`Tempo esgotado para ${timer.name}!`);
-                    // The time will now simply continue into negative without interruption.
+                    updateClocks(timer);
                 }, 1000);
             }
         }
@@ -596,8 +615,8 @@
             if (!timer.isPaused) {
                 timer.isPaused = true;
                 clearInterval(timer.intervalId);
-                toggleTimerButtons(timer, false, true, false); // Enable Start, Disable Pause, Enable Reset
-                updateClocks(timer); // Update pop-out with current paused state
+                toggleTimerButtons(timer, false, true, false); // Habilita Inic., Desabilita Pausar, Habilita Reset
+                updateClocks(timer);
             }
         }
 
@@ -606,14 +625,13 @@
             timer.isPaused = true;
             timer.timeLeft = timer.initialTime;
             timer.displayElement.textContent = formatTime(timer.timeLeft);
-            // Reset color to green
             timer.displayElement.classList.remove('red', 'yellow', 'green');
             timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
             
-            timer.alertedZero = false; // Reset the alert flag
-            toggleTimerButtons(timer, false, true, true); // Enable Start, Disable Pause/Reset
+            timer.alertedZero = false;
+            toggleTimerButtons(timer, false, true, true); // Habilita Inic., Desabilita Pausar, Habilita Reset
             if (activeTimer && activeTimer.id === timer.id) {
-                clearClocksFocus(); // If the active timer is reset, clear pop-out focus
+                clearClocksFocus();
             }
         }
 
@@ -627,25 +645,22 @@
                 if (timer.id === id) {
                     clearInterval(timer.intervalId);
                     if (activeTimer && activeTimer.id === timer.id) {
-                        clearClocksFocus(); // If the removed timer was active, clear pop-out focus
+                        clearClocksFocus();
                     }
-                    return false; // Remove this timer from the array
+                    return false;
                 }
-                return true; // Keep other timers
+                return true;
             });
 
             if (timers.length === 0) {
-                noParticipantsMessage.style.display = 'block'; // Show "no participants" message
+                noParticipantsMessage.style.display = 'block';
+                nextParticipantNumber = 1; // Resetar contador de nomes automáticos
             }
         }
 
-        // --- Funções de Atualização dos Relógios (Apenas Pop-out) ---
         function updateClocks(timer = null) {
             const displayColor = timer ? getDisplayColor(timer.timeLeft) : 'green';
 
-            // REMOVED: Logic for local floating clock is gone.
-
-            // Lógica para atualizar o relógio pop-out
             if (popoutWindow && !popoutWindow.closed) {
                 if (popoutReady) {
                     popoutWindow.postMessage({
@@ -654,9 +669,8 @@
                         timeLeft: timer ? timer.timeLeft : 0,
                         color: displayColor
                     }, window.location.origin);
-                    pendingPopoutUpdate = null; // Clear pending update once sent
+                    pendingPopoutUpdate = null;
                 } else {
-                    // Store pending update if pop-out is not ready yet
                     pendingPopoutUpdate = {
                         name: timer ? timer.name : "Nenhum Ativo",
                         timeLeft: timer ? timer.timeLeft : 0,
@@ -664,7 +678,7 @@
                     };
                 }
             } else {
-                pendingPopoutUpdate = null; // No pop-out, no pending update needed
+                pendingPopoutUpdate = null;
             }
         }
 
@@ -675,53 +689,48 @@
                         type: 'updateMessage',
                         message: message
                     }, window.location.origin);
-                    pendingMessageUpdate = null; // Clear pending message once sent
+                    speakerMessageInput.value = ''; // Limpa a caixa de mensagem
+                    pendingMessageUpdate = null;
                 } else {
-                    // Store pending message if pop-out is not ready yet
                     pendingMessageUpdate = message;
                 }
             } else {
                 alert("A janela do pop-up não está aberta ou foi fechada.");
-                pendingMessageUpdate = null; // No pop-out, no pending message needed
+                pendingMessageUpdate = null;
             }
         }
 
         function clearClocksFocus() {
             if (activeTimer) {
-                pauseTimer(activeTimer); // Ensure any active timer is paused
-                activeTimer.cardElement.classList.remove('active-timer'); // Remove active highlight
-                activeTimer = null; // Clear active timer reference
+                pauseTimer(activeTimer);
+                activeTimer.cardElement.classList.remove('active-timer');
+                activeTimer = null;
             }
-            updateClocks(null); // Send 'null' to update pop-out to "Nenhum Ativo"
+            updateClocks(null);
         }
 
-        // --- Gerenciamento da Janela Pop-out ---
         function openPopoutClock() {
             if (popoutWindow && !popoutWindow.closed) {
-                popoutWindow.focus(); // Focus existing window
+                popoutWindow.focus();
                 return;
             }
 
-            popoutReady = false; // Reset ready flag
-            pendingPopoutUpdate = null; // Clear any old pending updates
-            pendingMessageUpdate = null; // Clear any old pending messages
+            popoutReady = false;
+            pendingPopoutUpdate = null;
+            pendingMessageUpdate = null;
 
-            // Open new window, attempting to maximize it
             popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=9999,height=9999,resizable,scrollbars=no,status=no,toolbar=no,menubar=no');
 
             if (!popoutWindow) {
                 alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
             } else {
-                // Small delay to allow pop-up to initialize before sending messages
                 setTimeout(() => {
                     if (popoutWindow && !popoutWindow.closed) {
-                        // Send current active timer info, or clear if no active
                         if (activeTimer) {
                             updateClocks(activeTimer);
                         } else {
                             updateClocks(null);
                         }
-                        // Send current message if exists
                         if (speakerMessageInput.value.trim() !== '') {
                             sendMessageToSpeaker(speakerMessageInput.value.trim());
                         }
@@ -730,7 +739,6 @@
             }
         }
 
-        // --- Event Listeners Globais ---
         addParticipantButton.addEventListener('click', addParticipant);
         participantNameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addParticipant();
@@ -742,13 +750,25 @@
             if (e.key === 'Enter') addParticipant();
         });
 
+        // Event listeners para os novos botões de tempo rápido
+        add5MinutesBtn.addEventListener('click', () => {
+            initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 5;
+        });
+        add10MinutesBtn.addEventListener('click', () => {
+            initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 10;
+        });
+        add30MinutesBtn.addEventListener('click', () => {
+            initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 30;
+        });
+
+
         yellowTimeInput.addEventListener('change', () => {
             const val = parseInt(yellowTimeInput.value);
             if (!isNaN(val) && val >= 0) {
                 YELLOW_THRESHOLD_SECONDS = val;
-                if (activeTimer) updateClocks(activeTimer); // Update pop-out color if active
+                if (activeTimer) updateClocks(activeTimer);
             } else {
-                yellowTimeInput.value = YELLOW_THRESHOLD_SECONDS; // Revert to previous valid value
+                yellowTimeInput.value = YELLOW_THRESHOLD_SECONDS;
             }
         });
 
@@ -756,9 +776,9 @@
             const val = parseInt(redTimeInput.value);
             if (!isNaN(val) && val >= 0) {
                 RED_THRESHOLD_SECONDS = val;
-                if (activeTimer) updateClocks(activeTimer); // Update pop-out color if active
+                if (activeTimer) updateClocks(activeTimer);
             } else {
-                redTimeInput.value = RED_THRESHOLD_SECONDS; // Revert to previous valid value
+                redTimeInput.value = RED_THRESHOLD_SECONDS;
             }
         });
 
@@ -767,10 +787,9 @@
             sendMessageToSpeaker(message);
         });
 
-        // Enviar mensagem ao pressionar ENTER no campo de texto
         speakerMessageInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) { // Check for Enter, ignore Shift+Enter for multiline
-                e.preventDefault(); // Prevent new line in textarea
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
                 const message = speakerMessageInput.value.trim();
                 sendMessageToSpeaker(message);
             }
@@ -778,17 +797,12 @@
 
         clearMessageButton.addEventListener('click', () => {
             speakerMessageInput.value = '';
-            sendMessageToSpeaker(''); // Send empty message to clear pop-out display
+            sendMessageToSpeaker('');
         });
-
-        // REMOVED: Event listener for showFloatingClockBtn
 
         openPopoutClockBtn.addEventListener('click', openPopoutClock);
 
-        // REMOVED: Event listener for closeFloatingClockBtn
-
         window.addEventListener('message', (event) => {
-            // Verificar a origem da mensagem para segurança
             const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
             if (!isLocalOrigin && !event.origin.startsWith('file://')) {
                 console.warn('Main: Mensagem bloqueada de origem desconhecida:', event.origin);
@@ -804,7 +818,6 @@
             if (event.data && event.data.type === 'popoutReady') {
                  popoutReady = true;
 
-                 // If there was a pending clock update, send it now
                  if (pendingPopoutUpdate) {
                     popoutWindow.postMessage({
                         type: 'updateClock',
@@ -814,14 +827,11 @@
                     }, window.location.origin);
                     pendingPopoutUpdate = null;
                  } else if (activeTimer) {
-                    // Otherwise, send the current active timer info
                     updateClocks(activeTimer);
                  } else {
-                    // Or clear the pop-out if no active timer
                     updateClocks(null);
                  }
 
-                 // If there was a pending message, send it now
                  if (pendingMessageUpdate !== null) {
                      popoutWindow.postMessage({
                         type: 'updateMessage',
@@ -829,17 +839,15 @@
                     }, window.location.origin);
                     pendingMessageUpdate = null;
                  } else if (speakerMessageInput.value.trim() !== '') {
-                    // Otherwise, send the current message from the input field
                     sendMessageToSpeaker(speakerMessageInput.value.trim());
                  }
             }
         });
 
-        // Initial check for no participants
         if (timers.length === 0) {
             noParticipantsMessage.style.display = 'block';
         }
-        updateClocks(null); // Initial update for pop-out on page load
+        updateClocks(null);
     </script>
 </body>
 </html>
