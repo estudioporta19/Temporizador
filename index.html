@@ -5,25 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Tempo de Conferência</title>
     <style>
+        /* CSS para o tema totalmente escuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #34495e; /* Fundo escuro como estava antes */
-            color: #ecf0f1; /* Texto claro para contraste */
+            background-color: #252b36; /* Fundo principal: azul/cinzento escuro profundo */
+            color: #ecf0f1; /* Texto claro para contraste geral */
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
         header {
-            background-color: #2c3e50;
+            background-color: #1a202c; /* Cabeçalho: tom ainda mais escuro */
             color: #ecf0f1;
             padding: 15px 20px;
             text-align: center;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra mais visível no fundo escuro */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra mais visível */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -47,21 +48,21 @@
         }
 
         .column {
-            background-color: #ffffff; /* Colunas claras para os elementos internos */
-            color: #333; /* Texto escuro dentro das colunas claras */
+            background-color: #2c3e50; /* Fundo das colunas: azul escuro */
+            color: #ecf0f1; /* Texto dentro das colunas: claro */
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             display: flex;
-            flex-direction: column; /* Para empilhar elementos dentro da coluna */
+            flex-direction: column;
         }
 
         h2 {
-            color: #2c3e50;
+            color: #ecf0f1; /* Títulos dentro das colunas: claros */
             margin-top: 0;
             margin-bottom: 15px;
             font-size: 1.4em;
-            border-bottom: 2px solid #eee;
+            border-bottom: 2px solid #555; /* Linha de separação mais escura */
             padding-bottom: 10px;
         }
 
@@ -73,7 +74,7 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: #555;
+            color: #bdc3c7; /* Rótulos dos campos: cinzento claro */
         }
 
         input[type="text"],
@@ -83,16 +84,16 @@
             width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid #555; /* Borda dos inputs: mais escura */
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 1em;
-            color: #333; /* Garante que o texto digitado seja escuro */
-            background-color: #f9f9f9; /* Fundo dos inputs ligeiramente mais claro */
+            color: #ecf0f1; /* Texto digitado nos inputs: claro */
+            background-color: #3f51b5; /* Fundo dos inputs: azul escuro */
         }
 
         button {
-            background-color: #3498db;
+            background-color: #3498db; /* Azul padrão para botões */
             color: white;
             padding: 10px 15px;
             border: none;
@@ -100,7 +101,7 @@
             cursor: pointer;
             font-size: 1em;
             transition: background-color 0.2s ease;
-            margin-right: 5px; /* Espaçamento entre botões */
+            margin-right: 5px;
         }
 
         button:hover:not(:disabled) {
@@ -114,25 +115,25 @@
 
         .button-group {
             display: flex;
-            flex-wrap: wrap; /* Permite que os botões quebrem a linha se não couberem */
-            gap: 10px; /* Espaço entre botões no grupo */
+            flex-wrap: wrap;
+            gap: 10px;
             margin-bottom: 15px;
         }
 
         .participant-card {
-            background-color: #f0f8ff; /* Light blue background */
-            border: 1px solid #b3d9ff; /* Blue border */
+            background-color: #34495e; /* Fundo das cards de participante: azul/cinzento escuro */
+            border: 1px solid #555; /* Borda das cards: mais escura */
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 6px;
             display: flex;
             flex-direction: column;
             transition: transform 0.2s ease;
-            position: relative; /* Para o botão de remover */
+            position: relative;
         }
 
         .participant-card.active-timer {
-            border: 2px solid #28a745; /* Green border for active timer */
+            border: 2px solid #28a745; /* Borda verde para timer ativo */
             box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
             transform: translateY(-3px);
         }
@@ -147,11 +148,11 @@
         .participant-name-container {
             font-weight: bold;
             font-size: 1.2em;
-            color: #2c3e50;
-            flex-grow: 1; /* Permite que o nome ocupe espaço */
-            overflow: hidden; /* Esconde o excesso */
-            white-space: nowrap; /* Impede quebras de linha */
-            text-overflow: ellipsis; /* Adiciona "..." se o nome for muito longo */
+            color: #ffffff; /* Nome do participante: branco */
+            flex-grow: 1;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
             padding-right: 10px;
         }
 
@@ -160,11 +161,12 @@
             font-weight: bold;
             padding: 5px 10px;
             border-radius: 4px;
-            min-width: 120px; /* Garante largura mínima para o tempo */
+            min-width: 120px;
             text-align: center;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
+        /* Cores dos displays dos temporizadores (mantidas claras para visibilidade) */
         .display.green { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .display.yellow { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .display.red { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
@@ -173,33 +175,33 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap; /* Garante que os botões quebrem a linha em telas pequenas */
-            gap: 5px; /* Espaço entre os grupos de botões */
+            flex-wrap: wrap;
+            gap: 5px;
         }
 
         .participant-line-2-buttons .controls button {
-            background-color: #28a745; /* Green for start/pause/reset */
+            background-color: #28a745; /* Verde para start */
         }
-        .participant-line-2-buttons .controls button#pause { background-color: #ffc107; } /* Orange for pause */
-        .participant-line-2-buttons .controls button#reset { background-color: #dc3545; } /* Red for reset */
+        .participant-line-2-buttons .controls button#pause { background-color: #ffc107; } /* Laranja para pause */
+        .participant-line-2-buttons .controls button#reset { background-color: #dc3545; } /* Vermelho para reset */
 
         .participant-line-2-buttons .adjust-time-buttons button {
-            background-color: #6c757d; /* Grey for adjust time */
+            background-color: #6c757d; /* Cinzento para ajustar tempo */
         }
 
         .remove-participant-btn {
             background-color: #dc3545;
             color: white;
             border: none;
-            border-radius: 50%; /* Faz um botão circular */
+            border-radius: 50%;
             width: 30px;
             height: 30px;
             font-size: 1.1em;
-            line-height: 1; /* Centraliza o 'X' */
+            line-height: 1;
             text-align: center;
             padding: 0;
-            flex-shrink: 0; /* Impede que encolha */
-            align-self: flex-start; /* Alinha no topo, ao lado dos outros botões */
+            flex-shrink: 0;
+            align-self: flex-start;
         }
         .remove-participant-btn:hover {
             background-color: #c82333;
@@ -207,46 +209,46 @@
 
         #noParticipantsMessage {
             text-align: center;
-            color: #777;
+            color: #bdc3c7; /* Mensagem de "nenhum participante": cinzento claro */
             padding: 20px;
-            border: 1px dashed #ccc;
+            border: 1px dashed #555; /* Borda tracejada mais escura */
             border-radius: 5px;
             margin-top: 20px;
-            background-color: #f9f9f9;
+            background-color: #2c3e50; /* Fundo da mensagem: mesmo das colunas */
         }
 
         .session-controls {
             margin-top: 20px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #555; /* Borda de separação para sessões: mais escura */
             padding-top: 15px;
         }
 
         .session-controls select {
-            width: calc(100% - 22px); /* Ajuste fino */
+            width: calc(100% - 22px);
             margin-right: 0;
             margin-bottom: 10px;
         }
 
         .popout-control {
             margin-top: 20px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #555; /* Borda de separação para pop-up: mais escura */
             padding-top: 15px;
-            text-align: center; /* Centraliza o botão */
+            text-align: center;
         }
 
         .message-box {
-            margin-top: auto; /* Empurra para o fundo da coluna */
+            margin-top: auto;
             padding-top: 20px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #555; /* Borda de separação para mensagem: mais escura */
         }
 
         /* Responsividade básica */
         @media (max-width: 1024px) {
             .main-layout {
-                grid-template-columns: 1fr; /* Uma única coluna para telas menores */
+                grid-template-columns: 1fr;
             }
             .column {
-                margin-bottom: 20px; /* Espaçamento entre as colunas quando elas viram linhas */
+                margin-bottom: 20px;
             }
         }
     </style>
