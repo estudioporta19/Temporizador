@@ -16,6 +16,16 @@
             margin: 0;
             padding: 20px 0;
             color: #f8f8f8; /* Cor do texto principal clara */
+            position: relative; /* Para posicionar a hora atual */
+        }
+
+        #currentTimeMain { /* Novo estilo para a hora atual na janela principal */
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 1.1em;
+            color: #aaa; /* Cor suave */
+            font-weight: 300;
         }
 
         .main-layout-container {
@@ -329,6 +339,11 @@
 
         /* Media Queries para responsividade */
         @media (max-width: 992px) {
+            #currentTimeMain {
+                top: 5px;
+                right: 5px;
+                font-size: 0.9em;
+            }
             .main-layout-container {
                 flex-direction: column;
                 gap: 15px;
@@ -373,7 +388,7 @@
     </style>
 </head>
 <body>
-    <div class="main-layout-container">
+    <div id="currentTimeMain"></div> <div class="main-layout-container">
         <div class="left-panel">
             <h1>Multi-Temporizador</h1>
             <div class="top-buttons">
@@ -401,7 +416,8 @@
                 <button id="add5Minutes">Adic. 5 Min</button>
                 <button id="add10Minutes">Adic. 10 Min</button>
                 <button id="add30Minutes">Adic. 30 Min</button>
-                <button id="clearTimeInputsBtn" class="clear-button">Limpar Tempo</button> </div>
+                <button id="clearTimeInputsBtn" class="clear-button">Limpar Tempo</button>
+            </div>
 
             <div class="color-settings">
                 <h3>Alertas de Cor</h3>
@@ -448,7 +464,7 @@
         const add5MinutesBtn = document.getElementById('add5Minutes');
         const add10MinutesBtn = document.getElementById('add10Minutes');
         const add30MinutesBtn = document.getElementById('add30Minutes');
-        const clearTimeInputsBtn = document.getElementById('clearTimeInputsBtn'); // NOVO ELEMENTO
+        const clearTimeInputsBtn = document.getElementById('clearTimeInputsBtn');
 
         const yellowTimeInput = document.getElementById('yellowTime');
         const redTimeInput = document.getElementById('redTime');
@@ -456,6 +472,8 @@
         const speakerMessageInput = document.getElementById('speakerMessageInput');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const clearMessageButton = document.getElementById('clearMessageButton');
+
+        const currentTimeMain = document.getElementById('currentTimeMain'); // NOVO ELEMENTO
 
         let timers = [];
         let nextParticipantNumber = 1;
@@ -489,6 +507,14 @@
             } else {
                 return 'green';
             }
+        }
+
+        function updateCurrentTimeMain() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            currentTimeMain.textContent = `${hours}:${minutes}:${seconds}`;
         }
 
         function addParticipant() {
@@ -726,11 +752,13 @@
             pendingPopoutUpdate = null;
             pendingMessageUpdate = null;
 
-            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=9999,height=9999,resizable,scrollbars=no,status=no,toolbar=no,menubar=no');
+            // Ajuste o tamanho e posição conforme necessário para a sua configuração
+            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=1024,height=768,resizable,scrollbars=no,status=no,toolbar=no,menubar=no');
 
             if (!popoutWindow) {
                 alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
             } else {
+                // Pequeno delay para garantir que a janela esteja pronta para receber mensagens
                 setTimeout(() => {
                     if (popoutWindow && !popoutWindow.closed) {
                         if (activeTimer) {
@@ -757,7 +785,6 @@
             if (e.key === 'Enter') addParticipant();
         });
 
-        // Event listeners para os botões de tempo rápido
         add1MinuteBtn.addEventListener('click', () => {
             initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 1;
             initialMinutesInput.focus();
@@ -775,11 +802,10 @@
             initialMinutesInput.focus();
         });
 
-        // NOVO Event listener para o botão Limpar Tempo
         clearTimeInputsBtn.addEventListener('click', () => {
             initialMinutesInput.value = '';
             initialSecondsInput.value = '';
-            initialMinutesInput.focus(); // Opcional: focar no campo minutos após limpar
+            initialMinutesInput.focus();
         });
 
 
@@ -839,6 +865,9 @@
             if (event.data && event.data.type === 'popoutReady') {
                  popoutReady = true;
 
+                 // Enviar hora atual para o pop-up assim que estiver pronto
+                 updateCurrentTimePopout();
+
                  if (pendingPopoutUpdate) {
                     popoutWindow.postMessage({
                         type: 'updateClock',
@@ -864,6 +893,27 @@
                  }
             }
         });
+
+        function updateCurrentTimePopout() {
+            if (popoutWindow && !popoutWindow.closed && popoutReady) {
+                const now = new Date();
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                popoutWindow.postMessage({
+                    type: 'updateCurrentTime',
+                    time: `${hours}:${minutes}:${seconds}`
+                }, window.location.origin);
+            }
+        }
+
+        // Inicializar e atualizar a hora atual a cada segundo na janela principal
+        updateCurrentTimeMain();
+        setInterval(updateCurrentTimeMain, 1000);
+
+        // Inicializar e atualizar a hora atual a cada segundo no pop-up (se estiver aberto)
+        setInterval(updateCurrentTimePopout, 1000);
+
 
         if (timers.length === 0) {
             noParticipantsMessage.style.display = 'block';
