@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Temporizador com Relógio Flutuante</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 30px 0;
+            color: #333;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 600px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h1 {
+            color: #007bff;
+            margin-bottom: 25px;
+            font-size: 2.2em;
+        }
+
+        /* Botões para ativar o relógio flutuante e o pop-out */
+        .top-buttons {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+        .top-buttons button {
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        .top-buttons button:hover {
+            background-color: #5a6268;
+        }
+
+        /* Janela Flutuante (agora para uso interno, caso queira manter) */
+        #floatingClockWindow {
+            display: none; /* Inicia oculto */
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #333;
+            color: white;
+            padding: 25px 20px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            min-width: 280px;
+            text-align: center;
+            cursor: grab;
+            border: 2px solid #007bff;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #floatingClockWindow.dragging {
+            cursor: grabbing;
+        }
+
+        #closeFloatingClockBtn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5em;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 5px;
+            transition: color 0.2s ease;
+        }
+        #closeFloatingClockBtn:hover {
+            color: #dc3545;
+        }
+
+        #floatingClockParticipantName {
+            font-size: 1.8em;
+            color: #f8f9fa;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
+        #mainClockDisplay {
+            font-size: 6em;
+            font-weight: bold;
+            color: #28a745;
+            letter-spacing: 3px;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Estilos para o formulário de adicionar participante (inalterado) */
+        .add-participant-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .add-participant-form div {
+            flex-grow: 1;
+            min-width: 100px;
+        }
+
+        .add-participant-form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            font-size: 1em;
+            text-align: left;
+        }
+
+        .add-participant-form input[type="text"],
+        .add-participant-form input[type="number"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 1em;
+            text-align: center;
+            -moz-appearance: textfield;
+        }
+
+        .add-participant-form input::-webkit-outer-spin-button,
+        .add-participant-form input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .add-participant-form button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .add-participant-form button:hover {
+            background-color: #218838;
+            transform: translateY(-2px);
+        }
+
+        /* Estilos para a lista de participantes (inalterado) */
+        #participantList {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .participant-card {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            border: 1px solid #eee;
+            transition: border-color 0.3s ease;
+        }
+
+        /* Estilo para o participante ativo */
+        .participant-card.active-timer {
+            border-color: #007bff;
+            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.2);
+        }
+
+        .participant-card h2 {
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.8em;
+        }
+
+        .participant-card .display {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 15px 0;
+            color: #d10000;
+            letter-spacing: 1px;
+        }
+
+        .participant-card .controls button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 5px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .participant-card .controls button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .participant-card .controls button:active {
+            transform: translateY(0);
+        }
+
+        .participant-card .controls button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        .remove-participant-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+            margin-top: 15px;
+            transition: background-color 0.3s ease;
+        }
+        .remove-participant-btn:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Multi-Temporizador de Participantes</h1>
+        <div class="top-buttons">
+            <button id="showFloatingClockBtn">Mostrar Relógio Local</button>
+            <button id="openPopoutClockBtn">Abrir Relógio em Nova Janela</button>
+        </div>
+
+        <div class="add-participant-form">
+            <div>
+                <label for="participantName">Nome do Participante:</label>
+                <input type="text" id="participantName" placeholder="Ex: João" required>
+            </div>
+            <div>
+                <label for="initialMinutes">Minutos:</label>
+                <input type="number" id="initialMinutes" value="0" min="0">
+            </div>
+            <div>
+                <label for="initialSeconds">Segundos:</label>
+                <input type="number" id="initialSeconds" value="10" min="0" max="59">
+            </div>
+            <button id="addParticipantButton">Adicionar Participante</button>
+        </div>
+    </div>
+
+    <div id="participantList" class="container">
+        <h2>Participantes Ativos</h2>
+        <p id="noParticipantsMessage" style="color: #666;">Nenhum participante adicionado ainda.</p>
+    </div>
+
+    <div id="floatingClockWindow">
+        <button id="closeFloatingClockBtn">&times;</button>
+        <p id="floatingClockParticipantName">Nenhum Ativo</p>
+        <div id="mainClockDisplay">00:00</div>
+    </div>
+
+    <script>
+        const participantNameInput = document.getElementById('participantName');
+        const initialMinutesInput = document.getElementById('initialMinutes');
+        const initialSecondsInput = document.getElementById('initialSeconds');
+        const addParticipantButton = document.getElementById('addParticipantButton');
+        const participantList = document.getElementById('participantList');
+        const noParticipantsMessage = document.getElementById('noParticipantsMessage');
+
+        const showFloatingClockBtn = document.getElementById('showFloatingClockBtn');
+        const openPopoutClockBtn = document.getElementById('openPopoutClockBtn');
+        const floatingClockWindow = document.getElementById('floatingClockWindow');
+        const closeFloatingClockBtn = document.getElementById('closeFloatingClockBtn');
+
+        const floatingClockParticipantName = document.getElementById('floatingClockParticipantName');
+        const mainClockDisplay = document.getElementById('mainClockDisplay');
+
+        let timers = [];
+        let nextId = 0;
+        let activeTimer = null;
+        let popoutWindow = null;
+        let popoutReady = false; // Flag para indicar se o pop-out está pronto para receber mensagens
+        let pendingPopoutUpdate = null; // Guarda a atualização pendente para o pop-out
+
+        // --- Funções Auxiliares ---
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        function calculateTotalSeconds(minutes, seconds) {
+            return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
+        }
+
+        // --- Lógica para arrastar a janela flutuante local ---
+        let isDragging = false;
+        let offset = { x: 0, y: 0 };
+
+        floatingClockWindow.addEventListener('mousedown', (e) => {
+            if (e.target === closeFloatingClockBtn) {
+                return;
+            }
+            isDragging = true;
+            floatingClockWindow.classList.add('dragging');
+            offset = {
+                x: floatingClockWindow.offsetLeft - e.clientX,
+                y: floatingClockWindow.offsetTop - e.clientY
+            };
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            e.preventDefault();
+            floatingClockWindow.style.left = (e.clientX + offset.x) + 'px';
+            floatingClockWindow.style.top = (e.clientY + offset.y) + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            floatingClockWindow.classList.remove('dragging');
+        });
+
+        // --- Lógica do Multi-Temporizador ---
+        function addParticipant() {
+            const name = participantNameInput.value.trim();
+            const initialMinutes = parseInt(initialMinutesInput.value) || 0;
+            const initialSeconds = parseInt(initialSecondsInput.value) || 0;
+
+            if (!name) {
+                alert("Por favor, insira o nome do participante.");
+                return;
+            }
+
+            let initialTotalSeconds = calculateTotalSeconds(initialMinutes, initialSeconds);
+            if (initialTotalSeconds === 0) {
+                alert("Por favor, defina um tempo inicial maior que zero para o participante.");
+                return;
+            }
+
+            noParticipantsMessage.style.display = 'none';
+
+            const id = nextId++;
+            const participantCard = document.createElement('div');
+            participantCard.className = 'participant-card';
+            participantCard.setAttribute('data-id', id);
+
+            participantCard.innerHTML = `
+                <h2>${name}</h2>
+                <div class="display" id="display-${id}">${formatTime(initialTotalSeconds)}</div>
+                <div class="controls">
+                    <button id="start-${id}">Iniciar</button>
+                    <button id="pause-${id}" disabled>Pausar</button>
+                    <button id="reset-${id}" disabled>Reiniciar</button>
+                </div>
+                <button class="remove-participant-btn" data-id="${id}">Remover</button>
+            `;
+
+            participantList.appendChild(participantCard);
+
+            const timer = {
+                id: id,
+                name: name,
+                initialTime: initialTotalSeconds,
+                timeLeft: initialTotalSeconds,
+                intervalId: null,
+                isPaused: true,
+                displayElement: document.getElementById(`display-${id}`),
+                startButton: document.getElementById(`start-${id}`),
+                pauseButton: document.getElementById(`pause-${id}`),
+                resetButton: document.getElementById(`reset-${id}`),
+                cardElement: participantCard
+            };
+
+            timers.push(timer);
+
+            timer.startButton.addEventListener('click', () => startTimer(timer));
+            timer.pauseButton.addEventListener('click', () => pauseTimer(timer));
+            timer.resetButton.addEventListener('click', () => resetTimer(timer));
+            participantCard.querySelector('.remove-participant-btn').addEventListener('click', () => removeParticipant(id));
+
+            participantNameInput.value = '';
+            initialMinutesInput.value = '0';
+            initialSecondsInput.value = '10';
+        }
+
+        function toggleTimerButtons(timer, startDisabled, pauseDisabled, resetDisabled) {
+            if (timer) {
+                timer.startButton.disabled = startDisabled;
+                timer.pauseButton.disabled = pauseDisabled;
+                timer.resetButton.disabled = resetDisabled;
+            }
+        }
+
+        function startTimer(timer) {
+            console.log(`Main: Iniciando temporizador para: ${timer.name} (Tempo atual: ${timer.timeLeft})`);
+            if (timer.isPaused && timer.timeLeft > 0) {
+                if (activeTimer && activeTimer !== timer) {
+                    pauseTimer(activeTimer);
+                    activeTimer.cardElement.classList.remove('active-timer');
+                }
+
+                activeTimer = timer;
+                activeTimer.cardElement.classList.add('active-timer');
+
+                timer.isPaused = false;
+                toggleTimerButtons(timer, true, false, false);
+
+                // Força uma atualização imediata para o pop-out, que agora usa pendingPopoutUpdate
+                updateClocks(timer);
+
+                timer.intervalId = setInterval(() => {
+                    timer.timeLeft--;
+                    timer.displayElement.textContent = formatTime(timer.timeLeft);
+                    updateClocks(timer);
+
+                    if (timer.timeLeft <= 0) {
+                        clearInterval(timer.intervalId);
+                        timer.isPaused = true;
+                        toggleTimerButtons(timer, false, true, true);
+                        alert(`Tempo esgotado para ${timer.name}!`);
+                        timer.timeLeft = timer.initialTime; // Reseta para o tempo inicial após o fim
+                        timer.displayElement.textContent = formatTime(timer.timeLeft);
+                        if (activeTimer && activeTimer.id === timer.id) {
+                            clearClocksFocus();
+                        }
+                    }
+                }, 1000);
+            } else if (timer.timeLeft === 0) {
+                 alert(`Por favor, defina um tempo inicial maior que zero para ${timer.name}.`);
+                 resetTimer(timer);
+            }
+        }
+
+        function pauseTimer(timer) {
+            console.log(`Main: Pausando temporizador para: ${timer.name}`);
+            if (!timer.isPaused) {
+                timer.isPaused = true;
+                clearInterval(timer.intervalId);
+                toggleTimerButtons(timer, false, true, false);
+                updateClocks(timer);
+            }
+        }
+
+        function resetTimer(timer) {
+            console.log(`Main: Reiniciando temporizador para: ${timer.name}`);
+            clearInterval(timer.intervalId);
+            timer.isPaused = true;
+            timer.timeLeft = timer.initialTime;
+            timer.displayElement.textContent = formatTime(timer.timeLeft);
+            toggleTimerButtons(timer, false, true, true);
+            if (activeTimer && activeTimer.id === timer.id) {
+                clearClocksFocus();
+            }
+        }
+
+        function removeParticipant(id) {
+            console.log(`Main: Removendo participante com ID: ${id}`);
+            const cardToRemove = document.querySelector(`.participant-card[data-id="${id}"]`);
+            if (cardToRemove) {
+                participantList.removeChild(cardToRemove);
+            }
+
+            timers = timers.filter(timer => {
+                if (timer.id === id) {
+                    clearInterval(timer.intervalId);
+                    if (activeTimer && activeTimer.id === timer.id) {
+                        clearClocksFocus();
+                    }
+                    return false;
+                }
+                return true;
+            });
+
+            if (timers.length === 0) {
+                noParticipantsMessage.style.display = 'block';
+            }
+        }
+
+        // --- Funções de Atualização dos Relógios (Local e Pop-out) ---
+        function updateClocks(timer = null) {
+            // Atualiza o relógio flutuante local
+            if (floatingClockWindow.style.display === 'block') {
+                if (timer) {
+                    floatingClockParticipantName.textContent = timer.name;
+                    mainClockDisplay.textContent = formatTime(timer.timeLeft);
+                } else {
+                    floatingClockParticipantName.textContent = "Nenhum Ativo";
+                    mainClockDisplay.textContent = "00:00";
+                }
+            }
+
+            // Lógica para atualizar o relógio pop-out
+            if (popoutWindow && !popoutWindow.closed) {
+                if (popoutReady) {
+                    console.log(`Main: Enviando updateClock para pop-out. Timer: ${timer ? timer.name : 'Nenhum'} (Tempo: ${timer ? timer.timeLeft : 'N/A'}).`);
+                    popoutWindow.postMessage({
+                        type: 'updateClock',
+                        name: timer ? timer.name : "Nenhum Ativo",
+                        timeLeft: timer ? timer.timeLeft : 0
+                    }, window.location.origin);
+                    pendingPopoutUpdate = null; // Limpa a atualização pendente se foi enviada
+                } else {
+                    // Se o pop-out não está pronto, armazena a atualização para ser enviada depois
+                    // Esta mensagem agora é um console.debug para não poluir tanto, mas ainda visível no console
+                    console.debug(`Main: Pop-out existe mas ainda não está pronto para receber mensagens. (Tentativa: ${timer ? timer.timeLeft : 'N/A'}). Dados pendentes.`);
+                    pendingPopoutUpdate = {
+                        name: timer ? timer.name : "Nenhum Ativo",
+                        timeLeft: timer ? timer.timeLeft : 0
+                    };
+                }
+            } else {
+                // Se o pop-out está fechado ou não existe, não há atualização pendente
+                if (pendingPopoutUpdate) {
+                    console.log('Main: Pop-out não está aberto/existe. Limpando atualização pendente.');
+                }
+                pendingPopoutUpdate = null;
+            }
+        }
+
+        // Limpa o foco dos relógios (local e pop-out) e remove o destaque do cartão
+        function clearClocksFocus() {
+            console.log('Main: Limpando foco dos relógios.');
+            if (activeTimer) {
+                pauseTimer(activeTimer);
+                activeTimer.cardElement.classList.remove('active-timer');
+                activeTimer = null;
+            }
+            updateClocks(null);
+        }
+
+        // --- Gerenciamento da Janela Pop-out ---
+        function openPopoutClock() {
+            console.log('Main: Tentando abrir pop-out.');
+            if (popoutWindow && !popoutWindow.closed) {
+                popoutWindow.focus();
+                return;
+            }
+
+            popoutReady = false;
+            pendingPopoutUpdate = null; // Limpa qualquer atualização pendente antiga
+
+            // Abre a nova janela
+            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=400,height=300,resizable,scrollbars=no,status=no,toolbar=no,menubar=no');
+
+            if (!popoutWindow) {
+                alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
+            } else {
+                console.log('Main: Pop-out aberto com sucesso.');
+                // Adicione um pequeno atraso (setTimeout) para dar tempo à janela de iniciar
+                // antes de tentar enviar qualquer mensagem inicial, mesmo se popoutReady já fosse true.
+                // Isso é um "último recurso" para race conditions.
+                setTimeout(() => {
+                    if (popoutWindow && !popoutWindow.closed && activeTimer) {
+                         // Se o timer já estava ativo ao abrir o pop-out, força uma sincronização
+                         // Este caso é para quando o pop-out é aberto *durante* um timer em execução.
+                         console.log('Main: Forçando sincronização inicial do pop-out após atraso.');
+                         updateClocks(activeTimer);
+                    } else if (popoutWindow && !popoutWindow.closed) {
+                        // Se não há timer ativo, garante que o pop-out mostre "Nenhum Ativo"
+                        updateClocks(null);
+                    }
+                }, 100); // Pequeno atraso de 100ms
+            }
+        }
+
+        // --- Event Listeners Globais ---
+        addParticipantButton.addEventListener('click', addParticipant);
+        participantNameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addParticipant();
+        });
+        initialMinutesInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addParticipant();
+        });
+        initialSecondsInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addParticipant();
+        });
+
+        showFloatingClockBtn.addEventListener('click', () => {
+            floatingClockWindow.style.display = floatingClockWindow.style.display === 'block' ? 'none' : 'block';
+            updateClocks(activeTimer);
+            console.log(`Main: Relógio local ${floatingClockWindow.style.display === 'block' ? 'mostrado' : 'oculto'}.`);
+        });
+
+        openPopoutClockBtn.addEventListener('click', openPopoutClock);
+
+        closeFloatingClockBtn.addEventListener('click', () => {
+            floatingClockWindow.style.display = 'none';
+            console.log('Main: Relógio local fechado.');
+        });
+
+        // Listener para mensagens da janela pop-out
+        window.addEventListener('message', (event) => {
+            if (event.origin !== window.location.origin) {
+                console.warn('Main: Mensagem bloqueada de origem desconhecida:', event.origin);
+                return;
+            }
+            console.log('Main: Mensagem recebida do pop-out:', event.data.type, event.data);
+
+            if (event.data && event.data.type === 'popoutClosed') {
+                popoutWindow = null;
+                popoutReady = false;
+                pendingPopoutUpdate = null;
+                console.log('Main: Pop-out fechado, referência e flags resetados.');
+            }
+            if (event.data && event.data.type === 'popoutReady') {
+                 popoutReady = true;
+                 console.log('Main: Pop-out está pronto! Verificando atualizações pendentes...');
+
+                 // Prioriza a atualização pendente, se existir
+                 if (pendingPopoutUpdate) {
+                    console.log('Main: Encontrada atualização pendente. Enviando para pop-out.');
+                    popoutWindow.postMessage({
+                        type: 'updateClock',
+                        name: pendingPopoutUpdate.name,
+                        timeLeft: pendingPopoutUpdate.timeLeft
+                    }, window.location.origin);
+                    pendingPopoutUpdate = null; // Limpa após o envio
+                 } else if (activeTimer) {
+                    // Se não havia pendente, mas há um ativo, envia o estado atual
+                    updateClocks(activeTimer);
+                    console.log('Main: Temporizador ativo sincronizado com o pop-out (sem pendências).');
+                 } else {
+                    // Se não há temporizador ativo nem pendente, garante que o pop-out mostre "Nenhum Ativo"
+                    updateClocks(null);
+                    console.log('Main: Pop-out definido para "Nenhum Ativo".');
+                 }
+            }
+        });
+
+        // Inicialização
+        if (timers.length === 0) {
+            noParticipantsMessage.style.display = 'block';
+        }
+        updateClocks(null);
+        console.log('Main: Aplicação inicializada.');
+    </script>
+</body>
+</html>

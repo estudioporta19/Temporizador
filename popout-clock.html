@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relógio para Ecrã Secundário</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #333; /* Fundo escuro para contraste */
+            color: white;
+            overflow: hidden; /* Evita barras de rolagem */
+        }
+
+        #popoutClockParticipantName {
+            font-size: 3em; /* Nome maior para o segundo ecrã */
+            color: #f8f9fa;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+            line-height: 1.2;
+            text-align: center;
+            padding: 0 10px;
+        }
+
+        #popoutClockDisplay {
+            font-size: 10em; /* Relógio gigante para o segundo ecrã */
+            font-weight: bold;
+            color: #28a745; /* Verde vibrante */
+            letter-spacing: 5px;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.7);
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <p id="popoutClockParticipantName">Aguardando...</p>
+    <div id="popoutClockDisplay">00:00</div>
+
+    <script>
+        const popoutClockParticipantName = document.getElementById('popoutClockParticipantName');
+        const popoutClockDisplay = document.getElementById('popoutClockDisplay');
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+        }
+
+        // Listener para mensagens da janela principal
+        window.addEventListener('message', (event) => {
+            // Verifica a origem da mensagem por segurança
+            if (event.origin !== window.location.origin) {
+                console.warn('Popout: Mensagem bloqueada de origem desconhecida:', event.origin);
+                return;
+            }
+            console.log('Popout: Mensagem recebida do pai:', event.data.type, event.data);
+
+            const data = event.data;
+            if (data && data.type === 'updateClock') {
+                popoutClockParticipantName.textContent = data.name;
+                popoutClockDisplay.textContent = formatTime(data.timeLeft);
+            }
+        });
+
+        // Para lidar com o fecho da janela principal ou do pop-out
+        window.addEventListener('beforeunload', () => {
+            console.log('Popout: Janela pop-out sendo fechada.');
+            // Envia uma mensagem para a janela pai (se existir) para indicar que foi fechada
+            if (window.opener && !window.opener.closed) {
+                window.opener.postMessage({ type: 'popoutClosed' }, window.location.origin);
+            }
+        });
+
+        // Envia uma mensagem para a janela pai para avisar que o popout está pronto
+        // Isso é crucial para a sincronização
+        if (window.opener && !window.opener.closed) {
+            console.log('Popout: Enviando mensagem popoutReady para o pai.');
+            window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
+        }
+    </script>
+</body>
+</html>
