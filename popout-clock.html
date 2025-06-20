@@ -21,21 +21,22 @@
             position: relative; /* Para posicionar a hora atual */
         }
 
-        #currentTimePopout { /* NOVO ESTILO para a hora atual no pop-up */
+        #currentTimePopout { /* Estilo para a hora atual no pop-up */
             position: absolute;
-            top: 20px; /* **Ajustado para mais espaço** */
+            top: 20px;
             left: 20px;
-            font-size: 8vw; /* **Muito maior, adaptável à largura da tela** */
+            font-size: 3.8em; /* **Ajustado para ser similar ao nome do participante** */
             color: #eee;
-            font-weight: bolder; /* **Ainda mais forte** */
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.7); /* **Sombra para melhor contraste** */
-            z-index: 10; /* Garante que fique por cima de outros elementos */
+            font-weight: bolder;
+            text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
+            z-index: 10;
         }
 
         #floatingClockParticipantName {
-            font-size: 3.5em; /* Aumentado para melhor visibilidade */
+            font-size: 3.5em; /* Tamanho do nome do participante */
             font-weight: bold;
             color: #f8f9fa;
+            margin-top: 80px; /* **Ajustado para dar espaço à hora** */
             margin-bottom: 5px;
             text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
             text-align: center;
@@ -48,9 +49,9 @@
             align-items: center;
             justify-content: center;
             height: 15vh; /* Ocupa 15% da altura da viewport */
-            overflow: hidden; /* Garante que nomes longos não quebrem o layout */
-            text-overflow: ellipsis; /* Adiciona '...' para nomes longos */
-            white-space: nowrap; /* Impede quebra de linha do nome */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         #mainClockDisplay {
@@ -82,7 +83,6 @@
             background-color: #550000; /* Um vermelho escuro */
         }
 
-
         #speakerMessageDisplay {
             width: 100%;
             background-color: #444;
@@ -106,11 +106,14 @@
         /* Ajustes para quando a janela é muito pequena, garantindo legibilidade mínima */
         @media (max-width: 600px), (max-height: 500px) {
             #currentTimePopout {
-                font-size: 4vw; /* **Ajuste responsivo para telas menores** */
+                font-size: 2.5em; /* **Ajuste responsivo para telas menores** */
                 top: 10px;
                 left: 10px;
             }
-            #floatingClockParticipantName { font-size: 2em; }
+            #floatingClockParticipantName {
+                font-size: 2em;
+                margin-top: 60px; /* **Ajustado para telas menores** */
+            }
             #mainClockDisplay { font-size: 20vw; letter-spacing: 2px; }
             #speakerMessageDisplay { font-size: 3vw; padding: 10px; }
         }
