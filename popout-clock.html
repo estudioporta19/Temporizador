@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relógio para Ecrã Secundário</title>
+    <title>Relógio Pop-out</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -13,76 +13,99 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #333; /* Fundo escuro para contraste */
-            color: white;
+            background-color: #333; /* Fundo escuro */
+            color: white; /* Texto claro */
             overflow: hidden; /* Evita barras de rolagem */
         }
 
-        #popoutClockParticipantName {
-            font-size: 3em; /* Nome maior para o segundo ecrã */
+        #floatingClockParticipantName {
+            font-size: 2.2em; /* Um pouco maior para o pop-out */
             color: #f8f9fa;
-            margin-bottom: 20px;
-            text-shadow: 2px 2px 5px rgba(0,0,0,0.7);
-            line-height: 1.2;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             text-align: center;
-            padding: 0 10px;
+            padding: 0 10px; /* Para evitar que o nome toque nas bordas */
         }
 
-        #popoutClockDisplay {
-            font-size: 10em; /* Relógio gigante para o segundo ecrã */
+        #mainClockDisplay {
+            font-size: 8em; /* Grande para fácil visualização */
             font-weight: bold;
-            color: #28a745; /* Verde vibrante */
-            letter-spacing: 5px;
-            text-shadow: 4px 4px 8px rgba(0,0,0,0.7);
-            text-align: center;
+            color: #28a745; /* Cor padrão verde */
+            letter-spacing: 3px;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            transition: color 0.3s ease; /* Transição suave de cor */
+        }
+
+        /* Classes de cor para o display do pop-up */
+        #mainClockDisplay.red {
+            color: #dc3545; /* Vermelho */
+        }
+        #mainClockDisplay.yellow {
+            color: #ffc107; /* Amarelo */
+        }
+        #mainClockDisplay.green {
+            color: #28a745; /* Verde */
         }
     </style>
 </head>
 <body>
-    <p id="popoutClockParticipantName">Aguardando...</p>
-    <div id="popoutClockDisplay">00:00</div>
+    <p id="floatingClockParticipantName">Nenhum Ativo</p>
+    <div id="mainClockDisplay">00:00</div>
 
     <script>
-        const popoutClockParticipantName = document.getElementById('popoutClockParticipantName');
-        const popoutClockDisplay = document.getElementById('popoutClockDisplay');
+        const floatingClockParticipantName = document.getElementById('floatingClockParticipantName');
+        const mainClockDisplay = document.getElementById('mainClockDisplay');
 
+        // Função para formatar o tempo (copiada do index.html para consistência)
         function formatTime(seconds) {
-            const minutes = Math.floor(seconds / 60);
-            const remainingSeconds = seconds % 60;
-            return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
+            const isNegative = seconds < 0;
+            const absSeconds = Math.abs(seconds);
+            const minutes = Math.floor(absSeconds / 60);
+            const remainingSeconds = absSeconds % 60;
+            const sign = isNegative ? '-' : '';
+            return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
         }
 
         // Listener para mensagens da janela principal
         window.addEventListener('message', (event) => {
-            // Verifica a origem da mensagem por segurança
-            if (event.origin !== window.location.origin) {
-                console.warn('Popout: Mensagem bloqueada de origem desconhecida:', event.origin);
+            // Verifique a origem da mensagem por segurança
+            if (event.origin !== window.opener.location.origin) {
+                console.warn('Pop-out: Mensagem bloqueada de origem desconhecida:', event.origin);
                 return;
             }
-            console.log('Popout: Mensagem recebida do pai:', event.data.type, event.data);
 
-            const data = event.data;
-            if (data && data.type === 'updateClock') {
-                popoutClockParticipantName.textContent = data.name;
-                popoutClockDisplay.textContent = formatTime(data.timeLeft);
+            // console.log('Pop-out: Mensagem recebida:', event.data); // Para depuração
+
+            if (event.data && event.data.type === 'updateClock') {
+                const { name, timeLeft, color } = event.data; // Recebe a nova propriedade 'color'
+
+                floatingClockParticipantName.textContent = name;
+                mainClockDisplay.textContent = formatTime(timeLeft);
+
+                // Remove todas as classes de cor e adiciona a cor recebida
+                mainClockDisplay.classList.remove('red', 'yellow', 'green');
+                if (color) {
+                    mainClockDisplay.classList.add(color);
+                }
             }
         });
 
-        // Para lidar com o fecho da janela principal ou do pop-out
+        // Envia uma mensagem para a janela principal quando o pop-out estiver pronto
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.opener) {
+                window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
+                console.log('Pop-out: Enviou popoutReady para o main.');
+            }
+        });
+
+        // Envia uma mensagem para a janela principal quando o pop-out for fechado
         window.addEventListener('beforeunload', () => {
-            console.log('Popout: Janela pop-out sendo fechada.');
-            // Envia uma mensagem para a janela pai (se existir) para indicar que foi fechada
-            if (window.opener && !window.opener.closed) {
+            if (window.opener) {
                 window.opener.postMessage({ type: 'popoutClosed' }, window.location.origin);
+                console.log('Pop-out: Enviou popoutClosed para o main.');
             }
         });
-
-        // Envia uma mensagem para a janela pai para avisar que o popout está pronto
-        // Isso é crucial para a sincronização
-        if (window.opener && !window.opener.closed) {
-            console.log('Popout: Enviando mensagem popoutReady para o pai.');
-            window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
-        }
     </script>
 </body>
 </html>
