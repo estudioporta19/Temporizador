@@ -14,80 +14,102 @@
             min-height: 100vh;
             background-color: #f0f2f5;
             margin: 0;
-            padding: 20px 0; /* Padding reduzido */
+            padding: 20px 0;
             color: #333;
         }
 
-        .container {
+        .main-layout-container {
+            display: flex; /* Habilita o layout 2/3 + 1/3 */
+            width: 100%;
+            max-width: 1200px; /* Aumentado para comportar o novo layout */
+            gap: 20px; /* Espaço entre os dois blocos principais */
+            margin-bottom: 20px;
+            padding: 0 10px; /* Pequeno padding para os cantos */
+            box-sizing: border-box;
+        }
+
+        .left-panel {
+            flex: 2; /* Ocupa 2/3 da largura */
+            min-width: 450px; /* Garante que o painel esquerdo não encolha demais */
             background-color: #fff;
-            padding: 20px 30px; /* Padding reduzido */
-            border-radius: 10px; /* Borda mais suave */
+            padding: 20px 30px;
+            border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
-            width: 100%;
-            max-width: 900px; /* Aumentado para usar mais largura */
-            margin-bottom: 20px; /* Margem reduzida */
-            position: relative;
+        }
+
+        .right-panel {
+            flex: 1; /* Ocupa 1/3 da largura */
+            min-width: 300px; /* Garante que o painel direito não encolha demais */
+            background-color: #fff;
+            padding: 20px 15px; /* Padding ajustado para o lado direito */
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
         }
 
         h1 {
             color: #007bff;
-            margin-bottom: 20px; /* Margem reduzida */
-            font-size: 2em; /* Tamanho reduzido */
+            margin-bottom: 20px;
+            font-size: 2em;
+        }
+        h2 { /* Título da lista de participantes */
+            color: #007bff;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.5em;
         }
 
-        /* Botões superiores */
         .top-buttons {
-            margin-bottom: 15px; /* Margem reduzida */
+            margin-bottom: 15px;
             display: flex;
-            gap: 10px; /* Gap reduzido */
+            gap: 10px;
             justify-content: center;
-            flex-wrap: wrap; /* Permite quebrar linha em telas pequenas */
+            flex-wrap: wrap;
         }
         .top-buttons button {
             background-color: #6c757d;
             color: white;
             border: none;
-            padding: 8px 12px; /* Padding reduzido */
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.9em; /* Tamanho reduzido */
+            font-size: 0.9em;
             transition: background-color 0.3s ease;
         }
         .top-buttons button:hover {
             background-color: #5a6268;
         }
 
-        /* Formulário de adicionar participante */
         .add-participant-form {
             display: flex;
-            flex-wrap: wrap; /* Permite quebrar linha */
-            gap: 10px; /* Gap reduzido */
-            margin-bottom: 20px; /* Margem reduzida */
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
             justify-content: center;
             align-items: flex-end;
         }
 
         .add-participant-form div {
-            flex: 1 1 auto; /* Flexível para se ajustar */
-            min-width: 80px; /* Min-width menor */
+            flex: 1 1 auto;
+            min-width: 80px;
         }
 
         .add-participant-form label {
             display: block;
-            margin-bottom: 5px; /* Margem reduzida */
+            margin-bottom: 5px;
             font-weight: bold;
-            font-size: 0.9em; /* Tamanho reduzido */
+            font-size: 0.9em;
             text-align: left;
         }
 
         .add-participant-form input[type="text"],
         .add-participant-form input[type="number"] {
-            width: calc(100% - 16px); /* Padding ajustado */
-            padding: 8px; /* Padding reduzido */
+            width: calc(100% - 16px);
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 6px;
-            font-size: 0.9em; /* Tamanho reduzido */
+            font-size: 0.9em;
             text-align: center;
             -moz-appearance: textfield;
         }
@@ -96,10 +118,10 @@
             background-color: #28a745;
             color: white;
             border: none;
-            padding: 8px 15px; /* Padding reduzido */
+            padding: 8px 15px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 1em; /* Tamanho ligeiramente reduzido */
+            font-size: 1em;
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
@@ -108,47 +130,46 @@
             transform: translateY(-1px);
         }
 
-        /* Configurações de alerta de cor */
         .color-settings, .message-settings {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px; /* Gap reduzido */
-            margin-top: 15px; /* Margem reduzida */
-            margin-bottom: 20px; /* Margem reduzida */
+            gap: 10px;
+            margin-top: 15px;
+            margin-bottom: 20px;
             justify-content: center;
             align-items: flex-end;
-            padding: 10px 15px; /* Padding reduzido */
+            padding: 10px 15px;
             border: 1px solid #eee;
             border-radius: 8px;
-            background-color: #f8fbff; /* Fundo mais claro */
+            background-color: #f8fbff;
         }
         .color-settings label, .message-settings label {
             font-weight: bold;
-            font-size: 0.85em; /* Tamanho reduzido */
+            font-size: 0.85em;
             margin-bottom: 5px;
         }
         .color-settings input[type="number"] {
-            width: 60px; /* Ajuste para caber melhor */
+            width: 60px;
         }
         .color-settings h3, .message-settings h3 {
             width: 100%;
             text-align: center;
             color: #007bff;
-            margin-bottom: 10px; /* Margem reduzida */
+            margin-bottom: 10px;
             margin-top: 0;
-            font-size: 1.2em; /* Tamanho reduzido */
+            font-size: 1.2em;
         }
         .message-settings textarea {
-            width: calc(100% - 16px); /* Padding ajustado */
-            min-height: 50px; /* Altura mínima */
-            padding: 8px; /* Padding reduzido */
+            width: calc(100% - 16px);
+            min-height: 50px;
+            padding: 8px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 0.9em;
-            resize: vertical; /* Permite redimensionar verticalmente */
+            resize: vertical;
         }
         .message-settings button {
-            background-color: #007bff; /* Azul para enviar mensagem */
+            background-color: #007bff;
             color: white;
             border: none;
             padding: 8px 15px;
@@ -161,26 +182,25 @@
             background-color: #0056b3;
         }
 
-
-        /* Estilos para a lista de participantes - mais compacta */
+        /* ESTILOS PARA A NOVA LISTA DE PARTICIPANTES HORIZONTAL */
         #participantList {
             width: 100%;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Min-width ainda menor */
-            gap: 10px; /* Gap ainda menor */
-            padding: 0 5px; /* Padding ainda menor */
+            display: flex;
+            flex-direction: column; /* Lista de cartões, um abaixo do outro */
+            gap: 10px; /* Espaço entre os cartões */
         }
 
         .participant-card {
             background-color: #f9f9f9;
-            padding: 10px; /* Padding ainda mais reduzido */
-            border-radius: 8px; /* Borda mais suave */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06); /* Sombra mais suave */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
+            padding: 8px 10px; /* Padding reduzido */
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
+            display: flex; /* Torna o conteúdo do cartão flexível */
+            align-items: center; /* Alinha verticalmente */
+            gap: 8px; /* Espaço entre os itens na linha */
             border: 1px solid #eee;
+            flex-wrap: wrap; /* Permite que os botões quebrem linha se necessário */
+            justify-content: space-between; /* Espaço entre os elementos */
         }
 
         .participant-card.active-timer {
@@ -188,23 +208,27 @@
             box-shadow: 0 3px 10px rgba(0, 123, 255, 0.15);
         }
 
-        .participant-card h2 {
-            color: #007bff;
-            margin-top: 0;
-            margin-bottom: 8px; /* Margem reduzida */
-            font-size: 1.4em; /* Tamanho ainda menor */
-            white-space: nowrap; /* Evita quebra de linha no nome */
-            overflow: hidden; /* Oculta overflow */
+        .participant-name-container {
+            flex-shrink: 0; /* Não encolhe */
+            min-width: 80px; /* Largura mínima para o nome */
+            max-width: 120px; /* Largura máxima para o nome */
+            text-align: left;
+            overflow: hidden; /* Oculta o que transborda */
             text-overflow: ellipsis; /* Adiciona "..." */
-            max-width: 100%; /* Garante que o texto não ultrapasse */
+            white-space: nowrap; /* Impede quebra de linha */
+            font-weight: bold;
+            color: #007bff;
+            font-size: 1.1em;
         }
 
         .participant-card .display {
-            font-size: 2.2em; /* Tamanho ainda menor */
+            font-size: 1.8em; /* Tamanho reduzido para caber na linha */
             font-weight: bold;
-            margin: 8px 0; /* Margem reduzida */
+            flex-shrink: 0; /* Não encolhe */
+            min-width: 70px; /* Largura mínima para o tempo */
+            text-align: center;
             color: #28a745;
-            letter-spacing: 0.5px; /* Espaçamento reduzido */
+            letter-spacing: 0.5px;
         }
 
         /* Cores dinâmicas */
@@ -212,43 +236,47 @@
         .participant-card .display.yellow { color: #ffc107; }
         .participant-card .display.green { color: #28a745; }
 
+        .participant-card .controls {
+            display: flex;
+            gap: 5px; /* Espaço entre os botões de controlo */
+            flex-shrink: 0;
+            flex-wrap: wrap; /* Permite quebrar linha se não houver espaço */
+        }
         .participant-card .controls button {
             background-color: #007bff;
             color: white;
             border: none;
-            padding: 6px 10px; /* Padding ainda mais reduzido */
-            margin: 0 3px; /* Margem ainda mais reduzida */
-            border-radius: 5px;
+            padding: 5px 8px; /* Padding muito reduzido */
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.8em; /* Tamanho ainda menor */
+            font-size: 0.75em; /* Fonte pequena */
+            line-height: 1; /* Altura de linha compacta */
+            transition: background-color 0.3s ease;
         }
-
         .participant-card .controls button:hover {
             background-color: #0056b3;
-            transform: translateY(-0.5px);
         }
-
         .participant-card .controls button:disabled {
             background-color: #cccccc;
             cursor: not-allowed;
         }
 
-        /* Botões de ajuste de tempo */
         .adjust-time-buttons {
-            margin-top: 8px; /* Margem reduzida */
             display: flex;
-            gap: 6px; /* Gap ainda mais reduzido */
-            justify-content: center;
+            gap: 5px; /* Espaço entre os botões de ajuste */
+            flex-shrink: 0;
+            flex-wrap: wrap; /* Permite quebrar linha */
         }
-
         .adjust-time-buttons button {
             background-color: #17a2b8;
             color: white;
             border: none;
-            padding: 5px 10px; /* Padding ainda mais reduzido */
-            border-radius: 5px;
+            padding: 5px 8px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.8em; /* Tamanho ainda menor */
+            font-size: 0.75em;
+            line-height: 1;
+            transition: background-color 0.3s ease;
         }
         .adjust-time-buttons button:hover {
             background-color: #138496;
@@ -258,25 +286,87 @@
             background-color: #dc3545;
             color: white;
             border: none;
-            padding: 3px 6px; /* Padding ainda mais reduzido */
+            padding: 4px 6px;
             border-radius: 3px;
             cursor: pointer;
-            font-size: 0.7em; /* Tamanho ainda menor */
-            margin-top: 8px; /* Margem reduzida */
+            font-size: 0.7em;
+            line-height: 1;
+            flex-shrink: 0;
         }
         .remove-participant-btn:hover {
             background-color: #c82333;
         }
 
-        /* Media queries para telas menores (opcional, para mobile) */
+        /* Janela Flutuante Local */
+        #floatingClockWindow {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #333;
+            color: white;
+            padding: 20px 15px; /* Padding reduzido */
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            min-width: 250px; /* Min-width ajustado */
+            text-align: center;
+            cursor: grab;
+            border: 2px solid #007bff;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #floatingClockWindow.dragging { cursor: grabbing; }
+
+        #closeFloatingClockBtn {
+            position: absolute;
+            top: 5px; /* Posição ajustada */
+            right: 5px; /* Posição ajustada */
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em; /* Tamanho ajustado */
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 3px;
+            transition: color 0.2s ease;
+        }
+        #closeFloatingClockBtn:hover { color: #dc3545; }
+
+        #floatingClockParticipantName {
+            font-size: 1.5em; /* Tamanho ajustado */
+            color: #f8f9fa;
+            margin-bottom: 8px; /* Margem ajustada */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            line-height: 1.2;
+        }
+
+        #mainClockDisplay {
+            font-size: 5em; /* Tamanho ajustado */
+            font-weight: bold;
+            color: #28a745;
+            letter-spacing: 2px; /* Espaçamento ajustado */
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Media Queries para responsividade */
+        @media (max-width: 992px) { /* Em telas menores, os painéis empilham */
+            .main-layout-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            .left-panel, .right-panel {
+                flex: none; /* Remove flex-grow */
+                width: 100%; /* Ocupa a largura total */
+                min-width: unset; /* Remove min-width fixo */
+            }
+        }
+
         @media (max-width: 600px) {
-            .container {
-                padding: 15px 20px;
-            }
-            h1 {
-                font-size: 1.8em;
-            }
-            .add-participant-form, .color-settings, .message-settings {
+            .top-buttons, .add-participant-form, .color-settings, .message-settings {
                 flex-direction: column;
                 align-items: stretch;
             }
@@ -293,59 +383,77 @@
                 width: 100%;
                 box-sizing: border-box;
             }
+            .participant-card {
+                flex-direction: column; /* Em telas muito pequenas, os cartões podem empilhar seus conteúdos */
+                align-items: center;
+                gap: 5px;
+            }
+            .participant-name-container,
+            .participant-card .display,
+            .participant-card .controls,
+            .adjust-time-buttons,
+            .remove-participant-btn {
+                width: 100%; /* Ocupa a largura total do cartão */
+                text-align: center;
+                justify-content: center; /* Centraliza os botões */
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Multi-Temporizador</h1>
-        <div class="top-buttons">
-            <button id="showFloatingClockBtn">Relógio Local</button>
-            <button id="openPopoutClockBtn">Abrir Pop-up</button>
+    <div class="main-layout-container">
+        <div class="left-panel">
+            <h1>Multi-Temporizador</h1>
+            <div class="top-buttons">
+                <button id="showFloatingClockBtn">Relógio Local</button>
+                <button id="openPopoutClockBtn">Abrir Pop-up</button>
+            </div>
+
+            <div class="add-participant-form">
+                <div>
+                    <label for="participantName">Nome:</label>
+                    <input type="text" id="participantName" placeholder="Ex: João" required>
+                </div>
+                <div>
+                    <label for="initialMinutes">Min:</label>
+                    <input type="number" id="initialMinutes" value="10" min="0">
+                </div>
+                <div>
+                    <label for="initialSeconds">Seg:</label>
+                    <input type="number" id="initialSeconds" value="0" min="0" max="59">
+                </div>
+                <button id="addParticipantButton">Adicionar</button>
+            </div>
+
+            <div class="color-settings">
+                <h3>Alertas de Cor</h3>
+                <div>
+                    <label for="yellowTime">Amarelo (seg):</label>
+                    <input type="number" id="yellowTime" value="60" min="0">
+                </div>
+                <div>
+                    <label for="redTime">Vermelho (seg):</label>
+                    <input type="number" id="redTime" value="10" min="0">
+                </div>
+            </div>
+
+            <div class="message-settings">
+                <h3>Mensagem Palestrante</h3>
+                <div>
+                    <label for="speakerMessageInput">Mensagem:</label>
+                    <textarea id="speakerMessageInput" placeholder="Ex: Faltam 2 minutos!"></textarea>
+                </div>
+                <button id="sendMessageButton">Enviar Mensagem</button>
+                <button id="clearMessageButton">Limpar Mensagem</button>
+            </div>
         </div>
 
-        <div class="add-participant-form">
-            <div>
-                <label for="participantName">Nome:</label>
-                <input type="text" id="participantName" placeholder="Ex: João" required>
-            </div>
-            <div>
-                <label for="initialMinutes">Min:</label>
-                <input type="number" id="initialMinutes" value="10" min="0">
-            </div>
-            <div>
-                <label for="initialSeconds">Seg:</label>
-                <input type="number" id="initialSeconds" value="0" min="0" max="59">
-            </div>
-            <button id="addParticipantButton">Adicionar</button>
+        <div class="right-panel">
+            <h2>Participantes Ativos</h2>
+            <p id="noParticipantsMessage" style="color: #666;">Nenhum participante adicionado ainda.</p>
+            <div id="participantList">
+                </div>
         </div>
-
-        <div class="color-settings">
-            <h3>Alertas de Cor</h3>
-            <div>
-                <label for="yellowTime">Amarelo (seg):</label>
-                <input type="number" id="yellowTime" value="60" min="0">
-            </div>
-            <div>
-                <label for="redTime">Vermelho (seg):</label>
-                <input type="number" id="redTime" value="10" min="0">
-            </div>
-        </div>
-
-        <div class="message-settings">
-            <h3>Mensagem Palestrante</h3>
-            <div>
-                <label for="speakerMessageInput">Mensagem:</label>
-                <textarea id="speakerMessageInput" placeholder="Ex: Faltam 2 minutos!"></textarea>
-            </div>
-            <button id="sendMessageButton">Enviar Mensagem</button>
-            <button id="clearMessageButton">Limpar Mensagem</button>
-        </div>
-    </div>
-
-    <div id="participantList" class="container">
-        <h2>Participantes Ativos</h2>
-        <p id="noParticipantsMessage" style="color: #666;">Nenhum participante adicionado ainda.</p>
     </div>
 
     <div id="floatingClockWindow">
@@ -367,25 +475,24 @@
         const floatingClockWindow = document.getElementById('floatingClockWindow');
         const closeFloatingClockBtn = document.getElementById('closeFloatingClockBtn');
 
-        const floatingClockParticipantName = document.getElementById('floatingClockParticipantName');
-        const mainClockDisplay = document.getElementById('mainClockDisplay');
+        // Note: these are for the LOCAL floating clock, not the main page
+        const localFloatingClockParticipantName = floatingClockWindow.querySelector('#floatingClockParticipantName');
+        const localMainClockDisplay = floatingClockWindow.querySelector('#mainClockDisplay');
 
         const yellowTimeInput = document.getElementById('yellowTime');
         const redTimeInput = document.getElementById('redTime');
 
-        // Novos elementos para a mensagem do palestrante
         const speakerMessageInput = document.getElementById('speakerMessageInput');
         const sendMessageButton = document.getElementById('sendMessageButton');
         const clearMessageButton = document.getElementById('clearMessageButton');
-
 
         let timers = [];
         let nextId = 0;
         let activeTimer = null;
         let popoutWindow = null;
         let popoutReady = false;
-        let pendingPopoutUpdate = null; // Para o tempo e cor
-        let pendingMessageUpdate = null; // Para a mensagem
+        let pendingPopoutUpdate = null;
+        let pendingMessageUpdate = null;
 
         let YELLOW_THRESHOLD_SECONDS = 60;
         let RED_THRESHOLD_SECONDS = 10;
@@ -463,18 +570,18 @@
             participantCard.setAttribute('data-id', id);
 
             participantCard.innerHTML = `
-                <h2>${name}</h2>
+                <div class="participant-name-container">${name}</div>
                 <div class="display" id="display-${id}">${formatTime(initialTotalSeconds)}</div>
                 <div class="controls">
-                    <button id="start-${id}">Iniciar</button>
+                    <button id="start-${id}">Inic.</button>
                     <button id="pause-${id}" disabled>Pausar</button>
-                    <button id="reset-${id}" disabled>Reiniciar</button>
+                    <button id="reset-${id}" disabled>Reset</button>
                 </div>
                 <div class="adjust-time-buttons">
-                    <button id="add-min-${id}">+1 Min</button>
-                    <button id="sub-min-${id}">-1 Min</button>
+                    <button id="add-min-${id}">+1min</button>
+                    <button id="sub-min-${id}">-1min</button>
                 </div>
-                <button class="remove-participant-btn" data-id="${id}">Remover</button>
+                <button class="remove-participant-btn" data-id="${id}">X</button>
             `;
 
             participantList.appendChild(participantCard);
@@ -535,15 +642,12 @@
 
                 timer.alertedZero = false;
                 updateClocks(timer);
-                console.log(`Main: Tempo ajustado para ${timer.name}. Novo tempo: ${timer.timeLeft}`);
             } else {
-                 console.warn(`Main: Tentativa de ajustar tempo de ${timer.name}, mas não é o temporizador ativo.`);
                  alert("Ajuste de tempo só é possível para o temporizador ativo.");
             }
         }
 
         function startTimer(timer) {
-            console.log(`Main: Iniciando temporizador para: ${timer.name} (Tempo atual: ${timer.timeLeft})`);
             if (timer.isPaused) {
                 if (activeTimer && activeTimer !== timer) {
                     pauseTimer(activeTimer);
@@ -576,7 +680,6 @@
         }
 
         function pauseTimer(timer) {
-            console.log(`Main: Pausando temporizador para: ${timer.name}`);
             if (!timer.isPaused) {
                 timer.isPaused = true;
                 clearInterval(timer.intervalId);
@@ -586,7 +689,6 @@
         }
 
         function resetTimer(timer) {
-            console.log(`Main: Reiniciando temporizador para: ${timer.name}`);
             clearInterval(timer.intervalId);
             timer.isPaused = true;
             timer.timeLeft = timer.initialTime;
@@ -602,7 +704,6 @@
         }
 
         function removeParticipant(id) {
-            console.log(`Main: Removendo participante com ID: ${id}`);
             const cardToRemove = document.querySelector(`.participant-card[data-id="${id}"]`);
             if (cardToRemove) {
                 participantList.removeChild(cardToRemove);
@@ -628,18 +729,20 @@
         function updateClocks(timer = null) {
             const displayColor = timer ? getDisplayColor(timer.timeLeft) : 'green';
 
+            // Atualiza o relógio flutuante local
             if (floatingClockWindow.style.display === 'block') {
                 if (timer) {
-                    floatingClockParticipantName.textContent = timer.name;
-                    mainClockDisplay.textContent = formatTime(timer.timeLeft);
+                    localFloatingClockParticipantName.textContent = timer.name;
+                    localMainClockDisplay.textContent = formatTime(timer.timeLeft);
                 } else {
-                    floatingClockParticipantName.textContent = "Nenhum Ativo";
-                    mainClockDisplay.textContent = "00:00";
+                    localFloatingClockParticipantName.textContent = "Nenhum Ativo";
+                    localMainClockDisplay.textContent = "00:00";
                 }
-                mainClockDisplay.classList.remove('red', 'yellow', 'green');
-                mainClockDisplay.classList.add(displayColor);
+                localMainClockDisplay.classList.remove('red', 'yellow', 'green');
+                localMainClockDisplay.classList.add(displayColor);
             }
 
+            // Lógica para atualizar o relógio pop-out
             if (popoutWindow && !popoutWindow.closed) {
                 if (popoutReady) {
                     popoutWindow.postMessage({
@@ -661,7 +764,6 @@
             }
         }
 
-        // Nova função para enviar mensagem ao palestrante
         function sendMessageToSpeaker(message) {
             if (popoutWindow && !popoutWindow.closed) {
                 if (popoutReady) {
@@ -671,7 +773,7 @@
                     }, window.location.origin);
                     pendingMessageUpdate = null;
                 } else {
-                    pendingMessageUpdate = message; // Armazena para enviar depois
+                    pendingMessageUpdate = message;
                 }
             } else {
                 alert("A janela do pop-up não está aberta ou foi fechada.");
@@ -680,7 +782,6 @@
         }
 
         function clearClocksFocus() {
-            console.log('Main: Limpando foco dos relógios.');
             if (activeTimer) {
                 pauseTimer(activeTimer);
                 activeTimer.cardElement.classList.remove('active-timer');
@@ -691,7 +792,6 @@
 
         // --- Gerenciamento da Janela Pop-out ---
         function openPopoutClock() {
-            console.log('Main: Tentando abrir pop-out.');
             if (popoutWindow && !popoutWindow.closed) {
                 popoutWindow.focus();
                 return;
@@ -699,18 +799,15 @@
 
             popoutReady = false;
             pendingPopoutUpdate = null;
-            pendingMessageUpdate = null; // Limpar mensagem pendente antiga
+            pendingMessageUpdate = null;
 
-            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=500,height=600,resizable,scrollbars=no,status=no,toolbar=no,menubar=no'); // Tamanho inicial maior
+            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=500,height=600,resizable,scrollbars=no,status=no,toolbar=no,menubar=no');
 
             if (!popoutWindow) {
                 alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
             } else {
-                console.log('Main: Pop-out aberto com sucesso.');
-                // Adicione um pequeno atraso (setTimeout) para dar tempo à janela de iniciar
                 setTimeout(() => {
                     if (popoutWindow && !popoutWindow.closed) {
-                        // Sincroniza o relógio e a mensagem logo que o pop-up estiver pronto
                         if (activeTimer) {
                             updateClocks(activeTimer);
                         } else {
@@ -756,7 +853,6 @@
             }
         });
 
-        // Listeners para os novos botões de mensagem
         sendMessageButton.addEventListener('click', () => {
             const message = speakerMessageInput.value.trim();
             sendMessageToSpeaker(message);
@@ -764,7 +860,7 @@
 
         clearMessageButton.addEventListener('click', () => {
             speakerMessageInput.value = '';
-            sendMessageToSpeaker(''); // Envia mensagem vazia para limpar no pop-up
+            sendMessageToSpeaker('');
         });
 
         showFloatingClockBtn.addEventListener('click', () => {
@@ -793,7 +889,6 @@
             if (event.data && event.data.type === 'popoutReady') {
                  popoutReady = true;
 
-                 // Envia as atualizações pendentes (relógio e mensagem)
                  if (pendingPopoutUpdate) {
                     popoutWindow.postMessage({
                         type: 'updateClock',
@@ -802,25 +897,24 @@
                         color: pendingPopoutUpdate.color
                     }, window.location.origin);
                     pendingPopoutUpdate = null;
-                 } else if (activeTimer) { // Se não havia pendência, envia o estado atual
+                 } else if (activeTimer) {
                     updateClocks(activeTimer);
                  } else {
                     updateClocks(null);
                  }
 
-                 if (pendingMessageUpdate !== null) { // Se havia mensagem pendente
+                 if (pendingMessageUpdate !== null) {
                      popoutWindow.postMessage({
                         type: 'updateMessage',
                         message: pendingMessageUpdate
                     }, window.location.origin);
                     pendingMessageUpdate = null;
-                 } else if (speakerMessageInput.value.trim() !== '') { // Envia a mensagem atual se não havia pendência
+                 } else if (speakerMessageInput.value.trim() !== '') {
                     sendMessageToSpeaker(speakerMessageInput.value.trim());
                  }
             }
         });
 
-        // Inicialização
         if (timers.length === 0) {
             noParticipantsMessage.style.display = 'block';
         }
