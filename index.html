@@ -54,7 +54,7 @@
             position: absolute; /* Posição absoluta dentro do .left-panel */
             top: 15px;
             right: 20px;
-            font-size: 1.8em; /* **Aumentado para ser mais visível** */
+            font-size: 1.8em; /* Aumentado para ser mais visível */
             color: #aaddff; /* Cor mais visível */
             font-weight: bold; /* Mais forte */
             z-index: 10;
@@ -64,7 +64,7 @@
             color: #0099ff; /* Azul mais vibrante para títulos */
             margin-bottom: 20px;
             font-size: 2em;
-            padding-right: 120px; /* **Aumentado para dar mais espaço à hora** */
+            padding-right: 120px; /* Aumentado para dar mais espaço à hora */
         }
         h2 {
             margin-top: 0;
@@ -342,12 +342,12 @@
         /* Media Queries para responsividade */
         @media (max-width: 992px) {
             #currentTimeMain {
-                font-size: 1.2em; /* **Ajustado para telas menores** */
+                font-size: 1.2em; /* Ajustado para telas menores */
                 top: 10px;
                 right: 15px;
             }
             h1 {
-                padding-right: 80px; /* **Ajustado para telas menores** */
+                padding-right: 80px; /* Ajustado para telas menores */
             }
             .main-layout-container {
                 flex-direction: column;
@@ -403,7 +403,8 @@
 <body>
     <div class="main-layout-container">
         <div class="left-panel">
-            <div id="currentTimeMain"></div> <h1>Multi-Temporizador</h1>
+            <div id="currentTimeMain"></div>
+            <h1>Multi-Temporizador</h1>
             <div class="top-buttons">
                 <button id="openPopoutClockBtn">Abrir Pop-up (TV)</button>
             </div>
@@ -765,22 +766,34 @@
             pendingPopoutUpdate = null;
             pendingMessageUpdate = null;
 
-            // **Lógica para abrir em tela cheia no segundo monitor (se houver)**
-            // Esta é uma tentativa e pode variar o comportamento entre navegadores/sistemas.
-            // O ideal é que o usuário mova e maximize manualmente na primeira vez.
+            // **Melhoria para abrir no segundo monitor**
+            // Tenta obter as dimensões de todos os ecrãs disponíveis.
+            // Esta API (screen.getPrimaryDisplay(), screen.getDisplays()) não é amplamente suportada em browsers web.
+            // Para browsers padrão, window.screenLeft/screenY e window.outerWidth/outerHeight são usados.
             let screenX = 0;
             let screenY = 0;
             let width = screen.width;
             let height = screen.height;
 
-            // Se houver múltiplos monitores (não garantido para funcionar em todos os browsers)
-            if (window.screenX !== undefined && window.screenY !== undefined && screen.isExtended) {
-                // Tenta posicionar no segundo monitor (assumindo que seja à direita do principal)
-                // Isto é uma heurística; o comportamento exato depende do SO e do browser
-                screenX = screen.width; // Move para a direita do monitor principal
-                width = screen.width; // Tenta usar a largura do segundo monitor
-                height = screen.height; // Tenta usar a altura do segundo monitor
+            // Heurística para o segundo monitor:
+            // Se o ecrã atual não começa em (0,0), assume-se que está num multi-monitor setup
+            // e tenta-se abrir na posição (0,0) do monitor primário ou num monitor adjacente.
+            // Isto é uma suposição baseada em como os sistemas operativos geralmente organizam os ecrãs.
+            if (window.screenX !== 0 || window.screenY !== 0) {
+                // Se a janela principal já não está no monitor primário (0,0),
+                // tenta abrir o pop-up no monitor primário.
+                screenX = 0;
+                screenY = 0;
+            } else {
+                // Se a janela principal está no monitor primário (0,0),
+                // tenta abrir o pop-up à direita do monitor principal.
+                // Isso funciona bem para setups onde o segundo monitor está à direita.
+                screenX = screen.width; // Mova para a direita do monitor atual
+                screenY = 0; // Mantenha no topo
             }
+            // Definir largura e altura para preencher o novo ecrã
+            width = screen.width;
+            height = screen.height;
 
             const features = `width=${width},height=${height},left=${screenX},top=${screenY},resizable,scrollbars=no,status=no,toolbar=no,menubar=no,fullscreen=yes`;
 
