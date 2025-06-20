@@ -5,26 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestor de Tempo de Conferência</title>
     <style>
-        /* CSS para o tema totalmente escuro */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #252b36; /* Fundo principal: azul/cinzento escuro profundo */
-            color: #ecf0f1; /* Texto claro para contraste geral */
+            background-color: #34495e; /* Fundo escuro para o "Night Mode" */
+            color: #ecf0f1; /* Texto claro para contraste */
             display: flex;
             flex-direction: column;
             min-height: 100vh;
         }
 
         header {
-            background-color: #1a202c; /* Cabeçalho: tom ainda mais escuro */
+            background-color: #2c3e50;
             color: #ecf0f1;
             padding: 15px 20px;
             text-align: center;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Sombra mais visível */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -48,21 +47,21 @@
         }
 
         .column {
-            background-color: #2c3e50; /* Fundo das colunas: azul escuro */
-            color: #ecf0f1; /* Texto dentro das colunas: claro */
+            background-color: #ffffff; /* Colunas claras para os elementos internos (Night Mode UI) */
+            color: #333; /* Texto escuro dentro das colunas claras */
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column;
         }
 
         h2 {
-            color: #ecf0f1; /* Títulos dentro das colunas: claros */
+            color: #2c3e50;
             margin-top: 0;
             margin-bottom: 15px;
             font-size: 1.4em;
-            border-bottom: 2px solid #555; /* Linha de separação mais escura */
+            border-bottom: 2px solid #eee;
             padding-bottom: 10px;
         }
 
@@ -74,7 +73,7 @@
             display: block;
             margin-bottom: 5px;
             font-weight: bold;
-            color: #bdc3c7; /* Rótulos dos campos: cinzento claro */
+            color: #555;
         }
 
         input[type="text"],
@@ -84,16 +83,16 @@
             width: calc(100% - 20px);
             padding: 10px;
             margin-bottom: 10px;
-            border: 1px solid #555; /* Borda dos inputs: mais escura */
+            border: 1px solid #ddd;
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 1em;
-            color: #ecf0f1; /* Texto digitado nos inputs: claro */
-            background-color: #3f51b5; /* Fundo dos inputs: azul escuro */
+            color: #333; /* Garante que o texto digitado seja escuro */
+            background-color: #f9f9f9; /* Fundo dos inputs ligeiramente mais claro */
         }
 
         button {
-            background-color: #3498db; /* Azul padrão para botões */
+            background-color: #3498db;
             color: white;
             padding: 10px 15px;
             border: none;
@@ -121,8 +120,8 @@
         }
 
         .participant-card {
-            background-color: #34495e; /* Fundo das cards de participante: azul/cinzento escuro */
-            border: 1px solid #555; /* Borda das cards: mais escura */
+            background-color: #f0f8ff; /* Light blue background para as cards */
+            border: 1px solid #b3d9ff; /* Blue border */
             padding: 15px;
             margin-bottom: 10px;
             border-radius: 6px;
@@ -133,7 +132,7 @@
         }
 
         .participant-card.active-timer {
-            border: 2px solid #28a745; /* Borda verde para timer ativo */
+            border: 2px solid #28a745; /* Green border for active timer */
             box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
             transform: translateY(-3px);
         }
@@ -148,7 +147,7 @@
         .participant-name-container {
             font-weight: bold;
             font-size: 1.2em;
-            color: #ffffff; /* Nome do participante: branco */
+            color: #2c3e50;
             flex-grow: 1;
             overflow: hidden;
             white-space: nowrap;
@@ -166,7 +165,6 @@
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
-        /* Cores dos displays dos temporizadores (mantidas claras para visibilidade) */
         .display.green { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .display.yellow { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .display.red { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
@@ -180,13 +178,13 @@
         }
 
         .participant-line-2-buttons .controls button {
-            background-color: #28a745; /* Verde para start */
+            background-color: #28a745; /* Green for start/pause/reset */
         }
-        .participant-line-2-buttons .controls button#pause { background-color: #ffc107; } /* Laranja para pause */
-        .participant-line-2-buttons .controls button#reset { background-color: #dc3545; } /* Vermelho para reset */
+        .participant-line-2-buttons .controls button#pause { background-color: #ffc107; } /* Orange for pause */
+        .participant-line-2-buttons .controls button#reset { background-color: #dc3545; } /* Red for reset */
 
         .participant-line-2-buttons .adjust-time-buttons button {
-            background-color: #6c757d; /* Cinzento para ajustar tempo */
+            background-color: #6c757d; /* Grey for adjust time */
         }
 
         .remove-participant-btn {
@@ -209,17 +207,17 @@
 
         #noParticipantsMessage {
             text-align: center;
-            color: #bdc3c7; /* Mensagem de "nenhum participante": cinzento claro */
+            color: #777;
             padding: 20px;
-            border: 1px dashed #555; /* Borda tracejada mais escura */
+            border: 1px dashed #ccc;
             border-radius: 5px;
             margin-top: 20px;
-            background-color: #2c3e50; /* Fundo da mensagem: mesmo das colunas */
+            background-color: #f9f9f9;
         }
 
         .session-controls {
             margin-top: 20px;
-            border-top: 1px solid #555; /* Borda de separação para sessões: mais escura */
+            border-top: 1px solid #eee;
             padding-top: 15px;
         }
 
@@ -231,7 +229,7 @@
 
         .popout-control {
             margin-top: 20px;
-            border-top: 1px solid #555; /* Borda de separação para pop-up: mais escura */
+            border-top: 1px solid #eee;
             padding-top: 15px;
             text-align: center;
         }
@@ -239,7 +237,17 @@
         .message-box {
             margin-top: auto;
             padding-top: 20px;
-            border-top: 1px solid #555; /* Borda de separação para mensagem: mais escura */
+            border-top: 1px solid #eee;
+        }
+
+        /* Novo estilo para o botão de limpar tudo */
+        #clearAllParticipantsButton {
+            background-color: #e74c3c; /* Vermelho para ação de apagar */
+            margin-top: 15px;
+            width: 100%; /* Ocupa a largura total da coluna */
+        }
+        #clearAllParticipantsButton:hover {
+            background-color: #c0392b;
         }
 
         /* Responsividade básica */
@@ -282,7 +290,10 @@
             </div>
             <button id="addParticipantButton">Adicionar Participante</button>
 
-            <div class="session-controls"> <h2>Configurações de Alerta</h2>
+            <button id="clearAllParticipantsButton">Limpar Todos os Participantes</button>
+
+            <div class="session-controls">
+                <h2>Configurações de Alerta</h2>
                 <div class="form-group">
                     <label for="yellowTime">Tempo para Alerta Amarelo (segundos):</label>
                     <input type="number" id="yellowTime" value="60" min="0">
@@ -338,9 +349,6 @@
     </div>
 
     <script>
-        // O CÓDIGO JAVASCRIPT CORRIGIDO MAIS RECENTE DEVE VIR AQUI
-        // ESTE BLOCO É O MESMO DA ÚLTIMA RESPOSTA COMPLETA.
-
         const participantNameInput = document.getElementById('participantName');
         const initialMinutesInput = document.getElementById('initialMinutes');
         const initialSecondsInput = document.getElementById('initialSeconds');
@@ -370,6 +378,9 @@
         const loadSessionSelect = document.getElementById('loadSessionSelect');
         const loadSelectedSessionButton = document.getElementById('loadSelectedSessionButton');
         const deleteSelectedSessionButton = document.getElementById('deleteSelectedSessionButton');
+
+        // Novo elemento para o botão de limpar tudo
+        const clearAllParticipantsButton = document.getElementById('clearAllParticipantsButton');
 
         let timers = [];
         let nextParticipantNumber = 1;
@@ -646,6 +657,30 @@
                 nextParticipantNumber = maxNum + 1;
             }
             updateAllTimerButtons(); // Atualiza os botões após a remoção
+        }
+
+        // Nova função para limpar todos os participantes
+        function clearAllParticipants() {
+            if (timers.length === 0) {
+                alert("Não há participantes na lista para limpar.");
+                return;
+            }
+
+            if (confirm("Tem certeza que deseja limpar a lista de todos os participantes?")) {
+                timers.forEach(timer => {
+                    clearInterval(timer.intervalId); // Para qualquer timer em execução
+                    timer.cardElement.remove(); // Remove o elemento HTML
+                });
+                timers = []; // Esvazia o array de timers
+                activeTimer = null; // Reseta o timer ativo
+                nextParticipantNumber = 1; // Reseta a contagem padrão
+
+                participantList.innerHTML = ''; // Limpa completamente o HTML da lista
+                noParticipantsMessage.style.display = 'block'; // Mostra a mensagem
+                updateClocks(null); // Atualiza o pop-up para "Nenhum Ativo"
+                updateAllTimerButtons(); // Atualiza o estado dos botões
+                alert("Todos os participantes foram removidos.");
+            }
         }
 
         // A função updateClocks agora sempre envia os dados do activeTimer, ou nulo se nenhum estiver ativo.
@@ -994,6 +1029,10 @@
         });
 
         openPopoutClockBtn.addEventListener('click', openPopoutClock);
+
+        // Listener para o novo botão de limpar todos os participantes
+        clearAllParticipantsButton.addEventListener('click', clearAllParticipants);
+
 
         window.addEventListener('message', (event) => {
             const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
