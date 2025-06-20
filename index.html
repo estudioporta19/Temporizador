@@ -9,8 +9,8 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 20px;
-            background-color: #f4f7f6;
-            color: #333;
+            background-color: #34495e; /* Fundo escuro como estava antes */
+            color: #ecf0f1; /* Texto claro para contraste */
             display: flex;
             flex-direction: column;
             min-height: 100vh;
@@ -23,7 +23,7 @@
             text-align: center;
             border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra mais visível no fundo escuro */
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -47,10 +47,11 @@
         }
 
         .column {
-            background-color: #ffffff;
+            background-color: #ffffff; /* Colunas claras para os elementos internos */
+            color: #333; /* Texto escuro dentro das colunas claras */
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
             display: flex;
             flex-direction: column; /* Para empilhar elementos dentro da coluna */
         }
@@ -86,6 +87,8 @@
             border-radius: 4px;
             box-sizing: border-box;
             font-size: 1em;
+            color: #333; /* Garante que o texto digitado seja escuro */
+            background-color: #f9f9f9; /* Fundo dos inputs ligeiramente mais claro */
         }
 
         button {
@@ -277,6 +280,17 @@
             </div>
             <button id="addParticipantButton">Adicionar Participante</button>
 
+            <div class="session-controls"> <h2>Configurações de Alerta</h2>
+                <div class="form-group">
+                    <label for="yellowTime">Tempo para Alerta Amarelo (segundos):</label>
+                    <input type="number" id="yellowTime" value="60" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="redTime">Tempo para Alerta Vermelho (segundos):</label>
+                    <input type="number" id="redTime" value="10" min="0">
+                </div>
+            </div>
+
             <div class="message-box">
                 <h2>Mensagem para o Palestrante</h2>
                 <textarea id="speakerMessageInput" rows="3" placeholder="Digite uma mensagem para aparecer no ecrã do palestrante..."></textarea>
@@ -295,16 +309,6 @@
         </div>
 
         <div class="column">
-            <h2>Configurações de Alerta</h2>
-            <div class="form-group">
-                <label for="yellowTime">Tempo para Alerta Amarelo (segundos):</label>
-                <input type="number" id="yellowTime" value="60" min="0">
-            </div>
-            <div class="form-group">
-                <label for="redTime">Tempo para Alerta Vermelho (segundos):</label>
-                <input type="number" id="redTime" value="10" min="0">
-            </div>
-
             <div class="session-controls">
                 <h2>Sessões</h2>
                 <div class="form-group">
@@ -333,12 +337,7 @@
 
     <script>
         // O CÓDIGO JAVASCRIPT CORRIGIDO MAIS RECENTE DEVE VIR AQUI
-        // Exemplo:
-        // const participantNameInput = document.getElementById('participantName');
-        // ... (todo o seu JavaScript)
-        // Por favor, cole aqui o script completo que lhe dei na penúltima interação
-        // ou recupere do seu ficheiro original de 1200 linhas.
-        // Se precisar, posso gerá-lo novamente para si.
+        // ESTE BLOCO É O MESMO DA ÚLTIMA RESPOSTA COMPLETA.
 
         const participantNameInput = document.getElementById('participantName');
         const initialMinutesInput = document.getElementById('initialMinutes');
