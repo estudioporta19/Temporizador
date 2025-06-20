@@ -6,35 +6,52 @@
     <title>Relógio Pop-out</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte mais moderna */
             display: flex;
             flex-direction: column;
-            justify-content: center;
+            justify-content: space-between; /* Espaçamento entre os elementos */
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #333; /* Fundo escuro */
-            color: white; /* Texto claro */
-            overflow: hidden; /* Evita barras de rolagem */
+            background-color: #222; /* Fundo mais escuro */
+            color: white;
+            overflow: hidden;
+            padding: 10px; /* Pequeno padding geral */
+            box-sizing: border-box; /* Inclui padding na largura/altura */
         }
 
         #floatingClockParticipantName {
-            font-size: 2.2em; /* Um pouco maior para o pop-out */
+            font-size: 2.8em; /* Ainda maior para o nome */
+            font-weight: bold;
             color: #f8f9fa;
-            margin-bottom: 15px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
             text-align: center;
-            padding: 0 10px; /* Para evitar que o nome toque nas bordas */
+            line-height: 1.2;
+            flex-shrink: 0; /* Não encolhe */
+            padding: 0 15px; /* Mais espaço nas laterais */
+            box-sizing: border-box;
+            width: 100%; /* Ocupa toda a largura */
+            min-height: 10%; /* Garante um mínimo de espaço para o nome */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         #mainClockDisplay {
-            font-size: 8em; /* Grande para fácil visualização */
+            font-size: 15vw; /* Tamanho responsivo: 15% da largura da viewport */
+            line-height: 1em; /* Ajusta a altura da linha */
             font-weight: bold;
             color: #28a745; /* Cor padrão verde */
-            letter-spacing: 3px;
-            margin: 0;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            letter-spacing: 5px; /* Mais espaçamento para clareza */
+            margin: auto; /* Centraliza verticalmente e horizontalmente no espaço restante */
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
             transition: color 0.3s ease; /* Transição suave de cor */
+            flex-grow: 1; /* Ocupa o máximo de espaço possível */
+            display: flex; /* Para centralizar o texto dentro do div */
+            align-items: center;
+            justify-content: center;
+            width: 100%;
         }
 
         /* Classes de cor para o display do pop-up */
@@ -47,17 +64,37 @@
         #mainClockDisplay.green {
             color: #28a745; /* Verde */
         }
+
+        #speakerMessageDisplay {
+            width: 100%;
+            background-color: #444; /* Fundo escuro para a mensagem */
+            color: #eee; /* Texto cinza claro */
+            padding: 15px 20px;
+            border-top: 2px solid #666; /* Separador sutil */
+            text-align: center;
+            font-size: 1.5em; /* Tamanho da fonte da mensagem */
+            font-weight: 500;
+            height: 30%; /* Ocupa 1/3 do ecrã */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-sizing: border-box;
+            word-wrap: break-word; /* Quebra palavras longas */
+            overflow: auto; /* Adiciona scroll se a mensagem for muito longa */
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
     <p id="floatingClockParticipantName">Nenhum Ativo</p>
     <div id="mainClockDisplay">00:00</div>
+    <div id="speakerMessageDisplay"></div>
 
     <script>
         const floatingClockParticipantName = document.getElementById('floatingClockParticipantName');
         const mainClockDisplay = document.getElementById('mainClockDisplay');
+        const speakerMessageDisplay = document.getElementById('speakerMessageDisplay');
 
-        // Função para formatar o tempo (copiada do index.html para consistência)
         function formatTime(seconds) {
             const isNegative = seconds < 0;
             const absSeconds = Math.abs(seconds);
@@ -67,31 +104,26 @@
             return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
         }
 
-        // Listener para mensagens da janela principal
         window.addEventListener('message', (event) => {
-            // Verifique a origem da mensagem por segurança
             if (event.origin !== window.opener.location.origin) {
                 console.warn('Pop-out: Mensagem bloqueada de origem desconhecida:', event.origin);
                 return;
             }
 
-            // console.log('Pop-out: Mensagem recebida:', event.data); // Para depuração
-
             if (event.data && event.data.type === 'updateClock') {
-                const { name, timeLeft, color } = event.data; // Recebe a nova propriedade 'color'
-
+                const { name, timeLeft, color } = event.data;
                 floatingClockParticipantName.textContent = name;
                 mainClockDisplay.textContent = formatTime(timeLeft);
-
-                // Remove todas as classes de cor e adiciona a cor recebida
                 mainClockDisplay.classList.remove('red', 'yellow', 'green');
                 if (color) {
                     mainClockDisplay.classList.add(color);
                 }
+            } else if (event.data && event.data.type === 'updateMessage') { // Nova lógica para mensagens
+                const { message } = event.data;
+                speakerMessageDisplay.textContent = message;
             }
         });
 
-        // Envia uma mensagem para a janela principal quando o pop-out estiver pronto
         window.addEventListener('DOMContentLoaded', () => {
             if (window.opener) {
                 window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
@@ -99,7 +131,6 @@
             }
         });
 
-        // Envia uma mensagem para a janela principal quando o pop-out for fechado
         window.addEventListener('beforeunload', () => {
             if (window.opener) {
                 window.opener.postMessage({ type: 'popoutClosed' }, window.location.origin);
