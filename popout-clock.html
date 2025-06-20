@@ -6,82 +6,88 @@
     <title>Relógio Pop-out</title>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Fonte mais moderna */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Espaçamento entre os elementos */
+            /* Removido justify-content: space-between; para controlar as alturas explicitamente */
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #222; /* Fundo mais escuro */
+            background-color: #222;
             color: white;
             overflow: hidden;
-            padding: 10px; /* Pequeno padding geral */
-            box-sizing: border-box; /* Inclui padding na largura/altura */
+            padding: 10px;
+            box-sizing: border-box;
         }
 
         #floatingClockParticipantName {
-            font-size: 2.8em; /* Ainda maior para o nome */
+            font-size: 2.5em; /* Ligeiramente menor para dar mais espaço ao relógio */
             font-weight: bold;
             color: #f8f9fa;
-            margin-bottom: 10px;
+            margin-bottom: 5px; /* Reduzida a margem */
             text-shadow: 1px 1px 3px rgba(0,0,0,0.7);
             text-align: center;
             line-height: 1.2;
-            flex-shrink: 0; /* Não encolhe */
-            padding: 0 15px; /* Mais espaço nas laterais */
+            flex-shrink: 0;
+            padding: 0 15px;
             box-sizing: border-box;
-            width: 100%; /* Ocupa toda a largura */
-            min-height: 10%; /* Garante um mínimo de espaço para o nome */
+            width: 100%;
+            /* min-height removido para deixar o flexbox gerir */
             display: flex;
             align-items: center;
             justify-content: center;
+            height: 15%; /* Ocupa uma parte menor, mas ainda visível, do topo */
         }
 
         #mainClockDisplay {
-            font-size: 15vw; /* Tamanho responsivo: 15% da largura da viewport */
-            line-height: 1em; /* Ajusta a altura da linha */
+            font-size: 18vw; /* Ajustado para ser maior, % da largura da viewport */
+            line-height: 1em;
             font-weight: bold;
-            color: #28a745; /* Cor padrão verde */
-            letter-spacing: 5px; /* Mais espaçamento para clareza */
-            margin: auto; /* Centraliza verticalmente e horizontalmente no espaço restante */
+            color: #28a745;
+            letter-spacing: 5px;
+            margin: 0; /* Removido auto para controle de altura */
             text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
-            transition: color 0.3s ease; /* Transição suave de cor */
-            flex-grow: 1; /* Ocupa o máximo de espaço possível */
-            display: flex; /* Para centralizar o texto dentro do div */
+            transition: color 0.3s ease;
+            flex-grow: 1; /* Permite ocupar o espaço disponível */
+            display: flex;
             align-items: center;
             justify-content: center;
             width: 100%;
+            height: 60%; /* Relógio ocupa 60% da altura do ecrã */
+            max-height: 60%; /* Garante que não exceda */
+            box-sizing: border-box;
         }
 
         /* Classes de cor para o display do pop-up */
-        #mainClockDisplay.red {
-            color: #dc3545; /* Vermelho */
-        }
-        #mainClockDisplay.yellow {
-            color: #ffc107; /* Amarelo */
-        }
-        #mainClockDisplay.green {
-            color: #28a745; /* Verde */
-        }
+        #mainClockDisplay.red { color: #dc3545; }
+        #mainClockDisplay.yellow { color: #ffc107; }
+        #mainClockDisplay.green { color: #28a745; }
 
         #speakerMessageDisplay {
             width: 100%;
-            background-color: #444; /* Fundo escuro para a mensagem */
-            color: #eee; /* Texto cinza claro */
+            background-color: #444;
+            color: #eee;
             padding: 15px 20px;
-            border-top: 2px solid #666; /* Separador sutil */
+            border-top: 2px solid #666;
             text-align: center;
-            font-size: 1.5em; /* Tamanho da fonte da mensagem */
+            font-size: 2.5em; /* Aumentado para letras grandes */
             font-weight: 500;
-            height: 30%; /* Ocupa 1/3 do ecrã */
+            height: 25%; /* Ocupa 25% da altura do ecrã */
+            max-height: 25%; /* Garante que não exceda */
             display: flex;
             align-items: center;
             justify-content: center;
             box-sizing: border-box;
-            word-wrap: break-word; /* Quebra palavras longas */
-            overflow: auto; /* Adiciona scroll se a mensagem for muito longa */
+            word-wrap: break-word;
+            overflow: auto;
             line-height: 1.4;
+        }
+
+        /* Ajustes para quando a janela é muito pequena */
+        @media (max-width: 400px), (max-height: 400px) {
+            #floatingClockParticipantName { font-size: 1.8em; }
+            #mainClockDisplay { font-size: 15vw; letter-spacing: 2px; }
+            #speakerMessageDisplay { font-size: 1.8em; padding: 10px; }
         }
     </style>
 </head>
@@ -118,7 +124,7 @@
                 if (color) {
                     mainClockDisplay.classList.add(color);
                 }
-            } else if (event.data && event.data.type === 'updateMessage') { // Nova lógica para mensagens
+            } else if (event.data && event.data.type === 'updateMessage') {
                 const { message } = event.data;
                 speakerMessageDisplay.textContent = message;
             }
