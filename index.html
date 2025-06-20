@@ -19,18 +19,18 @@
         }
 
         .main-layout-container {
-            display: flex; /* Habilita o layout 2/3 + 1/3 */
+            display: flex;
             width: 100%;
-            max-width: 1200px; /* Aumentado para comportar o novo layout */
-            gap: 20px; /* Espaço entre os dois blocos principais */
+            max-width: 1200px;
+            gap: 20px;
             margin-bottom: 20px;
-            padding: 0 10px; /* Pequeno padding para os cantos */
+            padding: 0 10px;
             box-sizing: border-box;
         }
 
         .left-panel {
             flex: 2; /* Ocupa 2/3 da largura */
-            min-width: 450px; /* Garante que o painel esquerdo não encolha demais */
+            min-width: 450px;
             background-color: #fff;
             padding: 20px 30px;
             border-radius: 10px;
@@ -40,12 +40,14 @@
 
         .right-panel {
             flex: 1; /* Ocupa 1/3 da largura */
-            min-width: 300px; /* Garante que o painel direito não encolha demais */
+            min-width: 300px;
             background-color: #fff;
-            padding: 20px 15px; /* Padding ajustado para o lado direito */
+            padding: 20px 15px;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
             text-align: center;
+            overflow-y: auto; /* Permite rolagem se a lista for muito longa */
+            max-height: 80vh; /* Altura máxima para o painel direito */
         }
 
         h1 {
@@ -53,7 +55,7 @@
             margin-bottom: 20px;
             font-size: 2em;
         }
-        h2 { /* Título da lista de participantes */
+        h2 {
             color: #007bff;
             margin-top: 0;
             margin-bottom: 15px;
@@ -186,21 +188,16 @@
         #participantList {
             width: 100%;
             display: flex;
-            flex-direction: column; /* Lista de cartões, um abaixo do outro */
-            gap: 10px; /* Espaço entre os cartões */
+            flex-direction: column; /* Cartões empilham verticalmente */
+            gap: 10px;
         }
 
         .participant-card {
             background-color: #f9f9f9;
-            padding: 8px 10px; /* Padding reduzido */
+            padding: 8px 10px;
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.06);
-            display: flex; /* Torna o conteúdo do cartão flexível */
-            align-items: center; /* Alinha verticalmente */
-            gap: 8px; /* Espaço entre os itens na linha */
             border: 1px solid #eee;
-            flex-wrap: wrap; /* Permite que os botões quebrem linha se necessário */
-            justify-content: space-between; /* Espaço entre os elementos */
         }
 
         .participant-card.active-timer {
@@ -208,25 +205,31 @@
             box-shadow: 0 3px 10px rgba(0, 123, 255, 0.15);
         }
 
+        .participant-line-1 {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* Espaçamento entre nome e relógio */
+            margin-bottom: 5px; /* Espaço entre a linha 1 e a linha 2 de botões */
+        }
+
         .participant-name-container {
-            flex-shrink: 0; /* Não encolhe */
-            min-width: 80px; /* Largura mínima para o nome */
-            max-width: 120px; /* Largura máxima para o nome */
-            text-align: left;
-            overflow: hidden; /* Oculta o que transborda */
-            text-overflow: ellipsis; /* Adiciona "..." */
-            white-space: nowrap; /* Impede quebra de linha */
             font-weight: bold;
             color: #007bff;
             font-size: 1.1em;
+            flex-grow: 1; /* Permite que o nome ocupe o espaço */
+            text-align: left;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            max-width: calc(100% - 90px); /* Ajustado para dar espaço ao relógio */
         }
 
         .participant-card .display {
-            font-size: 1.8em; /* Tamanho reduzido para caber na linha */
+            font-size: 1.8em;
             font-weight: bold;
             flex-shrink: 0; /* Não encolhe */
-            min-width: 70px; /* Largura mínima para o tempo */
-            text-align: center;
+            min-width: 75px; /* Largura mínima para o relógio */
+            text-align: right; /* Alinha o relógio à direita */
             color: #28a745;
             letter-spacing: 0.5px;
         }
@@ -236,39 +239,23 @@
         .participant-card .display.yellow { color: #ffc107; }
         .participant-card .display.green { color: #28a745; }
 
-        .participant-card .controls {
+        .participant-line-2-buttons {
             display: flex;
-            gap: 5px; /* Espaço entre os botões de controlo */
-            flex-shrink: 0;
-            flex-wrap: wrap; /* Permite quebrar linha se não houver espaço */
-        }
-        .participant-card .controls button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 5px 8px; /* Padding muito reduzido */
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.75em; /* Fonte pequena */
-            line-height: 1; /* Altura de linha compacta */
-            transition: background-color 0.3s ease;
-        }
-        .participant-card .controls button:hover {
-            background-color: #0056b3;
-        }
-        .participant-card .controls button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
+            gap: 5px; /* Espaço entre os grupos de botões */
+            flex-wrap: wrap; /* Permite que os grupos de botões quebrem linha */
+            justify-content: center; /* Centraliza os botões na linha */
+            align-items: center;
         }
 
-        .adjust-time-buttons {
+        .participant-card .controls, .adjust-time-buttons {
             display: flex;
-            gap: 5px; /* Espaço entre os botões de ajuste */
+            gap: 5px;
             flex-shrink: 0;
-            flex-wrap: wrap; /* Permite quebrar linha */
+            flex-wrap: wrap;
         }
-        .adjust-time-buttons button {
-            background-color: #17a2b8;
+
+        .participant-card .controls button, .adjust-time-buttons button {
+            background-color: #007bff;
             color: white;
             border: none;
             padding: 5px 8px;
@@ -277,10 +264,12 @@
             font-size: 0.75em;
             line-height: 1;
             transition: background-color 0.3s ease;
+            white-space: nowrap; /* Evita quebra de linha em nomes de botões */
         }
-        .adjust-time-buttons button:hover {
-            background-color: #138496;
-        }
+        .participant-card .controls button:hover { background-color: #0056b3; }
+        .participant-card .controls button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        .adjust-time-buttons button { background-color: #17a2b8; }
+        .adjust-time-buttons button:hover { background-color: #138496; }
 
         .remove-participant-btn {
             background-color: #dc3545;
@@ -292,10 +281,9 @@
             font-size: 0.7em;
             line-height: 1;
             flex-shrink: 0;
+            margin-left: auto; /* Empurra o botão X para a direita */
         }
-        .remove-participant-btn:hover {
-            background-color: #c82333;
-        }
+        .remove-participant-btn:hover { background-color: #c82333; }
 
         /* Janela Flutuante Local */
         #floatingClockWindow {
@@ -306,11 +294,11 @@
             transform: translate(-50%, -50%);
             background-color: #333;
             color: white;
-            padding: 20px 15px; /* Padding reduzido */
+            padding: 20px 15px;
             border-radius: 12px;
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
             z-index: 1000;
-            min-width: 250px; /* Min-width ajustado */
+            min-width: 250px;
             text-align: center;
             cursor: grab;
             border: 2px solid #007bff;
@@ -322,12 +310,12 @@
 
         #closeFloatingClockBtn {
             position: absolute;
-            top: 5px; /* Posição ajustada */
-            right: 5px; /* Posição ajustada */
+            top: 5px;
+            right: 5px;
             background: none;
             border: none;
             color: white;
-            font-size: 1.2em; /* Tamanho ajustado */
+            font-size: 1.2em;
             cursor: pointer;
             line-height: 1;
             padding: 0 3px;
@@ -336,32 +324,33 @@
         #closeFloatingClockBtn:hover { color: #dc3545; }
 
         #floatingClockParticipantName {
-            font-size: 1.5em; /* Tamanho ajustado */
+            font-size: 1.5em;
             color: #f8f9fa;
-            margin-bottom: 8px; /* Margem ajustada */
+            margin-bottom: 8px;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
             line-height: 1.2;
         }
 
         #mainClockDisplay {
-            font-size: 5em; /* Tamanho ajustado */
+            font-size: 5em;
             font-weight: bold;
             color: #28a745;
-            letter-spacing: 2px; /* Espaçamento ajustado */
+            letter-spacing: 2px;
             margin: 0;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
         }
 
         /* Media Queries para responsividade */
-        @media (max-width: 992px) { /* Em telas menores, os painéis empilham */
+        @media (max-width: 992px) {
             .main-layout-container {
                 flex-direction: column;
                 gap: 15px;
             }
             .left-panel, .right-panel {
-                flex: none; /* Remove flex-grow */
-                width: 100%; /* Ocupa a largura total */
-                min-width: unset; /* Remove min-width fixo */
+                flex: none;
+                width: 100%;
+                min-width: unset;
+                max-height: unset; /* Remove max-height para evitar corte em telas empilhadas */
             }
         }
 
@@ -383,19 +372,13 @@
                 width: 100%;
                 box-sizing: border-box;
             }
-            .participant-card {
-                flex-direction: column; /* Em telas muito pequenas, os cartões podem empilhar seus conteúdos */
-                align-items: center;
-                gap: 5px;
+            /* Em telas muito pequenas, os botões dentro do cartão podem quebrar para uma nova linha */
+            .participant-line-2-buttons {
+                flex-direction: column;
+                gap: 3px;
             }
-            .participant-name-container,
-            .participant-card .display,
-            .participant-card .controls,
-            .adjust-time-buttons,
-            .remove-participant-btn {
-                width: 100%; /* Ocupa a largura total do cartão */
-                text-align: center;
-                justify-content: center; /* Centraliza os botões */
+            .participant-card .controls button, .adjust-time-buttons button {
+                width: 100%; /* Botões ocupam a largura total da linha */
             }
         }
     </style>
@@ -412,7 +395,7 @@
             <div class="add-participant-form">
                 <div>
                     <label for="participantName">Nome:</label>
-                    <input type="text" id="participantName" placeholder="Ex: João" required>
+                    <input type="text" id="participantName" placeholder="Ex: João" required maxlength="20">
                 </div>
                 <div>
                     <label for="initialMinutes">Min:</label>
@@ -475,7 +458,6 @@
         const floatingClockWindow = document.getElementById('floatingClockWindow');
         const closeFloatingClockBtn = document.getElementById('closeFloatingClockBtn');
 
-        // Note: these are for the LOCAL floating clock, not the main page
         const localFloatingClockParticipantName = floatingClockWindow.querySelector('#floatingClockParticipantName');
         const localMainClockDisplay = floatingClockWindow.querySelector('#mainClockDisplay');
 
@@ -497,7 +479,6 @@
         let YELLOW_THRESHOLD_SECONDS = 60;
         let RED_THRESHOLD_SECONDS = 10;
 
-        // --- Funções Auxiliares ---
         function formatTime(seconds) {
             const isNegative = seconds < 0;
             const absSeconds = Math.abs(seconds);
@@ -521,7 +502,6 @@
             }
         }
 
-        // --- Lógica para arrastar a janela flutuante local ---
         let isDragging = false;
         let offset = { x: 0, y: 0 };
 
@@ -549,7 +529,6 @@
             floatingClockWindow.classList.remove('dragging');
         });
 
-        // --- Lógica do Multi-Temporizador ---
         function addParticipant() {
             const name = participantNameInput.value.trim();
             const initialMinutes = parseInt(initialMinutesInput.value) || 0;
@@ -570,18 +549,22 @@
             participantCard.setAttribute('data-id', id);
 
             participantCard.innerHTML = `
-                <div class="participant-name-container">${name}</div>
-                <div class="display" id="display-${id}">${formatTime(initialTotalSeconds)}</div>
-                <div class="controls">
-                    <button id="start-${id}">Inic.</button>
-                    <button id="pause-${id}" disabled>Pausar</button>
-                    <button id="reset-${id}" disabled>Reset</button>
+                <div class="participant-line-1">
+                    <div class="participant-name-container">${name}</div>
+                    <div class="display" id="display-${id}">${formatTime(initialTotalSeconds)}</div>
                 </div>
-                <div class="adjust-time-buttons">
-                    <button id="add-min-${id}">+1min</button>
-                    <button id="sub-min-${id}">-1min</button>
+                <div class="participant-line-2-buttons">
+                    <div class="controls">
+                        <button id="start-${id}">Inic.</button>
+                        <button id="pause-${id}" disabled>Pausar</button>
+                        <button id="reset-${id}" disabled>Reset</button>
+                    </div>
+                    <div class="adjust-time-buttons">
+                        <button id="add-min-${id}">+1min</button>
+                        <button id="sub-min-${id}">-1min</button>
+                    </div>
+                    <button class="remove-participant-btn" data-id="${id}">X</button>
                 </div>
-                <button class="remove-participant-btn" data-id="${id}">X</button>
             `;
 
             participantList.appendChild(participantCard);
@@ -725,7 +708,6 @@
             }
         }
 
-        // --- Funções de Atualização dos Relógios (Local e Pop-out) ---
         function updateClocks(timer = null) {
             const displayColor = timer ? getDisplayColor(timer.timeLeft) : 'green';
 
@@ -790,7 +772,6 @@
             updateClocks(null);
         }
 
-        // --- Gerenciamento da Janela Pop-out ---
         function openPopoutClock() {
             if (popoutWindow && !popoutWindow.closed) {
                 popoutWindow.focus();
@@ -801,11 +782,15 @@
             pendingPopoutUpdate = null;
             pendingMessageUpdate = null;
 
-            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=500,height=600,resizable,scrollbars=no,status=no,toolbar=no,menubar=no');
+            // Ajustado para abrir o pop-up maximizado para uma TV.
+            // Note: 'fullscreen=yes' pode não funcionar em todos os navegadores por segurança.
+            // 'width' e 'height' altos são uma boa alternativa.
+            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=9999,height=9999,resizable,scrollbars=no,status=no,toolbar=no,menubar=no');
 
             if (!popoutWindow) {
                 alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
             } else {
+                // Pequeno atraso para o pop-up inicializar antes de enviar mensagens
                 setTimeout(() => {
                     if (popoutWindow && !popoutWindow.closed) {
                         if (activeTimer) {
@@ -821,7 +806,6 @@
             }
         }
 
-        // --- Event Listeners Globais ---
         addParticipantButton.addEventListener('click', addParticipant);
         participantNameInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') addParticipant();
