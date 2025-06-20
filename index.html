@@ -62,9 +62,8 @@
             display: flex; /* Permite que as sub-colunas fiquem lado a lado */
             gap: 20px; /* Espaçamento entre as sub-colunas */
             flex-grow: 1; /* Ocupa o espaço disponível */
-            overflow-y: auto; /* Adiciona scroll apenas se necessário */
-            max-height: calc(100vh - 280px); /* Ajuste para caber na tela sem scroll excessivo */
-            /* Altura estimada: Altura da viewport - altura do header - padding - altura do título - altura do botão de limpar */
+            overflow-y: hidden; /* Remove o scroll COMPLETAMENTE */
+            /* A altura será controlada pelos elementos internos para caberem 8 */
         }
         
         /* Estilos para as sub-colunas de participantes */
@@ -110,10 +109,16 @@
             background-color: #3a3a3a; /* Fundo dos inputs: cinzento mais escuro */
         }
 
+        /* Botoes de adição (na coluna da esquerda) */
+        .button-group button {
+            padding: 8px 12px; /* Reduz padding */
+            font-size: 0.9em; /* Reduz fonte */
+        }
+
         button {
             background-color: #3498db; /* Azul padrão para botões */
             color: white;
-            padding: 10px 15px;
+            padding: 10px 15px; /* Padding padrão para a maioria dos botões */
             border: none;
             border-radius: 4px;
             cursor: pointer;
@@ -142,13 +147,14 @@
         .participant-card {
             background-color: #3a3a3a; /* Fundo das cards de participante: Cinzento escuro */
             border: 1px solid #777; /* Borda das cards: cinzento */
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 6px;
+            padding: 8px; /* REDUZIDO: Menor padding para compactar */
+            margin-bottom: 5px; /* REDUZIDO: Menor margem inferior */
+            border-radius: 4px; /* Ligeiramente mais quadrado */
             display: flex;
             flex-direction: column;
             transition: transform 0.2s ease;
             position: relative;
+            flex-shrink: 0; /* Impede que a card encolha */
         }
 
         .participant-card.active-timer {
@@ -161,26 +167,26 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px; /* REDUZIDO: Menor margem inferior */
         }
 
         .participant-name-container {
             font-weight: bold;
-            font-size: 1.2em;
+            font-size: 0.9em; /* REDUZIDO: Nome menor */
             color: #ffffff; /* Nome do participante: branco */
             flex-grow: 1;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
-            padding-right: 10px;
+            padding-right: 5px; /* REDUZIDO */
         }
 
         .display {
-            font-size: 1.8em;
+            font-size: 1.3em; /* REDUZIDO: Display de tempo menor */
             font-weight: bold;
-            padding: 5px 10px;
-            border-radius: 4px;
-            min-width: 120px;
+            padding: 3px 8px; /* REDUZIDO: Menor padding */
+            border-radius: 3px; /* REDUZIDO */
+            min-width: 80px; /* REDUZIDO: Largura mínima menor */
             text-align: center;
             transition: background-color 0.3s ease, color 0.3s ease;
         }
@@ -194,33 +200,35 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 5px;
+            flex-wrap: nowrap; /* Impede quebras de linha nos botões de controle */
+            gap: 3px; /* REDUZIDO: Menor gap entre botões */
         }
 
-        .participant-line-2-buttons .controls button {
-            background-color: #28a745; /* Verde para start */
-        }
-        .participant-line-2-buttons .controls button#pause { background-color: #ffc107; } /* Laranja para pause */
-        .participant-line-2-buttons .controls button#reset { background-color: #dc3545; } /* Vermelho para reset */
-
+        .participant-line-2-buttons .controls button,
         .participant-line-2-buttons .adjust-time-buttons button {
-            background-color: #6c757d; /* Cinzento para ajustar tempo */
+            padding: 4px 6px; /* MUITO REDUZIDO: Padding para os botões internos da card */
+            font-size: 0.7em; /* MUITO REDUZIDO: Fonte para os botões internos da card */
+            margin-right: 0; /* Remove margem extra */
         }
+
+        .participant-line-2-buttons .controls button#pause { background-color: #ffc107; }
+        .participant-line-2-buttons .controls button#reset { background-color: #dc3545; }
+        .participant-line-2-buttons .adjust-time-buttons button { background-color: #6c757d; }
 
         .remove-participant-btn {
             background-color: #dc3545;
             color: white;
             border: none;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            font-size: 1.1em;
+            width: 20px; /* REDUZIDO: Botão de remover menor */
+            height: 20px; /* REDUZIDO */
+            font-size: 0.8em; /* REDUZIDO */
             line-height: 1;
             text-align: center;
             padding: 0;
             flex-shrink: 0;
-            align-self: flex-start;
+            align-self: center; /* Centraliza verticalmente com os outros botões */
+            margin-left: 5px; /* Adiciona um pequeno espaço à esquerda */
         }
         .remove-participant-btn:hover {
             background-color: #c82333;
@@ -228,45 +236,66 @@
 
         #noParticipantsMessage {
             text-align: center;
-            color: #bdc3c7; /* Mensagem de "nenhum participante": cinzento claro */
-            padding: 20px;
-            border: 1px dashed #555; /* Borda tracejada mais escura */
+            color: #bdc3c7;
+            padding: 10px; /* Reduzido */
+            border: 1px dashed #555;
             border-radius: 5px;
-            margin-top: 20px;
-            background-color: #2a2a2a; /* O mesmo fundo das colunas */
-            display: none; /* Escondido por padrão, JavaScript o mostrará se necessário */
+            margin-top: 10px; /* Reduzido */
+            background-color: #2a2a2a;
+            display: none;
+            font-size: 0.9em; /* Reduzido */
         }
 
         .session-controls {
-            margin-top: 20px;
-            border-top: 1px solid #555; /* Borda de separação para sessões: mais escura */
-            padding-top: 15px;
+            margin-top: 15px; /* Reduzido */
+            border-top: 1px solid #555;
+            padding-top: 10px; /* Reduzido */
         }
 
         .session-controls select {
             width: calc(100% - 22px);
             margin-right: 0;
-            margin-bottom: 10px;
+            margin-bottom: 8px; /* Reduzido */
+        }
+        .session-controls button {
+            padding: 8px 12px; /* Reduzido */
+            font-size: 0.9em; /* Reduzido */
         }
 
+
         .popout-control {
-            margin-top: 20px;
-            border-top: 1px solid #555; /* Borda de separação para pop-up: mais escura */
-            padding-top: 15px;
+            margin-top: 15px; /* Reduzido */
+            border-top: 1px solid #555;
+            padding-top: 10px; /* Reduzido */
             text-align: center;
+        }
+        .popout-control button {
+            padding: 8px 12px; /* Reduzido */
+            font-size: 0.9em; /* Reduzido */
         }
 
         .message-box {
-            margin-top: auto; /* Empurra a caixa de mensagem para o fundo da coluna */
-            padding-top: 20px;
-            border-top: 1px solid #555; /* Borda de separação para mensagem: mais escura */
+            margin-top: auto;
+            padding-top: 15px; /* Reduzido */
+            border-top: 1px solid #555;
+        }
+        .message-box button {
+            padding: 8px 12px; /* Reduzido */
+            font-size: 0.9em; /* Reduzido */
+        }
+        textarea#speakerMessageInput {
+            margin-bottom: 8px; /* Reduzido */
+            padding: 8px; /* Reduzido */
+            font-size: 0.9em; /* Reduzido */
         }
 
-        /* Estilo para o botão de limpar tudo na base da coluna do meio */
+
         #clearAllParticipantsButton {
-            background-color: #e74c3c; /* Vermelho para ação de apagar */
-            margin-top: auto; /* Empurra o botão para o fundo da coluna */
-            width: 100%; /* Ocupa a largura total da coluna */
+            background-color: #e74c3c;
+            margin-top: auto;
+            width: 100%;
+            padding: 10px 15px; /* Mantém um pouco maior por ser uma ação importante */
+            font-size: 1em; /* Mantém o tamanho padrão */
         }
         #clearAllParticipantsButton:hover {
             background-color: #c0392b;
@@ -281,7 +310,9 @@
                 margin-bottom: 20px;
             }
             .participant-list-container {
-                flex-direction: column; /* Em telas menores, as sub-colunas ficam empilhadas */
+                flex-direction: column;
+                overflow-y: auto; /* Reativa o scroll para telas pequenas */
+                max-height: 400px; /* Define um max-height para evitar que a lista ocupe toda a tela */
             }
         }
     </style>
@@ -560,9 +591,9 @@
             timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
 
             if (!fromSession) {
-                participantNameInput.value = '';
                 initialMinutesInput.value = '5'; // Reseta para o valor padrão
                 initialSecondsInput.value = '0';  // Reseta para o valor padrão
+                participantNameInput.value = ''; // Limpa o nome
             }
         }
 
@@ -927,7 +958,7 @@
 
             participantColumn1.innerHTML = '';
             participantColumn2.innerHTML = '';
-            participantColumn1.appendChild(noParticipantsMessage); // Adiciona a mensagem de volta na primeira coluna
+            participantColumn1.appendChild(noParticipantsMessage);
             noParticipantsMessage.style.display = 'block';
 
             GLOBAL_YELLOW_THRESHOLD_SECONDS = sessionDataToLoad.globalYellow !== undefined ? sessionDataToLoad.globalYellow : 60;
@@ -952,7 +983,7 @@
             if (timers.length > 0) {
                 noParticipantsMessage.style.display = 'none';
             }
-            reorderParticipantsInColumns(); // Garante que estejam nas colunas corretas após o carregamento
+            reorderParticipantsInColumns();
 
             updateClocks(null);
             updateAllTimerButtons();
@@ -1004,8 +1035,8 @@
         });
 
         clearTimeInputsBtn.addEventListener('click', () => {
-            initialMinutesInput.value = '5'; // Volta para o padrão
-            initialSecondsInput.value = '0'; // Volta para o padrão
+            initialMinutesInput.value = '5';
+            initialSecondsInput.value = '0';
             initialMinutesInput.focus();
         });
 
