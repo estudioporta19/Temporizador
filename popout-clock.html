@@ -17,6 +17,7 @@
             overflow: hidden; /* Remove barras de rolagem */
             padding: 10px;
             box-sizing: border-box;
+            transition: background-color 0.1s ease-in-out; /* Para transição suave do flash */
         }
 
         #floatingClockParticipantName {
@@ -64,6 +65,11 @@
         #mainClockDisplay.yellow { color: #ffc107; }
         #mainClockDisplay.green { color: #28a745; }
 
+        /* Estilos para o efeito de piscar */
+        body.flash-red { background-color: #550000; } /* Vermelho mais escuro para o flash */
+        body.flash-dark { background-color: #222; } /* Volta para o preto padrão */
+
+
         #speakerMessageDisplay {
             width: 100%;
             background-color: #444;
@@ -101,6 +107,10 @@
         const floatingClockParticipantName = document.getElementById('floatingClockParticipantName');
         const mainClockDisplay = document.getElementById('mainClockDisplay');
         const speakerMessageDisplay = document.getElementById('speakerMessageDisplay');
+        const body = document.body;
+
+        let flashInterval = null;
+        let isFlashingRed = false;
 
         function formatTime(seconds) {
             const isNegative = seconds < 0;
@@ -111,17 +121,58 @@
             return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
         }
 
+        function startFlashing() {
+            if (flashInterval) return; // Already flashing
+            let flashCount = 0;
+            flashInterval = setInterval(() => {
+                if (flashCount < 2) { // Flash two times (red, dark, red, dark)
+                    if (isFlashingRed) {
+                        body.classList.remove('flash-red');
+                        body.classList.add('flash-dark');
+                    } else {
+                        body.classList.remove('flash-dark');
+                        body.classList.add('flash-red');
+                    }
+                    isFlashingRed = !isFlashingRed;
+                    flashCount++;
+                } else {
+                    stopFlashing(); // Stop after 2 flashes
+                    // Optionally, restart after a longer delay if needed for a continuous subtle alert
+                }
+            }, 500); // Flash every 0.5 seconds for the rapid part
+        }
+
+        function stopFlashing() {
+            clearInterval(flashInterval);
+            flashInterval = null;
+            body.classList.remove('flash-red', 'flash-dark');
+            isFlashingRed = false;
+            body.style.backgroundColor = '#222'; // Ensure it's reset to default
+        }
+
+        let delayedFlashTimeout = null;
+
+        function scheduleDelayedFlash(isTimeNegative) {
+            clearTimeout(delayedFlashTimeout); // Clear any previous scheduled flash
+
+            if (isTimeNegative) {
+                // Schedule a flash to happen every 10 seconds
+                delayedFlashTimeout = setTimeout(() => {
+                    startFlashing();
+                    // After the quick flashes, reschedule the next delayed flash
+                    delayedFlashTimeout = setTimeout(() => scheduleDelayedFlash(true), 10000); // 10 seconds
+                }, 1000); // Initial delay to show time change before first flash
+            } else {
+                stopFlashing(); // Ensure no flashing if time is positive
+            }
+        }
+
         window.addEventListener('message', (event) => {
-            // Verificar a origem da mensagem para segurança
-            // No ambiente local, event.origin pode ser 'null' ou 'file://'.
-            // Para GitHub Pages, será o URL completo.
-            // Para simplificar para o ambiente de desenvolvimento/teste, permitimos 'null' ou o 'file://' se for o caso.
             const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
             if (!isLocalOrigin && !event.origin.startsWith('file://')) {
                 console.warn('Pop-out: Mensagem bloqueada de origem desconhecida:', event.origin);
                 return;
             }
-
 
             if (event.data && event.data.type === 'updateClock') {
                 const { name, timeLeft, color } = event.data;
@@ -131,6 +182,13 @@
                 if (color) {
                     mainClockDisplay.classList.add(color);
                 }
+
+                if (timeLeft < 0) {
+                    scheduleDelayedFlash(true);
+                } else {
+                    scheduleDelayedFlash(false); // Stop any flashing if time goes positive
+                    stopFlashing(); // Ensure it's off immediately
+                }
             } else if (event.data && event.data.type === 'updateMessage') {
                 const { message } = event.data;
                 speakerMessageDisplay.textContent = message;
@@ -139,20 +197,20 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             if (window.opener) {
-                // Verificar a origem antes de enviar a mensagem de volta
                 const isLocalOrigin = ['null', window.opener.location.origin].includes(window.location.origin);
-                const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*'; // Usar '*' para local ou a origem específica
+                const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*';
                 window.opener.postMessage({ type: 'popoutReady' }, targetOrigin);
             }
         });
 
         window.addEventListener('beforeunload', () => {
             if (window.opener) {
-                // Verificar a origem antes de enviar a mensagem de volta
                 const isLocalOrigin = ['null', window.opener.location.origin].includes(window.location.origin);
-                const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*'; // Usar '*' para local ou a origem específica
+                const targetOrigin = isLocalOrigin ? window.opener.location.origin : '*';
                 window.opener.postMessage({ type: 'popoutClosed' }, targetOrigin);
             }
+            stopFlashing(); // Clear intervals on close
+            clearTimeout(delayedFlashTimeout);
         });
     </script>
 </body>
