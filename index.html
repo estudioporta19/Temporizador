@@ -377,20 +377,21 @@
             <div class="add-participant-form">
                 <div>
                     <label for="participantName">Nome:</label>
-                    <input type="text" id="participantName" placeholder="Ex: João" required maxlength="20">
+                    <input type="text" id="participantName" placeholder="Ex: João" maxlength="20">
                 </div>
                 <div>
                     <label for="initialMinutes">Min:</label>
-                    <input type="number" id="initialMinutes" value="10" min="0">
+                    <input type="number" id="initialMinutes" value="" min="0" placeholder="0">
                 </div>
                 <div>
                     <label for="initialSeconds">Seg:</label>
-                    <input type="number" id="initialSeconds" value="0" min="0" max="59">
+                    <input type="number" id="initialSeconds" value="" min="0" max="59" placeholder="0">
                 </div>
                 <button id="addParticipantButton">Adicionar</button>
             </div>
 
             <div class="quick-time-buttons">
+                <button id="add1Minute">Adic. 1 Min</button>
                 <button id="add5Minutes">Adic. 5 Min</button>
                 <button id="add10Minutes">Adic. 10 Min</button>
                 <button id="add30Minutes">Adic. 30 Min</button>
@@ -437,6 +438,7 @@
 
         const openPopoutClockBtn = document.getElementById('openPopoutClockBtn');
 
+        const add1MinuteBtn = document.getElementById('add1Minute'); // Novo botão
         const add5MinutesBtn = document.getElementById('add5Minutes');
         const add10MinutesBtn = document.getElementById('add10Minutes');
         const add30MinutesBtn = document.getElementById('add30Minutes');
@@ -484,8 +486,9 @@
 
         function addParticipant() {
             let name = participantNameInput.value.trim();
-            const initialMinutes = parseInt(initialMinutesInput.value) || 0;
-            const initialSeconds = parseInt(initialSecondsInput.value) || 0;
+            // Se os campos de tempo estiverem vazios, considera 0 para minutos e segundos
+            const initialMinutes = parseInt(initialMinutesInput.value || '0');
+            const initialSeconds = parseInt(initialSecondsInput.value || '0');
 
             if (!name) {
                 name = `Participante ${nextParticipantNumber++}`; // Nome automático
@@ -550,8 +553,8 @@
             timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
 
             participantNameInput.value = '';
-            initialMinutesInput.value = '10';
-            initialSecondsInput.value = '0';
+            initialMinutesInput.value = ''; // Limpa o campo
+            initialSecondsInput.value = ''; // Limpa o campo
         }
 
         function toggleTimerButtons(timer, startDisabled, pauseDisabled, resetDisabled) {
@@ -559,7 +562,6 @@
                 timer.startButton.disabled = startDisabled;
                 timer.pauseButton.disabled = pauseDisabled;
                 timer.resetButton.disabled = resetDisabled;
-                // Permitir ajuste de tempo apenas para o timer ativo, a menos que esteja resetado.
                 const adjustDisabled = !(activeTimer && activeTimer.id === timer.id) && !(timer.isPaused && timer.timeLeft === timer.initialTime);
                 timer.addMinButton.disabled = adjustDisabled;
                 timer.subMinButton.disabled = adjustDisabled;
@@ -567,10 +569,9 @@
         }
 
         function adjustTime(timer, secondsToAdd) {
-            // Permite ajustar tempo se o timer está ativo OU se ele está resetado (parado no tempo inicial)
             if ((activeTimer && activeTimer.id === timer.id) || (timer.isPaused && timer.timeLeft === timer.initialTime)) {
                 timer.timeLeft += secondsToAdd;
-                if (timer.timeLeft < -5940) { // Limite inferior para -99:00
+                if (timer.timeLeft < -5940) {
                     timer.timeLeft = -5940;
                 }
                 timer.displayElement.textContent = formatTime(timer.timeLeft);
@@ -595,7 +596,7 @@
                 activeTimer.cardElement.classList.add('active-timer');
 
                 timer.isPaused = false;
-                toggleTimerButtons(timer, true, false, false); // Desabilita Inic., Habilita Pausar/Reset
+                toggleTimerButtons(timer, true, false, false);
 
                 updateClocks(timer);
 
@@ -615,7 +616,7 @@
             if (!timer.isPaused) {
                 timer.isPaused = true;
                 clearInterval(timer.intervalId);
-                toggleTimerButtons(timer, false, true, false); // Habilita Inic., Desabilita Pausar, Habilita Reset
+                toggleTimerButtons(timer, false, true, false);
                 updateClocks(timer);
             }
         }
@@ -629,7 +630,7 @@
             timer.displayElement.classList.add(getDisplayColor(timer.timeLeft));
             
             timer.alertedZero = false;
-            toggleTimerButtons(timer, false, true, true); // Habilita Inic., Desabilita Pausar, Habilita Reset
+            toggleTimerButtons(timer, false, true, true);
             if (activeTimer && activeTimer.id === timer.id) {
                 clearClocksFocus();
             }
@@ -751,14 +752,21 @@
         });
 
         // Event listeners para os novos botões de tempo rápido
+        add1MinuteBtn.addEventListener('click', () => { // Novo listener
+            initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 1;
+            initialMinutesInput.focus(); // Opcional: focar para ver a mudança
+        });
         add5MinutesBtn.addEventListener('click', () => {
             initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 5;
+            initialMinutesInput.focus();
         });
         add10MinutesBtn.addEventListener('click', () => {
             initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 10;
+            initialMinutesInput.focus();
         });
         add30MinutesBtn.addEventListener('click', () => {
             initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 30;
+            initialMinutesInput.focus();
         });
 
 
