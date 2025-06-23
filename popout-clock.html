@@ -21,16 +21,14 @@
             color: #ecf0f1;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             box-sizing: border-box;
-            /* Padding aqui vai "encolher" o conteúdo interno */
-            padding-bottom: 3vh; 
-            padding-top: 3vh; /* Adiciona padding no topo também para o modo normal/debate */
+            padding: 3vh; /* Unificado padding superior e inferior no body */
         }
 
         #currentTimePopout {
             position: absolute;
-            top: 1.5vh; /* Usa vh para ser responsivo à altura */
-            right: 1.5vw; /* Usa vw para ser responsivo à largura */
-            font-size: clamp(1.5vw, 2.5vw, 30px); /* Tamanho responsivo, com limite */
+            top: 1.5vh;
+            right: 1.5vw;
+            font-size: clamp(1.5vw, 2.5vw, 30px);
             color: rgba(255, 255, 255, 0.6);
             z-index: 10;
         }
@@ -41,11 +39,11 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex-grow: 1; /* Ocupa o espaço disponível verticalmente */
+            flex-grow: 1;
             width: 100%;
             height: 100%; /* Ocupa 100% da altura disponível do body (menos paddings) */
             box-sizing: border-box;
-            padding: 0 2vw; /* Adiciona padding lateral para evitar toque nas bordas */
+            padding: 0 2vw;
         }
 
         #speakerName {
@@ -56,7 +54,7 @@
             text-align: center;
             word-break: break-word;
             line-height: 1.1;
-            flex-shrink: 0; /* Impede que o nome encolha demais */
+            flex-shrink: 0;
         }
 
         #clockDisplay {
@@ -66,13 +64,13 @@
             border-radius: 20px;
             box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
             transition: background-color 0.5s ease, color 0.5s ease;
-            width: 100%; /* Ocupa 100% da largura disponível */
-            flex-grow: 1; /* Permite que o relógio ocupe mais altura no modo normal */
+            width: 100%;
+            flex-grow: 1;
             display: flex;
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            padding: 2vh 0; /* Adiciona padding vertical dentro do relógio para "respirar" */
+            padding: 2vh 0;
         }
 
         #clockDisplay.green { background-color: #28a745; color: white; }
@@ -90,7 +88,7 @@
             align-items: center;
             justify-content: center;
             margin-top: 2vh;
-            flex-shrink: 0; /* Impede que a mensagem encolha demais */
+            flex-shrink: 0;
         }
 
         /* --- Estilos para o Modo Debate --- */
@@ -98,12 +96,12 @@
             display: none;
             flex-direction: column;
             align-items: center;
-            flex-grow: 1; /* Ocupa todo o espaço vertical disponível */
+            flex-grow: 1;
             width: 100%;
-            height: 100%; /* Ocupa 100% da altura disponível do body (menos paddings) */
+            height: 100%;
             box-sizing: border-box;
-            padding: 0 1.5vw; /* Padding lateral */
-            overflow: hidden; /* Para garantir que o scroll esteja apenas na lista de participantes, se necessário */
+            padding: 0 1.5vw;
+            overflow: hidden;
         }
 
         #debateModeContainer h2 {
@@ -117,18 +115,19 @@
 
         #debateParticipantsList {
             display: grid;
-            gap: 1.5vh; /* Usa vh para o gap para ser responsivo à altura */
+            gap: 1.5vh;
             width: 100%;
-            flex-grow: 1; /* ESSENCIAL: Ocupa TODO o espaço vertical restante do #debateModeContainer */
-            align-items: stretch; /* Garante que os itens se estendam para preencher a célula */
+            flex-grow: 1;
+            align-items: stretch;
             justify-content: center;
-            height: 100%; /* ESSENCIAL: Ocupa 100% da altura do seu container flex-grow:1 */
+            height: 100%;
             padding-bottom: 1vh;
-            overflow-y: auto; /* Permite scroll SOMENTE SE NECESSÁRIO dentro da lista */
+            overflow-y: hidden; /* **MUDANÇA CRUCIAL: Hidden para não gerar scroll** */
             box-sizing: border-box;
         }
 
-        /* Layouts para 1 a 8 participantes (otimizados para não ter scroll) */
+        /* Layouts para 1 a 8 participantes (foco em esticar o conteúdo) */
+        /* Usamos 'fr' para que as células se estiquem. Ajustamos o clamp para a fonte. */
         #debateParticipantsList.layout-1 { 
             grid-template-columns: 1fr; 
             grid-template-rows: 1fr; 
@@ -150,16 +149,17 @@
             grid-template-rows: repeat(4, 1fr); 
         }
         
-        /* Fallback/Default para mais de 8, pode gerar scroll */
+        /* Fallback/Default para mais de 8. Permitimos scroll vertical aqui SE NECESSÁRIO */
         #debateParticipantsList.layout-default {
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             grid-auto-rows: minmax(min-content, max-content);
+            overflow-y: auto; /* Permite scroll se for o default (mais de 8) */
         }
 
         .debate-participant-card {
             background-color: #3a3a3a;
             border-radius: 10px;
-            padding: 1.2vw;
+            padding: 1.5vw; /* Aumenta padding para dar mais espaço ao conteúdo */
             display: flex;
             flex-direction: row;
             justify-content: space-between;
@@ -177,7 +177,8 @@
         }
 
         .debate-participant-name {
-            font-size: clamp(3vw, 4.5vw, 70px);
+            /* MUDANÇA CRUCIAL: clamp com base na altura do viewport e larguras mínimas */
+            font-size: clamp(3vw, 5vh, 80px); /* Ajustado para ser mais agressivo com a altura disponível */
             font-weight: bold;
             color: #ecf0f1;
             text-align: left;
@@ -190,7 +191,8 @@
         }
 
         .debate-participant-time {
-            font-size: clamp(5vw, 7.5vw, 120px);
+            /* MUDANÇA CRUCIAL: clamp com base na altura do viewport e larguras mínimas */
+            font-size: clamp(6vw, 10vh, 150px); /* Ajustado para ser mais agressivo com a altura disponível */
             font-weight: bold;
             padding: 1vh 1vw;
             border-radius: 10px;
@@ -201,7 +203,7 @@
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            height: clamp(8vh, 12vh, 160px);
+            height: clamp(8vh, 12vh, 180px); /* Altura da caixa do relógio também mais agressiva */
             flex-shrink: 0;
         }
 
@@ -222,6 +224,7 @@
                 gap: 8px;
                 grid-template-columns: 1fr !important;
                 grid-template-rows: repeat(auto-fit, minmax(min-content, 1fr)) !important;
+                overflow-y: auto; /* Em mobile, pode haver scroll */
             }
             .debate-participant-card { 
                 flex-direction: column;
