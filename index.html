@@ -720,13 +720,18 @@
     function updateAllTimerButtons() {
         timers.forEach(t => {
             if (isDebateModeActive) {
-                // No modo debate, todos os botões são desabilitados na janela principal
-                t.startButton.disabled = true;
-                t.pauseButton.disabled = true;
-                t.resetButton.disabled = true;
-                t.addMinButton.disabled = true;
-                t.subMinButton.disabled = true;
-                t.cardElement.classList.remove('active-timer'); // Remove destaque
+                // No modo debate, todos os botões são ativados para operação individual
+                t.startButton.disabled = false;
+                t.pauseButton.disabled = false;
+                t.resetButton.disabled = false;
+                t.addMinButton.disabled = false;
+                t.subMinButton.disabled = false;
+                // Highlight active timer in debate mode
+                if (activeTimer && activeTimer.id === t.id) {
+                    t.cardElement.classList.add('active-timer');
+                } else {
+                    t.cardElement.classList.remove('active-timer');
+                }
             } else if (activeTimer && activeTimer.id === t.id) {
                 // Timer ativo no modo normal: Start desabilitado, Pausar e Reset habilitados
                 t.startButton.disabled = true;
@@ -750,8 +755,8 @@
     }
 
     function adjustTime(timer, secondsToAdd) {
-        // Permite ajuste se for o timer ativo OU se não houver timer ativo E este estiver parado
-        if ((activeTimer && activeTimer.id === timer.id) || (!activeTimer && timer.isPaused && !isDebateModeActive)) {
+        // Agora, no modo debate, qualquer timer pode ser ajustado
+        if (isDebateModeActive || (activeTimer && activeTimer.id === timer.id) || (!activeTimer && timer.isPaused)) {
             timer.timeLeft += secondsToAdd;
             if (timer.timeLeft < -5940) { // Limite de -99:00
                 timer.timeLeft = -5940;
@@ -765,23 +770,21 @@
     }
 
     function startTimer(timerToStart) {
-        if (isDebateModeActive) return; // Não permite iniciar timers individualmente no modo debate
-
         if (timerToStart.isPaused) {
-            if (activeTimer && activeTimer.id !== timerToStart.id) {
-                // Pause the currently active timer and log it to history if applicable
+            // Se estiver no modo normal e já houver um timer ativo diferente, pausa-o
+            if (!isDebateModeActive && activeTimer && activeTimer.id !== timerToStart.id) {
                 pauseTimer(activeTimer); 
                 if (activeTimer.timeLeft <= 0 || activeTimer.timeLeft !== activeTimer.initialTime) {
                     addToHistory(activeTimer.name, activeTimer.initialTime, activeTimer.timeLeft);
                 }
             } else if (activeTimer && activeTimer.id === timerToStart.id && !activeTimer.isPaused) {
-                return; // Already running
+                return; // Já a correr
             }
 
             activeTimer = timerToStart;
             timerToStart.isPaused = false;
             
-            updateAllTimerButtons();
+            updateAllTimerButtons(); // Atualiza o estado de todos os botões e pop-up
 
             timerToStart.intervalId = setInterval(() => {
                 timerToStart.timeLeft--;
@@ -821,9 +824,8 @@
         if (activeTimer && activeTimer.id === timerToReset.id) {
             activeTimer = null; // Clear active timer if it was the one being reset
             timerToReset.cardElement.classList.remove('active-timer');
-            updateClocks(); // Update pop-up after removing focus
         }
-        updateAllTimerButtons(); // Update button states
+        updateAllTimerButtons(); // Update button states and refresh pop-up
     }
 
     function removeParticipant(id) {
@@ -1151,13 +1153,13 @@
     function toggleDebateMode() {
         isDebateModeActive = !isDebateModeActive;
         updateDebateModeButtonText();
+        // Se entrar no modo debate, pausa qualquer timer ativo
         if (isDebateModeActive) {
-            // In debate mode, pause any active timer in the main window
             if (activeTimer) {
-                pauseTimer(activeTimer);
+                pauseTimer(activeTimer); // Pausa o timer ativo, mas não o reseta
             }
         }
-        updateAllTimerButtons(); // This will also trigger updateClocks()
+        updateAllTimerButtons(); // Isso irá reativar os botões se o modo debate for ativado
     }
 
     function updateDebateModeButtonText() {
@@ -1201,6 +1203,29 @@
                     break;
             }
         });
+    });
+
+    // --- Atalhos de Teclado (Ctrl + 1 a Ctrl + 8) ---
+    document.addEventListener('keydown', (event) => {
+        // Apenas no modo debate e se Ctrl estiver pressionado
+        if (isDebateModeActive && event.ctrlKey) {
+            const keyNum = parseInt(event.key);
+            if (keyNum >= 1 && keyNum <= 8) {
+                const participantIndex = keyNum - 1; // 0-indexed
+                if (participantIndex < timers.length) {
+                    const timer = timers[participantIndex];
+                    if (timer) {
+                        // Se o timer estiver pausado, inicia-o. Se estiver a correr, pausa-o.
+                        if (timer.isPaused) {
+                            startTimer(timer);
+                        } else {
+                            pauseTimer(timer);
+                        }
+                        event.preventDefault(); // Evita o comportamento padrão do navegador
+                    }
+                }
+            }
+        }
     });
 
 
