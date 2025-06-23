@@ -91,7 +91,7 @@
             width: 100%;
             padding: 3vh 2vw; /* Padding reduzido para dar mais espaço à grelha */
             box-sizing: border-box;
-            overflow: hidden; /* Garantir que não haja scroll aqui, o scroll será na lista se necessário */
+            overflow: hidden; /* Garantir que não haja scroll aqui */
             height: 100vh; /* Ocupa a altura total do viewport */
         }
 
@@ -157,9 +157,9 @@
         .debate-participant-card {
             background-color: #3a3a3a;
             border-radius: 10px;
-            padding: 1vw; /* Padding responsivo */
+            padding: 1vw; /* Padding responsivo para que o conteúdo não cole nas bordas */
             display: flex;
-            flex-direction: row; /* NOVO: Nome e tempo lado a lado */
+            flex-direction: row; /* Nome e tempo lado a lado */
             justify-content: space-between; /* Espaçamento entre nome e tempo */
             align-items: center; /* Centraliza verticalmente o conteúdo */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -175,7 +175,8 @@
         }
 
         .debate-participant-name {
-            font-size: clamp(2.5vw, 3.5vw, 5vw); /* Fonte maior, responsiva */
+            /* Tamanho de fonte maior para o nome, com clamp para responsividade */
+            font-size: clamp(2.8vw, 3.8vw, 5.5vw); 
             font-weight: bold;
             color: #ecf0f1;
             text-align: left; /* Nome alinhado à esquerda */
@@ -188,7 +189,8 @@
         }
 
         .debate-participant-time {
-            font-size: clamp(4vw, 5vw, 8vw); /* Fonte maior, responsiva */
+            /* Tamanho de fonte maior para o tempo, com clamp para responsividade */
+            font-size: clamp(4.5vw, 6vw, 9vw); 
             font-weight: bold;
             padding: 0.5vh 0.8vw; /* Padding ajustado */
             border-radius: 8px;
@@ -199,7 +201,7 @@
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            height: clamp(6vh, 8vh, 12vh); /* Altura da caixa do relógio */
+            height: clamp(6vh, 9vh, 14vh); /* Altura da caixa do relógio */
             flex-shrink: 0; /* Impede que o relógio encolha */
         }
 
@@ -215,8 +217,9 @@
             #currentTimePopout { font-size: 4vw; }
             
             #debateModeContainer h2 { font-size: 6vw; }
-            .debate-participant-card { flex-direction: column; padding: 10px; min-height: 100px; } /* Em telas pequenas, nome acima do tempo */
-            .debate-participant-name { font-size: 5vw; margin-bottom: 5px; margin-right: 0;}
+            /* Em telas muito pequenas, voltamos ao layout de coluna para nome/tempo */
+            .debate-participant-card { flex-direction: column; padding: 10px; min-height: 100px; } 
+            .debate-participant-name { font-size: 5vw; margin-bottom: 5px; margin-right: 0; }
             .debate-participant-time { 
                 font-size: 10vw; /* Ajuste para telas muito pequenas */
                 min-width: 150px;
@@ -241,9 +244,9 @@
                 min-width: 150px;
                 height: 80px;
             }
-            /* Em telas muito grandes, podemos permitir mais colunas ou ajustar ainda mais */
-            #debateParticipantsList.layout-1 { grid-template-columns: 0.5fr; } /* Centraliza um único card grande */
-            #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, minmax(400px, 1fr)); } /* Cards maiores */
+            /* Em telas muito grandes, podemos ajustar ainda mais as colunas */
+            #debateParticipantsList.layout-1 { grid-template-columns: 0.5fr; } 
+            #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
             #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
             #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
             #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
@@ -272,7 +275,6 @@
         const speakerMessageDisplay = document.getElementById('speakerMessage');
         const currentTimePopout = document.getElementById('currentTimePopout');
 
-        // Elementos do Modo Debate
         const normalModeContainer = document.getElementById('normalModeContainer');
         const debateModeContainer = document.getElementById('debateModeContainer');
         const debateParticipantsList = document.getElementById('debateParticipantsList');
