@@ -1173,13 +1173,15 @@
         sendMessageToSpeaker(message);
     });
 
-    speakerMessageInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            const message = speakerMessageInput.value.trim();
-            sendMessageToSpeaker(message);
-        }
-    });
+   const speakerMessageInput = document.getElementById('speakerMessageInput');
+        speakerMessageInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Impede a quebra de linha padrão do Enter
+                const message = speakerMessageInput.value.trim();
+                sendMessageToSpeaker(message);
+                speakerMessageInput.value = ''; // Apaga a mensagem após o envio
+            }
+        });
 
     clearMessageButton.addEventListener('click', () => {
         speakerMessageInput.value = '';
