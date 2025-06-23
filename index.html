@@ -946,26 +946,28 @@
     }
 
     // NOVO: Função para alternar o modo debate
-    function toggleDebateMode() {
-        isDebateModeActive = !isDebateModeActive;
-        if (isDebateModeActive) {
-            toggleDebateModeBtn.textContent = 'Desativar Modo Debate';
-            toggleDebateModeBtn.style.backgroundColor = '#27ae60'; // Cor verde para indicar que está ativo
-            // Quando entra no modo debate, limpa o foco do timer único
-            if (activeTimer) {
-                pauseTimer(activeTimer);
-                activeTimer.cardElement.classList.remove('active-timer');
-                activeTimer = null;
-                updateAllTimerButtons(); // Atualiza botões
+     function toggleDebateMode() {
+            isDebateModeActive = !isDebateModeActive;
+            if (isDebateModeActive) {
+                toggleDebateModeBtn.textContent = 'Desativar Modo Debate';
+                toggleDebateModeBtn.style.backgroundColor = '#27ae60'; // Cor verde para indicar que está ativo
+                // REMOVIDO: Não pausamos mais o activeTimer ao entrar no modo debate
+                // if (activeTimer) {
+                //     pauseTimer(activeTimer); 
+                //     activeTimer.cardElement.classList.remove('active-timer');
+                //     activeTimer = null; // Isso também é removido para que o activeTimer continue válido
+                //     updateAllTimerButtons();
+                // }
+            } else {
+                toggleDebateModeBtn.textContent = 'Ativar Modo Debate';
+                toggleDebateModeBtn.style.backgroundColor = '#8e44ad'; // Cor roxa original
             }
-        } else {
-            toggleDebateModeBtn.textContent = 'Ativar Modo Debate';
-            toggleDebateModeBtn.style.backgroundColor = '#8e44ad'; // Cor roxa original
+            // Força uma atualização do pop-up com o novo modo.
+            // Se houver um activeTimer, ele será enviado para o modo singular.
+            // Se estiver no modo debate, todos os timers são enviados.
+            updateClocks(activeTimer); 
+            sendMessageToSpeaker(speakerMessageInput.value.trim()); // Garante que a mensagem geral ainda é mostrada se houver
         }
-        updateClocks(activeTimer); // Força uma atualização do pop-up com o novo modo
-        sendMessageToSpeaker(speakerMessageInput.value.trim()); // Garante que a mensagem geral ainda é mostrada se houver
-    }
-
     function loadSessionsFromLocalStorage() {
         const storedSessions = localStorage.getItem('conferenceSessions');
         if (storedSessions) {
