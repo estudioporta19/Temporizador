@@ -5,262 +5,145 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ecrã do Palestrante</title>
     <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            overflow: hidden; /* Controla o scroll do body */
-            box-sizing: border-box;
-        }
+     html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
 
-        body {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between; 
-            align-items: center;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            padding: 3vh 2vw; /* Padding responsivo para o body */
-        }
+#normalModeContainer,
+#debateModeContainer {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
 
-        #currentTimePopout {
-            position: absolute;
-            top: 1.5vh;
-            right: 1.5vw;
-            font-size: clamp(1.5vw, 2.5vh, 30px);
-            color: rgba(255, 255, 255, 0.6);
-            z-index: 10;
-        }
+#debateModeContainer {
+    padding: 1.5vh 1vw;
+}
 
-        /* Container principal para o display do relógio e nome (MODO NORMAL) */
-        .timer-display-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            flex-grow: 1;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-        }
+#debateModeContainer h2 {
+    font-size: 2.5vw;
+    margin-bottom: 1vh;
+    text-align: center;
+}
 
-        #speakerName {
-            font-size: clamp(8vw, 10vh, 120px);
-            font-weight: bold;
-            margin-bottom: 2vh;
-            color: #ffffff;
-            text-align: center;
-            word-break: break-word;
-            line-height: 1.1;
-            flex-shrink: 0;
-            padding: 0 1vw;
-        }
+#debateParticipantsList {
+    flex-grow: 1;
+    display: grid;
+    gap: 10px;
+    width: 100%;
+    overflow-y: auto;
+}
 
-        #clockDisplay {
-            font-size: clamp(25vw, 30vh, 400px);
-            font-weight: bold;
-            text-align: center;
-            border-radius: 20px;
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
-            transition: background-color 0.5s ease, color 0.5s ease;
-            width: 100%;
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-        }
+/* Layouts por número de participantes */
+#debateParticipantsList.layout-1 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr;
+}
 
-        #clockDisplay.green { background-color: #28a745; color: white; }
-        #clockDisplay.yellow { background-color: #ffc107; color: #333; }
-        #clockDisplay.red { background-color: #dc3545; color: white; }
+#debateParticipantsList.layout-2 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: 1fr;
+}
 
-        #speakerMessage {
-            font-size: clamp(4vw, 5vh, 80px);
-            color: #ffffff;
-            text-align: center;
-            padding: 0 3vw;
-            word-wrap: break-word;
-            min-height: 8vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 2vh;
-            flex-shrink: 0;
-        }
+#debateParticipantsList.layout-3-4 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+}
 
-        /* --- Estilos para o Modo Debate --- */
-        #debateModeContainer {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            flex-grow: 1;
-            width: 100%;
-            height: 100%;
-            box-sizing: border-box;
-            padding: 0 1.5vw;
-            overflow: hidden;
-        }
+#debateParticipantsList.layout-5-6 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+}
 
-        #debateModeContainer h2 {
-            font-size: clamp(3vw, 4vh, 60px);
-            color: #ffffff;
-            margin-bottom: 2vh;
-            text-align: center;
-            width: 100%;
-            flex-shrink: 0;
-        }
+#debateParticipantsList.layout-7-8 {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(4, 1fr);
+}
 
-        #debateParticipantsList {
-            display: grid;
-            gap: 1.5vh;
-            width: 100%;
-            flex-grow: 1;
-            align-items: stretch;
-            justify-content: center;
-            height: 100%;
-            padding-bottom: 1vh;
-            overflow-y: hidden; 
-            box-sizing: border-box;
-        }
+#debateParticipantsList.layout-default {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-auto-rows: 1fr;
+}
 
-        /* Layouts para 1 a 8 participantes (foco em esticar o conteúdo) */
-        #debateParticipantsList.layout-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-        #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr; }
-        #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
-        #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
-        #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); }
-        
-        /* Fallback/Default para mais de 8, permite scroll */
-        #debateParticipantsList.layout-default {
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            grid-auto-rows: minmax(min-content, max-content);
-            overflow-y: auto;
-        }
+.debate-participant-card {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    padding: 1vh;
+    background-color: #222;
+    border-radius: 10px;
+}
 
-        .debate-participant-card {
-            background-color: #3a3a3a;
-            border-radius: 10px;
-            padding: 1vw; /* Ajustei para 1vw para tentar dar mais espaço interno */
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center; /* Centraliza verticalmente os itens flex (nome e tempo) */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-            transition: transform 0.2s ease, border 0.2s ease;
-            box-sizing: border-box;
-            height: 100%; /* Ocupa a altura da célula da grelha */
-            overflow: hidden; /* **NOVO: Garante que nada dentro do card transborda** */
-        }
+.debate-participant-name {
+    font-size: clamp(2vw, 4vh, 5vw);
+    text-align: center;
+    margin-bottom: 1vh;
+    white-space: normal;
+}
 
-        .debate-participant-card.active-speaker {
-            border: 4px solid #3498db;
-            transform: scale(1.03);
-        }
+.debate-participant-time {
+    font-size: clamp(4vw, 8vh, 10vw);
+    text-align: center;
+    min-width: 120px;
+    padding: 1vh 2vw;
+    border-radius: 8px;
+}
 
-        .debate-participant-name {
-            font-weight: bold;
-            color: #ecf0f1;
-            text-align: left;
-            flex-grow: 1; /* Permite que ocupe o máximo de largura */
-            margin-right: 1vw; /* Espaçamento entre nome e tempo */
-            white-space: normal; /* Permite quebrar a linha */
-            overflow: hidden; 
-            text-overflow: clip; 
-            line-height: 1; /* Linha mais apertada para caber mais texto */
-            
-            /* **MUDANÇA CRUCIAL: Escala de fonte mais agressiva para preencher altura do card** */
-            font-size: calc(1.5vw + 4vh); /* Base mais agressiva, sem px fixo */
-            max-font-size: 80px; 
-            
-            display: flex; /* Permite alinhamento vertical interno */
-            align-items: center; /* Centraliza verticalmente o texto dentro do seu espaço */
-            height: 100%; /* Ocupa 100% da altura do seu flex container */
-            padding-right: 0.5vw; /* Pequeno padding à direita para evitar que o texto toque no tempo */
-        }
+/* Cores do tempo */
+.green { background-color: #27ae60; color: white; }
+.yellow { background-color: #f1c40f; color: black; }
+.red { background-color: #e74c3c; color: white; }
 
-        .debate-participant-time {
-            font-weight: bold;
-            border-radius: 10px;
-            text-align: center;
-            color: white; 
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-sizing: border-box;
-            flex-shrink: 0; /* Não encolhe se o nome for muito longo */
-            
-            /* **MUDANÇA CRUCIAL: Escala de fonte mais agressiva e largura flexível** */
-            font-size: calc(3vw + 8vh); /* Base mais agressiva para o tempo */
-            max-font-size: 150px; 
-            
-            /* Ajustes para a caixa do tempo */
-            height: calc(100% - 1vh); /* Ocupa quase 100% da altura do card, menos um pequeno padding */
-            padding: 0.5vh 0.8vw; /* Padding interno responsivo */
-            min-width: 15%; /* Garante uma largura mínima para o relógio */
-            max-width: 40%; /* Garante que o relógio não ocupe largura demais */
-        }
+/* Nome e relógio no modo normal */
+#speakerName {
+    font-size: clamp(4vw, 8vh, 10vw);
+    margin-bottom: 1.5vh;
+    text-align: center;
+}
 
-        .debate-participant-time.green { background-color: #28a745; }
-        .debate-participant-time.yellow { background-color: #ffc107; color: #333; }
-        .debate-participant-time.red { background-color: #dc3545; }
+#clockDisplay {
+    font-size: clamp(10vw, 25vh, 30vw);
+    text-align: center;
+    padding: 0.5vh 1vw;
+    border-radius: 12px;
+}
 
-        /* Media queries para telas muito pequenas (mobile) - ajustar font-size para vw apenas */
-        @media (max-width: 768px) {
-            #currentTimePopout { font-size: 3vw; top: 10px; right: 10px; }
-            #speakerName { font-size: 8vw; margin-bottom: 1.5vh; }
-            #clockDisplay { font-size: 25vw; }
-            #speakerMessage { font-size: 4vw; min-height: 6vh; margin-top: 1.5vh; }
-            
-            #debateModeContainer { padding: 1.5vh 1vw; }
-            #debateModeContainer h2 { font-size: 5vw; margin-bottom: 1.5vh; }
-            #debateParticipantsList { 
-                gap: 8px;
-                grid-template-columns: 1fr !important; /* Sempre 1 coluna em mobile */
-                grid-template-rows: repeat(auto-fit, minmax(min-content, 1fr)) !important; /* Permite scroll em mobile */
-                overflow-y: auto; 
-            }
-            .debate-participant-card { 
-                flex-direction: column; /* Em mobile, empilha nome e tempo */
-                padding: 10px; 
-            } 
-            .debate-participant-name { 
-                font-size: 6vw; /* Ajuste para mobile */
-                margin-bottom: 5px; 
-                margin-right: 0;
-                white-space: normal;
-                text-overflow: clip;
-                height: auto; /* Deixa a altura ser automática em mobile */
-            }
-            .debate-participant-time { 
-                font-size: 10vw; /* Ajuste para mobile */
-                min-width: 140px;
-                height: 60px;
-                padding: 0.8vh 0.8vw;
-            }
-        }
+/* Mensagem do orador */
+#speakerMessage {
+    font-size: clamp(2vw, 4vh, 5vw);
+    min-height: 7vh;
+    margin-top: 1.5vh;
+    text-align: center;
+}
 
-        /* Media queries para telas muito grandes (desktop 1920px+) */
-        @media (min-width: 1920px) {
-            #currentTimePopout { font-size: 1.5vw; }
-            #speakerName { font-size: 5vw; margin-bottom: 1.5vh; }
-            #clockDisplay { font-size: 18vw; }
-            #speakerMessage { font-size: 3vw; min-height: 7vh; margin-top: 1.5vh; }
+/* Hora atual no canto */
+#currentTimePopout {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: clamp(1.5vw, 2.5vh, 3vw);
+    color: #ccc;
+}
 
-            #debateModeContainer h2 { font-size: 2.5vw; }
-            .debate-participant-name { font-size: 2.5vw; margin-right: 1vw; } 
-            .debate-participant-time { 
-                font-size: 4.5vw; 
-                min-width: 160px;
-                height: 90px;
-            }
-            #debateParticipantsList.layout-1 { grid-template-columns: 0.7fr; }
-            #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, minmax(350px, 1fr)); } 
-            #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, minmax(350px, 1fr)); }
-            #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, minmax(350px, 1fr)); }
-            #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, minmax(350px, 1fr)); }
-        }
+/* Mobile — layout vertical */
+@media (max-width: 768px) {
+    #speakerName { font-size: 8vw; }
+    #clockDisplay { font-size: 25vw; }
+    #speakerMessage { font-size: 4vw; }
+    .debate-participant-name { font-size: 6vw; }
+    .debate-participant-time { font-size: 10vw; }
+    #debateParticipantsList {
+        grid-template-columns: 1fr !important;
+        grid-auto-rows: 1fr;
+    }
+}
+
     </style>
 </head>
 <body>
