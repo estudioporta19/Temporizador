@@ -291,7 +291,11 @@
         const debateParticipantsList = document.getElementById('debateParticipantsList');
 
         let intervalId = null;
-        let isDebateModeActivePopout = false; // Estado local para o pop-up
+        let popoutYellowThreshold = 60;
+        let popoutRedThreshold = 10;
+        let currentTimersData = []; // Store all timers data for debate mode
+        let currentActiveSpeakerData = null; // Store active speaker data for normal mode
+        let isDebateModeActivePopout = false;
 
         function formatTime(seconds) {
             const isNegative = seconds < 0;
@@ -302,30 +306,52 @@
             return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
         }
 
-        // Esta função lida apenas com o modo normal
-        function updateClockDisplay(name, timeLeft, colorClass) {
-            speakerNameDisplay.textContent = name;
-            clockDisplay.textContent = formatTime(timeLeft);
-            
-            clockDisplay.classList.remove('green', 'yellow', 'red');
-            clockDisplay.classList.add(colorClass);
-
-            // Garante que o modo normal está visível e o debate está oculto
-            normalModeContainer.style.display = 'flex';
-            debateModeContainer.style.display = 'none';
-            
-            // Remove quaisquer classes de layout do debate
-            debateParticipantsList.classList.remove('layout-1', 'layout-2', 'layout-3-4', 'layout-5-6', 'layout-7-8', 'layout-default');
+        function getDisplayColorPopout(timeLeft, yellow, red) {
+            if (timeLeft <= red) {
+                return 'red';
+            } else if (timeLeft <= yellow) {
+                return 'yellow';
+            } else {
+                return 'green';
+            }
         }
 
-        // Função para atualizar a lista de oradores no Modo Debate
-        function updateAllClocksDisplay(timersData) {
-            debateParticipantsList.innerHTML = ''; // Limpa a lista existente
+        // Consolidated function to render based on the received state
+        function renderPopoutState() {
+            // First, update message (always visible)
+            speakerMessageDisplay.textContent = event.data.speakerMessage || '';
 
-            // Primeiro, remove todas as classes de layout existentes
+            if (isDebateModeActivePopout) {
+                // Show Debate Mode
+                normalModeContainer.style.display = 'none';
+                debateModeContainer.style.display = 'flex';
+                updateDebateParticipantsList(currentTimersData);
+            } else {
+                // Show Normal Mode
+                normalModeContainer.style.display = 'flex';
+                debateModeContainer.style.display = 'none';
+                if (currentActiveSpeakerData) {
+                    speakerNameDisplay.textContent = currentActiveSpeakerData.name;
+                    clockDisplay.textContent = formatTime(currentActiveSpeakerData.timeLeft);
+                    clockDisplay.classList.remove('green', 'yellow', 'red');
+                    clockDisplay.classList.add(currentActiveSpeakerData.color);
+                } else {
+                    speakerNameDisplay.textContent = 'Nenhum Ativo';
+                    clockDisplay.textContent = '00:00';
+                    clockDisplay.classList.remove('green', 'yellow', 'red');
+                    clockDisplay.classList.add('green');
+                }
+            }
+        }
+
+        // Function to update the list of speakers in Debate Mode
+        function updateDebateParticipantsList(timersData) {
+            debateParticipantsList.innerHTML = ''; // Clear existing list
+
+            // Remove all existing layout classes first
             debateParticipantsList.classList.remove('layout-1', 'layout-2', 'layout-3-4', 'layout-5-6', 'layout-7-8', 'layout-default');
 
-            // Adiciona a classe de layout com base no número de participantes
+            // Add the appropriate layout class based on the number of participants
             const numParticipants = timersData.length;
             if (numParticipants === 1) {
                 debateParticipantsList.classList.add('layout-1');
@@ -338,18 +364,17 @@
             } else if (numParticipants >= 7 && numParticipants <= 8) {
                 debateParticipantsList.classList.add('layout-7-8');
             } else {
-                debateParticipantsList.classList.add('layout-default'); // Para mais de 8
+                debateParticipantsList.classList.add('layout-default'); // For more than 8
             }
 
             if (numParticipants === 0) {
-                // Mensagem se não houver participantes no modo debate
                 debateParticipantsList.innerHTML = '<p style="color: #bdc3c7; text-align: center; font-size: 2.5vw;">Nenhum participante ativo.</p>';
             } else {
                 timersData.forEach(timer => {
                     const card = document.createElement('div');
                     card.className = 'debate-participant-card';
                     if (timer.isActive) {
-                        card.classList.add('active-speaker'); // Destaca o orador ativo
+                        card.classList.add('active-speaker'); // Highlight active speaker
                     }
 
                     const nameDiv = document.createElement('div');
@@ -359,21 +384,13 @@
                     const timeDiv = document.createElement('div');
                     timeDiv.className = 'debate-participant-time';
                     timeDiv.textContent = formatTime(timer.timeLeft);
-                    timeDiv.classList.add(timer.color); // Aplica a cor (verde, amarelo, vermelho)
+                    timeDiv.classList.add(timer.color); // Apply color (green, yellow, red)
 
                     card.appendChild(nameDiv);
                     card.appendChild(timeDiv);
                     debateParticipantsList.appendChild(card);
                 });
             }
-
-            // Garante que o modo debate está visível e o normal está oculto
-            normalModeContainer.style.display = 'none';
-            debateModeContainer.style.display = 'flex';
-        }
-
-        function updateSpeakerMessage(message) {
-            speakerMessageDisplay.textContent = message;
         }
 
         function updateCurrentTimePopout() {
@@ -391,18 +408,20 @@
                 return;
             }
 
-            if (event.data) {
-                if (event.data.type === 'updateClock') {
-                    isDebateModeActivePopout = false; // Desativa o modo debate no popout
-                    updateClockDisplay(event.data.name, event.data.timeLeft, event.data.color);
-                } else if (event.data.type === 'updateAllClocks') {
-                    isDebateModeActivePopout = true; // Ativa o modo debate no popout
-                    updateAllClocksDisplay(event.data.timers);
-                } else if (event.data.type === 'updateMessage') {
-                    updateSpeakerMessage(event.data.message);
-                } else if (event.data.type === 'updateCurrentTime') {
-                    currentTimePopout.textContent = event.data.time;
-                }
+            if (event.data && event.data.type === 'updateAll') {
+                isDebateModeActivePopout = event.data.isDebateModeActive;
+                popoutYellowThreshold = event.data.globalYellow;
+                popoutRedThreshold = event.data.globalRed;
+                currentTimersData = event.data.allTimers;
+                currentActiveSpeakerData = {
+                    name: event.data.activeSpeakerName,
+                    timeLeft: event.data.activeSpeakerTimeLeft,
+                    color: event.data.activeSpeakerColor,
+                    isPaused: event.data.activeSpeakerIsPaused
+                };
+                // Now render the state based on all received data
+                renderPopoutState();
+                speakerMessageDisplay.textContent = event.data.speakerMessage || '';
             }
         });
 
@@ -413,8 +432,8 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-            updateCurrentTimePopout(); // Atualiza uma vez ao carregar
-            setInterval(updateCurrentTimePopout, 1000); // Atualiza a cada segundo
+            updateCurrentTimePopout(); // Update once on load
+            setInterval(updateCurrentTimePopout, 1000); // Update every second
             if (window.opener) {
                 window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
             }
