@@ -5,20 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ecrã do Palestrante</title>
     <style>
-        /* Revertendo para o estilo original, com correções para o scroll e borda */
+        /* ESTILOS ORIGINAIS + CORREÇÕES DE LAYOUT PARA SCROLL E BORDER */
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 0; /* REMOVIDO PADDING AQUI - DEIXAR O CONTEÚDO CONTROLAR O PADDING */
+            padding: 0; /* SEM PADDING NO BODY, O CONTEÚDO CONTROLARÁ ISSO */
             background-color: #1a1a1a;
             color: #ecf0f1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            height: 100vh; /* Altura total da viewport */
-            overflow: hidden; /* EVITA SCROLLS NO BODY, deixa os sub-contêineres gerirem */
-            box-sizing: border-box; /* Garante que padding e border sejam incluídos na largura/altura total */
+            height: 100vh; /* Ocupa a altura total da viewport */
+            overflow: hidden; /* EVITA SCROLL GERAL NO BODY */
+            box-sizing: border-box; /* ESSENCIAL PARA BORDAS E PADDINGS */
         }
 
         #mainClockContainer {
@@ -26,19 +27,19 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            flex-grow: 1;
+            flex-grow: 1; /* Ocupa o espaço disponível */
             width: 100%;
-            height: 100%; /* Ocupa a altura total */
+            height: 100%; /* Ocupa a altura total para se adaptar */
             text-align: center;
-            padding: 20px; /* Padding para o conteúdo principal, dá espaço à borda */
-            box-sizing: border-box; /* ESSENCIAL para que o padding não cause scroll */
+            padding: 20px; /* Adiciona padding para dar espaço para a borda do timer */
+            box-sizing: border-box; /* Garante que padding seja incluído na largura/altura */
         }
 
         #speakerName {
-            font-size: 4em;
+            font-size: 4em; /* Tamanho original */
             font-weight: bold;
             margin-bottom: 20px;
-            color: #ffffff;
+            color: #ffffff; /* Cor original */
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
@@ -46,30 +47,31 @@
         }
 
         #timerDisplay {
-            font-size: 15em;
+            font-size: 15em; /* Tamanho original */
             font-weight: bold;
-            padding: 20px 40px;
-            border-radius: 15px;
-            min-width: 600px;
+            padding: 20px 40px; /* Padding original */
+            border-radius: 15px; /* Border-radius original */
+            min-width: 600px; /* Largura mínima original para o display principal */
             text-align: center;
-            transition: background-color 0.5s ease, color 0.5s ease; /* Removida transição de border */
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
-            /* Borda será adicionada via JavaScript para o destaque */
+            transition: background-color 0.5s ease, color 0.5s ease;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5); /* Sombra original */
+            /* As cores serão aplicadas via JS e CSS, sem borda padrão */
         }
 
-        /* Cores originais mantidas */
+        /* Cores originais mantidas como no index.html e imagens */
         #timerDisplay.green { background-color: #d4edda; color: #155724; }
         #timerDisplay.yellow { background-color: #fff3cd; color: #856404; }
         #timerDisplay.red { background-color: #f8d7da; color: #721c24; }
         
-        /* NOVO: Estilo para a borda do timer ativo na tela principal */
+        /* NOVO: Estilo para a borda do timer ATIVO (no modo normal) */
         #timerDisplay.active-main-border {
-            border: 5px solid #28a745; /* Borda verde clara */
+            border: 5px solid #28a745; /* Borda verde clara, como no `index.html` */
+            box-sizing: border-box; /* Garante que a borda não aumente o tamanho do elemento */
         }
 
         #speakerMessage {
-            font-size: 2.5em;
-            color: #ccc;
+            font-size: 2.5em; /* Tamanho original */
+            color: #ccc; /* Cor original */
             margin-top: 30px;
             text-align: center;
             opacity: 0;
@@ -81,64 +83,65 @@
             opacity: 1;
         }
         
-        /* Estilos para o Modo Debate */
+        /* Estilos para o Modo Debate - Revertendo para o original + Fixes */
         #debateModeContainer {
-            display: none;
+            display: none; /* Inicia oculto */
             flex-direction: column;
             align-items: center;
             width: 100%;
-            height: 100%;
-            padding: 10px; /* Adiciona um pequeno padding geral para o container do debate */
-            box-sizing: border-box; /* ESSENCIAL para o padding */
+            height: 100%; /* Ocupa a altura total */
+            padding: 10px; /* Padding para o container do debate para bordas */
+            box-sizing: border-box; /* ESSENCIAL */
         }
 
         #debateSpeakersGrid {
             display: grid;
-            /* Ajustado para 3 colunas fixas e responsive, com largura mínima menor */
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
-            gap: 10px; /* Reduzido o gap entre as cards */
+            /* Layout original com minmax ajustado e auto-fit para 3 colunas */
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); /* Ajustado para caber 3 por linha */
+            gap: 10px; /* Gap original ou ligeiramente menor */
             width: 100%;
             flex-grow: 1;
-            overflow-y: auto; /* Permite scroll vertical se houver muitos */
-            overflow-x: hidden; /* Garante que não haja scroll horizontal no grid */
-            padding: 5px; /* Pequeno padding interno para o grid */
-            box-sizing: border-box; /* ESSENCIAL para o padding */
-            justify-content: center;
-            align-content: start;
+            overflow-y: auto; /* Permite scroll vertical se houver muitos participantes */
+            overflow-x: hidden; /* **CORREÇÃO CRÍTICA**: Impede scroll horizontal */
+            padding: 5px; /* Pequeno padding interno ao grid para as cards */
+            box-sizing: border-box; /* ESSENCIAL */
+            justify-content: center; /* Centraliza as cards horizontalmente */
+            align-content: start; /* Alinha o conteúdo ao topo */
         }
 
         .debate-speaker-card {
-            background-color: #3a3a3a;
-            border: 2px solid #777; /* Borda original dos participantes */
-            border-radius: 4px;
+            background-color: #3a3a3a; /* Fundo original */
+            border: 1px solid #777; /* Borda original */
             padding: 10px; /* Padding original */
-            text-align: center;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            margin-bottom: 8px; /* Margem original */
+            border-radius: 4px; /* Border-radius original */
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            align-items: center;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+            position: relative;
+            flex-shrink: 0;
+            align-items: center; /* Centraliza itens na card */
             box-sizing: border-box; /* ESSENCIAL: Inclui padding e borda na dimensão */
             max-width: 100%; /* Garante que a card não exceda a largura da sua célula */
-            margin: 0; /* Remove qualquer margem automática extra */
         }
 
-        /* NOVO: Estilo para a borda do timer ativo no modo debate */
+        /* Borda de seleção do participante ATIVO no modo debate */
         .debate-speaker-card.active-timer-popout {
             border: 2px solid #28a745; /* Borda verde clara para o ativo */
-            box-shadow: 0 0 10px rgba(40, 167, 69, 0.3); /* Sombra suave */
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.3); /* Sombra suave para destaque */
             transform: scale(1.02); /* Pequeno zoom para destaque */
         }
 
         .debate-speaker-name {
-            font-size: 1em; /* Tamanho original */
             font-weight: bold;
-            color: #ffffff;
-            margin-bottom: 8px; /* Margem original */
-            white-space: nowrap;
+            font-size: 1em; /* Tamanho original */
+            color: #ffffff; /* Cor original */
+            flex-grow: 1;
             overflow: hidden;
+            white-space: nowrap;
             text-overflow: ellipsis;
-            width: 100%;
+            padding-right: 8px;
+            width: 100%; /* Ocupa a largura disponível */
         }
 
         .debate-timer-display {
@@ -148,17 +151,17 @@
             border-radius: 4px; /* Raio original */
             min-width: 90px; /* Largura mínima original */
             text-align: center;
-            /* Cores já definidas acima */
-            box-sizing: border-box; /* ESSENCIAL para o padding */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            /* Cores dos displays dos temporizadores (mantidas claras para visibilidade) */
+            background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; /* Default green */
+            box-sizing: border-box; /* ESSENCIAL: Inclui padding e borda na dimensão */
         }
 
-        /* Cores dos displays dos temporizadores (mantidas claras para visibilidade) */
-        .debate-timer-display.green { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        /* Cores dos displays dos temporizadores */
         .debate-timer-display.yellow { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .debate-timer-display.red { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
 
-
-        /* Media queries para responsividade no pop-up - Ajustadas */
+        /* Media queries para responsividade no pop-up - Ajustadas para o original */
         @media (max-width: 900px) {
             #timerDisplay {
                 font-size: 10em;
@@ -172,14 +175,7 @@
             }
             /* Ajustes para o modo debate em telas menores */
             #debateSpeakersGrid {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Reduz min-width */
-            }
-            .debate-speaker-name {
-                font-size: 1em; /* Manter pequeno */
-            }
-            .debate-timer-display {
-                font-size: 1.5em; /* Manter pequeno */
-                min-width: 80px; /* Reduzir min-width */
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* Permite 3 colunas em telas menores */
             }
         }
 
@@ -200,19 +196,12 @@
             }
             /* Ajustes para o modo debate em telas muito pequenas */
             #debateSpeakersGrid {
-                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Reduz ainda mais min-width */
-                gap: 5px; /* Reduz gap */
-                padding: 2px; /* Reduz padding */
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* Permite 2 colunas em telas muito pequenas */
+                gap: 5px;
+                padding: 2px;
             }
             .debate-speaker-card {
-                padding: 5px; /* Reduz padding da card */
-            }
-            .debate-speaker-name {
-                font-size: 0.9em; /* Ainda menor */
-            }
-            .debate-timer-display {
-                font-size: 1.2em; /* Ainda menor */
-                min-width: 70px; /* Ainda menor */
+                padding: 5px;
             }
         }
     </style>
@@ -294,11 +283,11 @@
         function updateMainClock(data) {
             speakerNameDisplay.textContent = data.activeSpeakerName;
             timerDisplay.textContent = formatTime(data.activeSpeakerTimeLeft);
-            timerDisplay.className = ''; // Reset classes
+            // Reverter a lógica de classe para aplicar apenas a cor (green, yellow, red)
+            timerDisplay.className = ''; 
             timerDisplay.classList.add(getDisplayColor(data.activeSpeakerTimeLeft, globalYellowThreshold, globalRedThreshold));
             
-            // Adiciona ou remove a borda ativa com base no estado de pausa e se é o timer ativo
-            // Apenas adiciona a borda se houver um timer ativo E não estiver pausado
+            // Adicionar/remover a classe de borda ativa SEPARADAMENTE
             if (data.activeSpeakerName !== 'Nenhum Ativo' && !data.activeSpeakerIsPaused) {
                 timerDisplay.classList.add('active-main-border');
             } else {
@@ -307,23 +296,23 @@
         }
 
         function updateDebateSpeakers(allTimersData) {
-            debateSpeakersGrid.innerHTML = ''; // Clear existing cards
+            debateSpeakersGrid.innerHTML = ''; // Limpar cards existentes
 
-            allTimersData.sort((a, b) => a.name.localeCompare(b.name)); // Sort by name
+            allTimersData.sort((a, b) => a.name.localeCompare(b.name)); // Ordenar por nome
 
             allTimersData.forEach(timerData => {
                 const card = document.createElement('div');
-                card.className = 'debate-speaker-card';
+                card.className = 'debate-speaker-card'; // Classe original
                 card.setAttribute('data-id', timerData.id);
 
                 const nameDiv = document.createElement('div');
-                nameDiv.className = 'debate-speaker-name';
+                nameDiv.className = 'debate-speaker-name'; // Classe original
                 nameDiv.textContent = timerData.name;
 
                 const timerDiv = document.createElement('div');
-                timerDiv.className = 'debate-timer-display';
+                timerDiv.className = 'debate-timer-display'; // Classe original
                 timerDiv.textContent = formatTime(timerData.timeLeft);
-                timerDiv.classList.add(timerData.color);
+                timerDiv.classList.add(timerData.color); // Adiciona a classe de cor (red, yellow, green)
 
                 // Adiciona a classe de destaque se for o timer ativo E NÃO estiver pausado
                 if (timerData.isActive && !timerData.isPaused) {
