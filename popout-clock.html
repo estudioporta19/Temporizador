@@ -72,7 +72,6 @@
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            /* Removendo max-height para permitir que ocupe todo o espaço disponível */
             padding: 2vh 0; /* Adiciona padding vertical dentro do relógio para "respirar" */
         }
 
@@ -120,21 +119,36 @@
             display: grid;
             gap: 1.5vh; /* Usa vh para o gap para ser responsivo à altura */
             width: 100%;
-            flex-grow: 1; /* Essencial: Ocupa todo o espaço vertical restante */
+            flex-grow: 1; /* ESSENCIAL: Ocupa TODO o espaço vertical restante do #debateModeContainer */
             align-items: stretch; /* Garante que os itens se estendam para preencher a célula */
             justify-content: center;
-            height: 100%; /* Ocupa 100% da altura do seu container */
+            height: 100%; /* ESSENCIAL: Ocupa 100% da altura do seu container flex-grow:1 */
             padding-bottom: 1vh;
             overflow-y: auto; /* Permite scroll SOMENTE SE NECESSÁRIO dentro da lista */
             box-sizing: border-box;
         }
 
         /* Layouts para 1 a 8 participantes (otimizados para não ter scroll) */
-        #debateParticipantsList.layout-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-        #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr; }
-        #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
-        #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
-        #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); }
+        #debateParticipantsList.layout-1 { 
+            grid-template-columns: 1fr; 
+            grid-template-rows: 1fr; 
+        }
+        #debateParticipantsList.layout-2 { 
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: 1fr; 
+        }
+        #debateParticipantsList.layout-3-4 { 
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: repeat(2, 1fr); 
+        }
+        #debateParticipantsList.layout-5-6 { 
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: repeat(3, 1fr); 
+        }
+        #debateParticipantsList.layout-7-8 { 
+            grid-template-columns: repeat(2, 1fr); 
+            grid-template-rows: repeat(4, 1fr); 
+        }
         
         /* Fallback/Default para mais de 8, pode gerar scroll */
         #debateParticipantsList.layout-default {
@@ -267,7 +281,6 @@
     <div id="speakerMessage"></div>
 
     <script>
-        // O código JavaScript aqui deve ser o mesmo que já tens, pois não precisa de alterações
         const speakerNameDisplay = document.getElementById('speakerName');
         const clockDisplay = document.getElementById('clockDisplay');
         const speakerMessageDisplay = document.getElementById('speakerMessage');
