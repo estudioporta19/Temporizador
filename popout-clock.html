@@ -101,7 +101,7 @@
             height: 100%;
             box-sizing: border-box;
             padding: 0 1.5vw;
-            overflow: hidden;
+            overflow: hidden; /* Mantém hidden para o container pai */
         }
 
         #debateModeContainer h2 {
@@ -122,22 +122,23 @@
             justify-content: center;
             height: 100%;
             padding-bottom: 1vh;
-            overflow-y: hidden; 
+            overflow-y: auto; /* ATENÇÃO: Agora permite scroll quando necessário */
             box-sizing: border-box;
         }
 
         /* Layouts para 1 a 8 participantes (foco em esticar o conteúdo) */
-        #debateParticipantsList.layout-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
-        #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr; }
-        #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
-        #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
-        #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); }
+        /* Estas classes agora aplicam grid-template-rows com auto-fit para permitir mais flexibilidade */
+        #debateParticipantsList.layout-1 { grid-template-columns: 1fr; grid-auto-rows: 1fr; }
+        #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; }
+        #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; }
+        #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; }
+        #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, 1fr); grid-auto-rows: 1fr; }
         
-        /* Fallback/Default para mais de 8, permite scroll */
+        /* Fallback/Default para mais de 8 ou se o conteúdo transbordar */
         #debateParticipantsList.layout-default {
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             grid-auto-rows: minmax(min-content, max-content);
-            overflow-y: auto;
+            overflow-y: auto; /* Mantido explicitamente aqui */
         }
 
         .debate-participant-card {
@@ -152,7 +153,7 @@
             transition: transform 0.2s ease, border 0.2s ease;
             box-sizing: border-box;
             height: 100%; /* Ocupa a altura da célula da grelha */
-            overflow: hidden; /* **NOVO: Garante que nada dentro do card transborda** */
+            overflow: hidden; /* Garante que nada dentro do card transborda */
         }
 
         .debate-participant-card.active-speaker {
@@ -169,11 +170,9 @@
             white-space: normal; /* Permite quebrar a linha */
             overflow: hidden; 
             text-overflow: clip; 
-            line-height: 1; /* Linha mais apertada para caber mais texto */
+            line-height: 1.1; /* Ajustei ligeiramente o line-height */
             
-            /* **MUDANÇA CRUCIAL: Escala de fonte mais agressiva para preencher altura do card** */
-            font-size: calc(1.5vw + 4vh); /* Base mais agressiva, sem px fixo */
-            max-font-size: 80px; 
+            font-size: clamp(1.5vw, 4vh, 80px); /* Ajuste com clamp para melhor escala */
             
             display: flex; /* Permite alinhamento vertical interno */
             align-items: center; /* Centraliza verticalmente o texto dentro do seu espaço */
@@ -192,9 +191,7 @@
             box-sizing: border-box;
             flex-shrink: 0; /* Não encolhe se o nome for muito longo */
             
-            /* **MUDANÇA CRUCIAL: Escala de fonte mais agressiva e largura flexível** */
-            font-size: calc(3vw + 8vh); /* Base mais agressiva para o tempo */
-            max-font-size: 150px; 
+            font-size: clamp(3vw, 8vh, 150px); /* Ajuste com clamp para melhor escala */
             
             /* Ajustes para a caixa do tempo */
             height: calc(100% - 1vh); /* Ocupa quase 100% da altura do card, menos um pequeno padding */
@@ -351,7 +348,7 @@
             // Remove all existing layout classes first
             debateParticipantsList.classList.remove('layout-1', 'layout-2', 'layout-3-4', 'layout-5-6', 'layout-7-8', 'layout-default');
 
-            // Add the appropriate layout class based on the number of participants
+            // Add the appropriate layout class based on number of participants
             const numParticipants = timersData.length;
             if (numParticipants === 1) {
                 debateParticipantsList.classList.add('layout-1');
@@ -364,35 +361,33 @@
             } else if (numParticipants >= 7 && numParticipants <= 8) {
                 debateParticipantsList.classList.add('layout-7-8');
             } else {
-                debateParticipantsList.classList.add('layout-default'); // For more than 8
+                // For more than 8 participants, or a general fallback
+                debateParticipantsList.classList.add('layout-default');
             }
 
-            if (numParticipants === 0) {
-                debateParticipantsList.innerHTML = '<p style="color: #bdc3c7; text-align: center; font-size: 2.5vw;">Nenhum participante ativo.</p>';
-            } else {
-                timersData.forEach(timer => {
-                    const card = document.createElement('div');
-                    card.className = 'debate-participant-card';
-                    if (timer.isActive) {
-                        card.classList.add('active-speaker'); // Highlight active speaker
-                    }
+            timersData.forEach(timer => {
+                const card = document.createElement('div');
+                card.className = 'debate-participant-card';
+                if (timer.isActive) { // Highlight active speaker
+                    card.classList.add('active-speaker');
+                }
 
-                    const nameDiv = document.createElement('div');
-                    nameDiv.className = 'debate-participant-name';
-                    nameDiv.textContent = timer.name;
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'debate-participant-name';
+                nameDiv.textContent = timer.name;
 
-                    const timeDiv = document.createElement('div');
-                    timeDiv.className = 'debate-participant-time';
-                    timeDiv.textContent = formatTime(timer.timeLeft);
-                    timeDiv.classList.add(timer.color); // Apply color (green, yellow, red)
+                const timeDiv = document.createElement('div');
+                timeDiv.className = 'debate-participant-time';
+                timeDiv.textContent = formatTime(timer.timeLeft);
+                timeDiv.classList.add(getDisplayColorPopout(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
 
-                    card.appendChild(nameDiv);
-                    card.appendChild(timeDiv);
-                    debateParticipantsList.appendChild(card);
-                });
-            }
+                card.appendChild(nameDiv);
+                card.appendChild(timeDiv);
+                debateParticipantsList.appendChild(card);
+            });
         }
 
+        // Current time for the popout window
         function updateCurrentTimePopout() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -401,6 +396,7 @@
             currentTimePopout.textContent = `${hours}:${minutes}:${seconds}`;
         }
 
+        // Receive messages from parent window
         window.addEventListener('message', (event) => {
             const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
             if (!isLocalOrigin && !event.origin.startsWith('file://')) {
@@ -408,34 +404,36 @@
                 return;
             }
 
-            if (event.data && event.data.type === 'updateAll') {
+            if (event.data.type === 'updateAll') {
                 isDebateModeActivePopout = event.data.isDebateModeActive;
                 popoutYellowThreshold = event.data.globalYellow;
                 popoutRedThreshold = event.data.globalRed;
-                currentTimersData = event.data.allTimers;
+
                 currentActiveSpeakerData = {
                     name: event.data.activeSpeakerName,
                     timeLeft: event.data.activeSpeakerTimeLeft,
                     color: event.data.activeSpeakerColor,
                     isPaused: event.data.activeSpeakerIsPaused
                 };
-                // Now render the state based on all received data
-                renderPopoutState();
-                speakerMessageDisplay.textContent = event.data.speakerMessage || '';
+                currentTimersData = event.data.allTimers; // Update all timers data for debate mode
+
+                renderPopoutState(); // Re-render the display based on the received state
             }
         });
 
+        // Inform parent window that popout is ready
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.opener) {
+                window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
+            }
+            updateCurrentTimePopout();
+            setInterval(updateCurrentTimePopout, 1000);
+        });
+
+        // Inform parent window that popout is closing
         window.addEventListener('beforeunload', () => {
             if (window.opener) {
                 window.opener.postMessage({ type: 'popoutClosed' }, window.location.origin);
-            }
-        });
-
-        document.addEventListener('DOMContentLoaded', () => {
-            updateCurrentTimePopout(); // Update once on load
-            setInterval(updateCurrentTimePopout, 1000); // Update every second
-            if (window.opener) {
-                window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
             }
         });
     </script>
