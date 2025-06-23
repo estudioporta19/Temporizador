@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ecrã do Palestrante</title>
-    <style>
+<style>
         html, body {
-            height: 100%; /* Garante que HTML e BODY ocupam 100% da viewport */
+            height: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Evita scroll indesejado do body */
+            overflow: hidden;
+            box-sizing: border-box; /* Garante que padding/border são incluídos na altura */
         }
 
         body {
@@ -17,18 +18,17 @@
             flex-direction: column;
             justify-content: space-between; 
             align-items: center;
-            background-color: #2c3e50; /* Cor de fundo escura para contraste */
+            background-color: #2c3e50;
             color: #ecf0f1;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            box-sizing: border-box;
-            padding: 3vh; /* Unificado padding superior e inferior no body */
+            padding: 3vh 2vw; /* Padding responsivo para o body */
         }
 
         #currentTimePopout {
             position: absolute;
             top: 1.5vh;
             right: 1.5vw;
-            font-size: clamp(1.5vw, 2.5vw, 30px);
+            font-size: clamp(1.5vw, 2.5vh, 30px); /* Ajustado para vh */
             color: rgba(255, 255, 255, 0.6);
             z-index: 10;
         }
@@ -41,13 +41,12 @@
             justify-content: center;
             flex-grow: 1;
             width: 100%;
-            height: 100%; /* Ocupa 100% da altura disponível do body (menos paddings) */
+            height: 100%;
             box-sizing: border-box;
-            padding: 0 2vw;
         }
 
         #speakerName {
-            font-size: clamp(8vw, 10vw, 120px);
+            font-size: clamp(8vw, 10vh, 120px); /* Usando vh mais agressivamente */
             font-weight: bold;
             margin-bottom: 2vh;
             color: #ffffff;
@@ -55,10 +54,11 @@
             word-break: break-word;
             line-height: 1.1;
             flex-shrink: 0;
+            padding: 0 1vw; /* Pequeno padding para o nome */
         }
 
         #clockDisplay {
-            font-size: clamp(25vw, 30vw, 400px);
+            font-size: clamp(25vw, 30vh, 400px); /* Usando vh mais agressivamente */
             font-weight: bold;
             text-align: center;
             border-radius: 20px;
@@ -70,7 +70,6 @@
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            padding: 2vh 0;
         }
 
         #clockDisplay.green { background-color: #28a745; color: white; }
@@ -78,7 +77,7 @@
         #clockDisplay.red { background-color: #dc3545; color: white; }
 
         #speakerMessage {
-            font-size: clamp(4vw, 5vw, 80px);
+            font-size: clamp(4vw, 5vh, 80px); /* Usando vh mais agressivamente */
             color: #ffffff;
             text-align: center;
             padding: 0 3vw;
@@ -105,7 +104,7 @@
         }
 
         #debateModeContainer h2 {
-            font-size: clamp(3vw, 4vw, 60px);
+            font-size: clamp(3vw, 4vh, 60px); /* Usando vh */
             color: #ffffff;
             margin-bottom: 2vh;
             text-align: center;
@@ -123,43 +122,28 @@
             height: 100%;
             padding-bottom: 1vh;
             overflow-y: hidden; /* **MUDANÇA CRUCIAL: Hidden para não gerar scroll** */
-            box-sizing: border-box;
+            box-sizing: border-sizing; /* Para grid */
         }
 
         /* Layouts para 1 a 8 participantes (foco em esticar o conteúdo) */
         /* Usamos 'fr' para que as células se estiquem. Ajustamos o clamp para a fonte. */
-        #debateParticipantsList.layout-1 { 
-            grid-template-columns: 1fr; 
-            grid-template-rows: 1fr; 
-        }
-        #debateParticipantsList.layout-2 { 
-            grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: 1fr; 
-        }
-        #debateParticipantsList.layout-3-4 { 
-            grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: repeat(2, 1fr); 
-        }
-        #debateParticipantsList.layout-5-6 { 
-            grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: repeat(3, 1fr); 
-        }
-        #debateParticipantsList.layout-7-8 { 
-            grid-template-columns: repeat(2, 1fr); 
-            grid-template-rows: repeat(4, 1fr); 
-        }
+        #debateParticipantsList.layout-1 { grid-template-columns: 1fr; grid-template-rows: 1fr; }
+        #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, 1fr); grid-template-rows: 1fr; }
+        #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
+        #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(3, 1fr); }
+        #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(4, 1fr); }
         
         /* Fallback/Default para mais de 8. Permitimos scroll vertical aqui SE NECESSÁRIO */
         #debateParticipantsList.layout-default {
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            grid-auto-rows: minmax(min-content, max-content);
+            grid-auto-rows: minmax(min-content, max-content); /* **MUDANÇA CRUCIAL: Volta a auto-rows para mais de 8 ** */
             overflow-y: auto; /* Permite scroll se for o default (mais de 8) */
         }
 
         .debate-participant-card {
             background-color: #3a3a3a;
             border-radius: 10px;
-            padding: 1.5vw; /* Aumenta padding para dar mais espaço ao conteúdo */
+            padding: 1.5vw;
             display: flex;
             flex-direction: row;
             justify-content: space-between;
@@ -168,7 +152,7 @@
             transition: transform 0.2s ease, border 0.2s ease;
             box-sizing: border-box;
             height: 100%; /* Ocupa a altura da célula da grelha */
-            min-height: 80px;
+            /* min-height removido para que possa encolher mais se necessário ou esticar */
         }
 
         .debate-participant-card.active-speaker {
@@ -177,8 +161,6 @@
         }
 
         .debate-participant-name {
-            /* MUDANÇA CRUCIAL: clamp com base na altura do viewport e larguras mínimas */
-            font-size: clamp(3vw, 5vh, 80px); /* Ajustado para ser mais agressivo com a altura disponível */
             font-weight: bold;
             color: #ecf0f1;
             text-align: left;
@@ -188,11 +170,15 @@
             overflow: hidden; 
             text-overflow: ellipsis; 
             line-height: 1.1;
+            /* MUDANÇA CRUCIAL: font-size calculado com base na altura do elemento pai */
+            font-size: calc(1.5vw + 4vh + 10px); /* Começa com um base e adiciona vw/vh para escalar */
+            max-font-size: 80px; /* Limite máximo para o nome */
+            display: flex; /* Para centralizar verticalmente o nome no espaço */
+            align-items: center;
+            min-width: 30%; /* Garante um mínimo de largura para o nome */
         }
 
         .debate-participant-time {
-            /* MUDANÇA CRUCIAL: clamp com base na altura do viewport e larguras mínimas */
-            font-size: clamp(6vw, 10vh, 150px); /* Ajustado para ser mais agressivo com a altura disponível */
             font-weight: bold;
             padding: 1vh 1vw;
             border-radius: 10px;
@@ -203,8 +189,11 @@
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            height: clamp(8vh, 12vh, 180px); /* Altura da caixa do relógio também mais agressiva */
+            /* MUDANÇA CRUCIAL: font-size calculado com base na altura do elemento pai */
+            font-size: calc(2vw + 8vh + 20px); /* Começa com um base e adiciona vw/vh para escalar */
+            max-font-size: 150px; /* Limite máximo para o relógio */
             flex-shrink: 0;
+            height: calc(100% - 2vh); /* Ocupa quase 100% da altura do card, menos o padding vertical */
         }
 
         .debate-participant-time.green { background-color: #28a745; }
@@ -215,7 +204,7 @@
         @media (max-width: 768px) {
             #currentTimePopout { font-size: 3vw; top: 10px; right: 10px; }
             #speakerName { font-size: 8vw; margin-bottom: 1.5vh; }
-            #clockDisplay { font-size: 25vw; padding: 1vh 0; }
+            #clockDisplay { font-size: 25vw; }
             #speakerMessage { font-size: 4vw; min-height: 6vh; margin-top: 1.5vh; }
             
             #debateModeContainer { padding: 1.5vh 1vw; }
@@ -224,22 +213,21 @@
                 gap: 8px;
                 grid-template-columns: 1fr !important;
                 grid-template-rows: repeat(auto-fit, minmax(min-content, 1fr)) !important;
-                overflow-y: auto; /* Em mobile, pode haver scroll */
+                overflow-y: auto; /* Em mobile, permite scroll */
             }
             .debate-participant-card { 
                 flex-direction: column;
                 padding: 10px; 
-                min-height: 90px;
             } 
             .debate-participant-name { 
-                font-size: 4.5vw; 
+                font-size: 4.5vw; /* Volta a vw para mobile */
                 margin-bottom: 5px; 
                 margin-right: 0;
                 white-space: normal;
                 text-overflow: clip;
             }
             .debate-participant-time { 
-                font-size: 8vw;
+                font-size: 8vw; /* Volta a vw para mobile */
                 min-width: 140px;
                 height: 60px;
                 padding: 0.8vh 0.8vw;
@@ -249,7 +237,7 @@
         @media (min-width: 1920px) {
             #currentTimePopout { font-size: 1.5vw; }
             #speakerName { font-size: 5vw; margin-bottom: 1.5vh; }
-            #clockDisplay { font-size: 18vw; padding: 3vh 0; }
+            #clockDisplay { font-size: 18vw; }
             #speakerMessage { font-size: 3vw; min-height: 7vh; margin-top: 1.5vh; }
 
             #debateModeContainer h2 { font-size: 2.5vw; }
