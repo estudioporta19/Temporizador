@@ -5,232 +5,250 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ecrã do Palestrante</title>
     <style>
-    body {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between; 
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #2c3e50; /* Cor de fundo escura para contraste */
-        color: #ecf0f1;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        overflow: hidden; /* Remove scrollbars */
-        padding-bottom: 5vh; /* Adiciona um padding na parte inferior do body */
-        box-sizing: border-box; /* Garante que o padding seja incluído na altura total */
-    }
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; 
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #2c3e50; /* Cor de fundo escura para contraste */
+            color: #ecf0f1;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; /* Remove scrollbars */
+            padding-bottom: 5vh; /* Adiciona um padding na parte inferior do body */
+            box-sizing: border-box; /* Garante que o padding seja incluído na altura total */
+        }
 
-    #currentTimePopout {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        font-size: 3vw;
-        color: rgba(255, 255, 255, 0.7);
-    }
+        #currentTimePopout {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 3vw;
+            color: rgba(255, 255, 255, 0.7);
+        }
 
-    /* Container principal para o display do relógio e nome (MODO NORMAL) */
-    .timer-display-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        flex-grow: 1; /* Ocupa o espaço disponível */
-        width: 100%;
-        padding-top: 5vh; /* Adiciona um padding no topo para o relógio/nome */
-    }
+        /* Container principal para o display do relógio e nome (MODO NORMAL) */
+        .timer-display-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1; /* Ocupa o espaço disponível */
+            width: 100%;
+            padding-top: 5vh; /* Adiciona um padding no topo para o relógio/nome */
+        }
 
-    #speakerName {
-        font-size: 8vw; /* Tamanho responsivo para o nome */
-        font-weight: bold;
-        margin-bottom: 2vh; /* Espaço abaixo do nome */
-        color: #ffffff;
-        text-align: center;
-        padding: 0 2vw; /* Pequeno padding para evitar que toque nas bordas */
-        word-break: break-word; /* Quebra palavras longas */
-    }
+        #speakerName {
+            font-size: 8vw; /* Tamanho responsivo para o nome */
+            font-weight: bold;
+            margin-bottom: 2vh; /* Espaço abaixo do nome */
+            color: #ffffff;
+            text-align: center;
+            padding: 0 2vw; /* Pequeno padding para evitar que toque nas bordas */
+            word-break: break-word; /* Quebra palavras longas */
+        }
 
-    #clockDisplay {
-        font-size: 25vw; /* Tamanho responsivo para o relógio */
-        font-weight: bold;
-        text-align: center;
-        padding: 0 2vw;
-        border-radius: 20px; /* Bordas arredondadas para o display */
-        box-shadow: 0 0 50px rgba(0, 0, 0, 0.5); /* Sombra suave */
-        transition: background-color 0.5s ease, color 0.5s ease; /* Transição suave de cores */
-        min-width: 90vw; /* Garante que o relógio não fique muito pequeno */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 40vh; /* Altura fixa para o display do relógio */
-        box-sizing: border-box; /* Inclui padding e border na largura/altura */
-    }
+        #clockDisplay {
+            font-size: 25vw; /* Tamanho responsivo para o relógio */
+            font-weight: bold;
+            text-align: center;
+            padding: 0 2vw;
+            border-radius: 20px; /* Bordas arredondadas para o display */
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5); /* Sombra suave */
+            transition: background-color 0.5s ease, color 0.5s ease; /* Transição suave de cores */
+            min-width: 90vw; /* Garante que o relógio não fique muito pequeno */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 40vh; /* Altura fixa para o display do relógio */
+            box-sizing: border-box; /* Inclui padding e border na largura/altura */
+        }
 
-    #clockDisplay.green { background-color: #28a745; color: white; } /* Verde vibrante */
-    #clockDisplay.yellow { background-color: #ffc107; color: #333; } /* Amarelo vibrante */
-    #clockDisplay.red { background-color: #dc3545; color: white; } /* Vermelho vibrante */
+        #clockDisplay.green { background-color: #28a745; color: white; } /* Verde vibrante */
+        #clockDisplay.yellow { background-color: #ffc107; color: #333; } /* Amarelo vibrante */
+        #clockDisplay.red { background-color: #dc3545; color: white; } /* Vermelho vibrante */
 
-    #speakerMessage {
-        font-size: 5vw; /* Tamanho responsivo para a mensagem */
-        color: #ffffff;
-        text-align: center;
-        padding: 0 3vw;
-        word-wrap: break-word; /* Quebra de linha para mensagens longas */
-        min-height: 10vh; /* Altura mínima para a mensagem */
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 2vh; 
-    }
+        #speakerMessage {
+            font-size: 5vw; /* Tamanho responsivo para a mensagem */
+            color: #ffffff;
+            text-align: center;
+            padding: 0 3vw;
+            word-wrap: break-word; /* Quebra de linha para mensagens longas */
+            min-height: 10vh; /* Altura mínima para a mensagem */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2vh; 
+        }
 
-    /* --- Estilos para o Modo Debate --- */
-    #debateModeContainer {
-        display: none; /* Por padrão, escondido */
-        flex-direction: column;
-        align-items: center;
-        flex-grow: 1;
-        width: 100%;
-        padding: 5vh 2vw; /* Padding para o conteúdo não tocar nas bordas */
-        box-sizing: border-box;
-        overflow-y: auto; /* Permite scroll se houver muitos participantes */
-        max-height: 90vh; /* Limita a altura para o container não exceder o viewport */
-    }
+        /* --- Estilos para o Modo Debate --- */
+        #debateModeContainer {
+            display: none; /* Por padrão, escondido */
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            width: 100%;
+            padding: 3vh 2vw; /* Padding reduzido para dar mais espaço à grelha */
+            box-sizing: border-box;
+            overflow: hidden; /* Garantir que não haja scroll aqui, o scroll será na lista se necessário */
+            height: 100vh; /* Ocupa a altura total do viewport */
+        }
 
-    #debateModeContainer h2 {
-        font-size: 4vw; /* Título no modo debate */
-        color: #ffffff;
-        margin-bottom: 3vh;
-        text-align: center;
-        width: 100%;
-    }
+        #debateModeContainer h2 {
+            font-size: clamp(3vw, 3.5vw, 4vw); /* Título responsivo */
+            color: #ffffff;
+            margin-bottom: 2vh; /* Margem reduzida */
+            text-align: center;
+            width: 100%;
+            flex-shrink: 0; /* Impede que o título encolha */
+        }
 
-    #debateParticipantsList {
-        display: grid;
-        gap: 20px;
-        width: 100%;
-        max-width: 100%; /* Permite ocupar a largura máxima disponível */
-        flex-grow: 1; /* Ocupa o espaço vertical disponível */
-        align-items: stretch; /* Garante que os itens se estendam para preencher a célula */
-        justify-content: center;
-        height: 100%; /* Essencial para que os itens possam usar o espaço vertical */
-        /* grid-auto-rows: minmax(min-content, max-content); - REMOVIDO: Será controlado pelas classes de layout */
-    }
+        #debateParticipantsList {
+            display: grid;
+            gap: 15px; /* Espaçamento entre cards reduzido */
+            width: 100%;
+            max-width: 100%;
+            flex-grow: 1; /* Ocupa o espaço vertical disponível */
+            align-items: stretch; /* Garante que os itens se estendam para preencher a célula */
+            justify-content: center;
+            height: 100%; /* Essencial para que os itens possam usar o espaço vertical */
+            padding-bottom: 2vh; /* Pequeno padding na parte inferior da lista */
+            overflow-y: auto; /* Permite scroll SOMENTE SE NECESSÁRIO dentro da lista */
+        }
 
-    /* Layout para 1-2 participantes: 1 linha, 2 colunas */
-    #debateParticipantsList.layout-1-2 {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: 1fr; /* Ocupa 1 linha completa */
-    }
+        /* Layout para 1 participante: 1 linha, 1 coluna grande */
+        #debateParticipantsList.layout-1 {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr;
+        }
 
-    /* Layout para 3-4 participantes: 2 linhas, 2 colunas */
-    #debateParticipantsList.layout-3-4 {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(2, 1fr); /* Ocupa 2 linhas */
-    }
+        /* Layout para 2 participantes: 1 linha, 2 colunas */
+        #debateParticipantsList.layout-2 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: 1fr;
+        }
 
-    /* Layout para 5-8 participantes: 2 colunas, 4 linhas */
-    #debateParticipantsList.layout-5-8 {
-        grid-template-columns: repeat(2, 1fr);
-        grid-template-rows: repeat(4, 1fr); /* Ocupa 4 linhas */
-    }
-    
-    /* Fallback/Default para mais de 8 (ou se layout não se aplicar) */
-    #debateParticipantsList.layout-default {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        grid-auto-rows: minmax(min-content, max-content);
-    }
+        /* Layout para 3-4 participantes: 2 linhas, 2 colunas */
+        #debateParticipantsList.layout-3-4 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(2, 1fr); 
+        }
 
+        /* Layout para 5-6 participantes: 3 linhas, 2 colunas */
+        #debateParticipantsList.layout-5-6 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(3, 1fr); 
+        }
 
-    .debate-participant-card {
-        background-color: #3a3a3a;
-        border-radius: 10px;
-        padding: 15px; /* Padding interno da card */
-        display: flex;
-        flex-direction: column; /* Nome e tempo ficam em colunas */
-        align-items: center; /* Centraliza o conteúdo horizontalmente */
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-        transition: transform 0.2s ease, border 0.2s ease;
-        min-height: 120px; /* Altura mínima para cada card */
-        box-sizing: border-box;
-        /* Ajustes para altura e alinhamento vertical */
-        height: 100%; /* Ocupa a altura da célula da grelha */
-        justify-content: center; /* Centraliza o conteúdo verticalmente dentro da card */
-    }
-
-    .debate-participant-card.active-speaker {
-        border: 3px solid #3498db; /* Borda azul para o orador ativo */
-        transform: scale(1.02);
-    }
-
-    .debate-participant-name {
-        /* Ajuste para usar vw/vh e min/max para melhor escalabilidade */
-        font-size: clamp(2vw, 2.5vw, 4vw); /* min, ideal, max font-size */
-        font-weight: bold;
-        color: #ecf0f1;
-        text-align: center; /* Centraliza o nome */
-        margin-bottom: 1.5vh; /* Espaço entre o nome e o relógio (usando vh) */
-        white-space: nowrap; /* IMPEDE QUEBRA DE LINHA para o nome */
-        overflow: hidden; /* Esconde o que excede */
-        text-overflow: ellipsis; /* Adiciona "..." se o nome for muito longo */
-        width: 100%; /* Ocupa toda a largura da card */
-        line-height: 1.2; /* Ajuste para espaçamento de linha */
-    }
-
-    .debate-participant-time {
-        /* Ajuste para usar vw/vh e min/max para melhor escalabilidade */
-        font-size: clamp(4vw, 5vw, 8vw); /* min, ideal, max font-size */
-        font-weight: bold;
-        padding: 1.5vh 1.5vw; /* Padding para que os dígitos caibam (usando vh/vw) */
-        border-radius: 8px;
-        min-width: 15vw; /* Largura mínima baseada na viewport */
-        max-width: 100%; /* Garante que não exceda a largura da card */
-        text-align: center;
-        color: white; /* Texto do tempo sempre branco para contraste nas cores de fundo */
-        display: flex; /* Para centralizar os dígitos vertical e horizontalmente */
-        justify-content: center;
-        align-items: center;
-        box-sizing: border-box; /* Inclui padding na largura e altura */
-        height: clamp(6vh, 8vh, 12vh); /* Altura fixa para a caixa do relógio (usando vh) */
-    }
-
-    .debate-participant-time.green { background-color: #28a745; }
-    .debate-participant-time.yellow { background-color: #ffc107; color: #333; } /* Texto escuro para amarelo */
-    .debate-participant-time.red { background-color: #dc3545; }
-
-    /* Media queries para ajustar tamanhos de fonte em telas muito pequenas ou muito grandes */
-    @media (max-width: 600px) {
-        #speakerName { font-size: 10vw; }
-        #clockDisplay { font-size: 30vw; }
-        #speakerMessage { font-size: 6vw; }
-        #currentTimePopout { font-size: 4vw; }
+        /* Layout para 7-8 participantes: 4 linhas, 2 colunas */
+        #debateParticipantsList.layout-7-8 {
+            grid-template-columns: repeat(2, 1fr);
+            grid-template-rows: repeat(4, 1fr); 
+        }
         
-        #debateModeContainer h2 { font-size: 6vw; }
-        .debate-participant-name { font-size: 4vw; } 
-        .debate-participant-time { 
-            font-size: 8vw; /* Ajuste para telas pequenas */
-            min-width: 120px;
-            height: 60px;
+        /* Fallback/Default para mais de 8 */
+        #debateParticipantsList.layout-default {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Min-width menor */
+            grid-auto-rows: minmax(min-content, max-content);
         }
-        .debate-participant-card { padding: 10px; min-height: 100px; }
-        #debateParticipantsList { grid-template-columns: 1fr; } /* Uma coluna em telas muito pequenas */
-    }
 
-    @media (min-width: 1920px) {
-        #speakerName { font-size: 6vw; }
-        #clockDisplay { font-size: 18vw; }
-        #speakerMessage { font-size: 4vw; }
-        #currentTimePopout { font-size: 2vw; }
 
-        #debateModeContainer h2 { font-size: 2.5vw; }
-        .debate-participant-name { font-size: 1.8vw; } 
-        .debate-participant-time { 
-            font-size: 3vw; 
-            min-width: 140px;
-            height: 70px;
+        .debate-participant-card {
+            background-color: #3a3a3a;
+            border-radius: 10px;
+            padding: 1vw; /* Padding responsivo */
+            display: flex;
+            flex-direction: row; /* NOVO: Nome e tempo lado a lado */
+            justify-content: space-between; /* Espaçamento entre nome e tempo */
+            align-items: center; /* Centraliza verticalmente o conteúdo */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, border 0.2s ease;
+            min-height: 10vh; /* Altura mínima responsiva para o card */
+            box-sizing: border-box;
+            height: 100%; /* Ocupa a altura da célula da grelha */
         }
-        /* Para telas muito grandes, podemos permitir mais colunas, mas o JavaScript irá sobrepor */
-        /* #debateParticipantsList { grid-template-columns: repeat(4, 1fr); max-width: 1800px; } */
-    }
-</style>
+
+        .debate-participant-card.active-speaker {
+            border: 3px solid #3498db; /* Borda azul para o orador ativo */
+            transform: scale(1.02);
+        }
+
+        .debate-participant-name {
+            font-size: clamp(2.5vw, 3.5vw, 5vw); /* Fonte maior, responsiva */
+            font-weight: bold;
+            color: #ecf0f1;
+            text-align: left; /* Nome alinhado à esquerda */
+            flex-grow: 1; /* Ocupa o espaço disponível */
+            margin-right: 1vw; /* Espaço entre nome e relógio */
+            white-space: nowrap; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+            line-height: 1.2; 
+        }
+
+        .debate-participant-time {
+            font-size: clamp(4vw, 5vw, 8vw); /* Fonte maior, responsiva */
+            font-weight: bold;
+            padding: 0.5vh 0.8vw; /* Padding ajustado */
+            border-radius: 8px;
+            min-width: 12vw; /* Largura mínima para o relógio, para evitar que encolha demais */
+            text-align: center;
+            color: white; 
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            height: clamp(6vh, 8vh, 12vh); /* Altura da caixa do relógio */
+            flex-shrink: 0; /* Impede que o relógio encolha */
+        }
+
+        .debate-participant-time.green { background-color: #28a745; }
+        .debate-participant-time.yellow { background-color: #ffc107; color: #333; } /* Texto escuro para amarelo */
+        .debate-participant-time.red { background-color: #dc3545; }
+
+        /* Media queries para ajustar tamanhos de fonte em telas muito pequenas ou muito grandes */
+        @media (max-width: 600px) {
+            #speakerName { font-size: 10vw; }
+            #clockDisplay { font-size: 30vw; }
+            #speakerMessage { font-size: 6vw; }
+            #currentTimePopout { font-size: 4vw; }
+            
+            #debateModeContainer h2 { font-size: 6vw; }
+            .debate-participant-card { flex-direction: column; padding: 10px; min-height: 100px; } /* Em telas pequenas, nome acima do tempo */
+            .debate-participant-name { font-size: 5vw; margin-bottom: 5px; margin-right: 0;}
+            .debate-participant-time { 
+                font-size: 10vw; /* Ajuste para telas muito pequenas */
+                min-width: 150px;
+                height: 70px;
+            }
+            #debateParticipantsList { 
+                grid-template-columns: 1fr !important; /* Força 1 coluna em mobile */
+                grid-template-rows: repeat(auto-fit, minmax(min-content, 1fr)) !important; /* Permite scroll vertical */
+            }
+        }
+
+        @media (min-width: 1920px) {
+            #speakerName { font-size: 6vw; }
+            #clockDisplay { font-size: 18vw; }
+            #speakerMessage { font-size: 4vw; }
+            #currentTimePopout { font-size: 2vw; }
+
+            #debateModeContainer h2 { font-size: 2.5vw; }
+            .debate-participant-name { font-size: 2vw; } 
+            .debate-participant-time { 
+                font-size: 3.5vw; 
+                min-width: 150px;
+                height: 80px;
+            }
+            /* Em telas muito grandes, podemos permitir mais colunas ou ajustar ainda mais */
+            #debateParticipantsList.layout-1 { grid-template-columns: 0.5fr; } /* Centraliza um único card grande */
+            #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, minmax(400px, 1fr)); } /* Cards maiores */
+            #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
+            #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
+            #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
+        }
+    </style>
 </head>
 <body>
     <div id="currentTimePopout">00:00:00</div>
@@ -248,141 +266,144 @@
 
     <div id="speakerMessage"></div>
 
-  <script>
-    const speakerNameDisplay = document.getElementById('speakerName');
-    const clockDisplay = document.getElementById('clockDisplay');
-    const speakerMessageDisplay = document.getElementById('speakerMessage');
-    const currentTimePopout = document.getElementById('currentTimePopout');
+    <script>
+        const speakerNameDisplay = document.getElementById('speakerName');
+        const clockDisplay = document.getElementById('clockDisplay');
+        const speakerMessageDisplay = document.getElementById('speakerMessage');
+        const currentTimePopout = document.getElementById('currentTimePopout');
 
-    // NOVO: Elementos do Modo Debate
-    const normalModeContainer = document.getElementById('normalModeContainer');
-    const debateModeContainer = document.getElementById('debateModeContainer');
-    const debateParticipantsList = document.getElementById('debateParticipantsList');
+        // Elementos do Modo Debate
+        const normalModeContainer = document.getElementById('normalModeContainer');
+        const debateModeContainer = document.getElementById('debateModeContainer');
+        const debateParticipantsList = document.getElementById('debateParticipantsList');
 
-    let intervalId = null;
+        let intervalId = null;
 
-    function formatTime(seconds) {
-        const isNegative = seconds < 0;
-        const absSeconds = Math.abs(seconds);
-        const minutes = Math.floor(absSeconds / 60);
-        const remainingSeconds = absSeconds % 60;
-        const sign = isNegative ? '-' : '';
-        return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
-    }
-
-    // Esta função agora lida apenas com o modo normal
-    function updateClockDisplay(name, timeLeft, colorClass) {
-        speakerNameDisplay.textContent = name;
-        clockDisplay.textContent = formatTime(timeLeft);
-        
-        clockDisplay.classList.remove('green', 'yellow', 'red');
-        clockDisplay.classList.add(colorClass);
-
-        // Garante que o modo normal está visível
-        normalModeContainer.style.display = 'flex';
-        debateModeContainer.style.display = 'none';
-        
-        // Remove quaisquer classes de layout do debate
-        debateParticipantsList.classList.remove('layout-1-2', 'layout-3-4', 'layout-5-8', 'layout-default');
-    }
-
-    // NOVO: Função para atualizar a lista de oradores no Modo Debate
-    function updateAllClocksDisplay(timersData) {
-        debateParticipantsList.innerHTML = ''; // Limpa a lista existente
-
-        // Primeiro, remove todas as classes de layout existentes
-        debateParticipantsList.classList.remove('layout-1-2', 'layout-3-4', 'layout-5-8', 'layout-default');
-
-        // Adiciona a classe de layout com base no número de participantes
-        const numParticipants = timersData.length;
-        if (numParticipants >= 1 && numParticipants <= 2) {
-            debateParticipantsList.classList.add('layout-1-2');
-        } else if (numParticipants >= 3 && numParticipants <= 4) {
-            debateParticipantsList.classList.add('layout-3-4');
-        } else if (numParticipants >= 5 && numParticipants <= 8) {
-            debateParticipantsList.classList.add('layout-5-8');
-        } else {
-            debateParticipantsList.classList.add('layout-default'); // Para mais de 8 ou outros casos
+        function formatTime(seconds) {
+            const isNegative = seconds < 0;
+            const absSeconds = Math.abs(seconds);
+            const minutes = Math.floor(absSeconds / 60);
+            const remainingSeconds = absSeconds % 60;
+            const sign = isNegative ? '-' : '';
+            return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
         }
 
-        if (numParticipants === 0) {
-            // Mensagem se não houver participantes no modo debate
-            debateParticipantsList.innerHTML = '<p style="color: #bdc3c7; text-align: center; font-size: 2.5vw;">Nenhum participante ativo.</p>';
-        } else {
-            timersData.forEach(timer => {
-                const card = document.createElement('div');
-                card.className = 'debate-participant-card';
-                if (timer.isActive) {
-                    card.classList.add('active-speaker'); // Destaca o orador ativo
-                }
+        // Esta função lida apenas com o modo normal
+        function updateClockDisplay(name, timeLeft, colorClass) {
+            speakerNameDisplay.textContent = name;
+            clockDisplay.textContent = formatTime(timeLeft);
+            
+            clockDisplay.classList.remove('green', 'yellow', 'red');
+            clockDisplay.classList.add(colorClass);
 
-                const nameDiv = document.createElement('div');
-                nameDiv.className = 'debate-participant-name';
-                nameDiv.textContent = timer.name;
-
-                const timeDiv = document.createElement('div');
-                timeDiv.className = 'debate-participant-time';
-                timeDiv.textContent = formatTime(timer.timeLeft);
-                timeDiv.classList.add(timer.color); // Aplica a cor (verde, amarelo, vermelho)
-
-                card.appendChild(nameDiv);
-                card.appendChild(timeDiv);
-                debateParticipantsList.appendChild(card);
-            });
+            normalModeContainer.style.display = 'flex';
+            debateModeContainer.style.display = 'none';
+            
+            // Remove quaisquer classes de layout do debate
+            debateParticipantsList.classList.remove('layout-1', 'layout-2', 'layout-3-4', 'layout-5-6', 'layout-7-8', 'layout-default');
         }
 
-        // Garante que o modo debate está visível
-        normalModeContainer.style.display = 'none';
-        debateModeContainer.style.display = 'flex';
-    }
+        // Função para atualizar a lista de oradores no Modo Debate
+        function updateAllClocksDisplay(timersData) {
+            debateParticipantsList.innerHTML = ''; // Limpa a lista existente
 
-    function updateSpeakerMessage(message) {
-        speakerMessageDisplay.textContent = message;
-    }
+            // Primeiro, remove todas as classes de layout existentes
+            debateParticipantsList.classList.remove('layout-1', 'layout-2', 'layout-3-4', 'layout-5-6', 'layout-7-8', 'layout-default');
 
-    function updateCurrentTimePopout() {
-        const now = new Date();
-        const hours = String(now.getHours()).padStart(2, '0');
-        const minutes = String(now.getMinutes()).padStart(2, '0');
-        const seconds = String(now.getSeconds()).padStart(2, '0');
-        currentTimePopout.textContent = `${hours}:${minutes}:${seconds}`;
-    }
-
-    window.addEventListener('message', (event) => {
-        const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
-        if (!isLocalOrigin && !event.origin.startsWith('file://')) {
-            console.warn('Popout: Mensagem bloqueada de origem desconhecida:', event.origin);
-            return;
-        }
-
-        if (event.data) {
-            if (event.data.type === 'updateClock') {
-                // Modo normal: exibe um único orador
-                updateClockDisplay(event.data.name, event.data.timeLeft, event.data.color);
-            } else if (event.data.type === 'updateAllClocks') {
-                // NOVO: Modo Debate: exibe a lista de oradores
-                updateAllClocksDisplay(event.data.timers);
-            } else if (event.data.type === 'updateMessage') {
-                updateSpeakerMessage(event.data.message);
-            } else if (event.data.type === 'updateCurrentTime') {
-                currentTimePopout.textContent = event.data.time;
+            // Adiciona a classe de layout com base no número de participantes
+            const numParticipants = timersData.length;
+            if (numParticipants === 1) {
+                debateParticipantsList.classList.add('layout-1');
+            } else if (numParticipants === 2) {
+                debateParticipantsList.classList.add('layout-2');
+            } else if (numParticipants >= 3 && numParticipants <= 4) {
+                debateParticipantsList.classList.add('layout-3-4');
+            } else if (numParticipants >= 5 && numParticipants <= 6) {
+                debateParticipantsList.classList.add('layout-5-6');
+            } else if (numParticipants >= 7 && numParticipants <= 8) {
+                debateParticipantsList.classList.add('layout-7-8');
+            } else {
+                debateParticipantsList.classList.add('layout-default'); // Para mais de 8
             }
-        }
-    });
 
-    window.addEventListener('beforeunload', () => {
-        if (window.opener) {
-            window.opener.postMessage({ type: 'popoutClosed' }, window.location.origin);
-        }
-    });
+            if (numParticipants === 0) {
+                // Mensagem se não houver participantes no modo debate
+                debateParticipantsList.innerHTML = '<p style="color: #bdc3c7; text-align: center; font-size: 2.5vw;">Nenhum participante ativo.</p>';
+            } else {
+                timersData.forEach(timer => {
+                    const card = document.createElement('div');
+                    card.className = 'debate-participant-card';
+                    if (timer.isActive) {
+                        card.classList.add('active-speaker'); // Destaca o orador ativo
+                    }
 
-    document.addEventListener('DOMContentLoaded', () => {
-         updateCurrentTimePopout(); // Atualiza uma vez ao carregar
-         setInterval(updateCurrentTimePopout, 1000); // Atualiza a cada segundo
-         if (window.opener) {
-            window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
+                    const nameDiv = document.createElement('div');
+                    nameDiv.className = 'debate-participant-name';
+                    nameDiv.textContent = timer.name;
+
+                    const timeDiv = document.createElement('div');
+                    timeDiv.className = 'debate-participant-time';
+                    timeDiv.textContent = formatTime(timer.timeLeft);
+                    timeDiv.classList.add(timer.color); // Aplica a cor (verde, amarelo, vermelho)
+
+                    card.appendChild(nameDiv);
+                    card.appendChild(timeDiv);
+                    debateParticipantsList.appendChild(card);
+                });
+            }
+
+            // Garante que o modo debate está visível
+            normalModeContainer.style.display = 'none';
+            debateModeContainer.style.display = 'flex';
         }
-    });
-</script>
+
+        function updateSpeakerMessage(message) {
+            speakerMessageDisplay.textContent = message;
+        }
+
+        function updateCurrentTimePopout() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            currentTimePopout.textContent = `${hours}:${minutes}:${seconds}`;
+        }
+
+        window.addEventListener('message', (event) => {
+            const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
+            if (!isLocalOrigin && !event.origin.startsWith('file://')) {
+                console.warn('Popout: Mensagem bloqueada de origem desconhecida:', event.origin);
+                return;
+            }
+
+            if (event.data) {
+                if (event.data.type === 'updateClock') {
+                    // Modo normal: exibe um único orador
+                    updateClockDisplay(event.data.name, event.data.timeLeft, event.data.color);
+                } else if (event.data.type === 'updateAllClocks') {
+                    // Modo Debate: exibe a lista de oradores
+                    updateAllClocksDisplay(event.data.timers);
+                } else if (event.data.type === 'updateMessage') {
+                    updateSpeakerMessage(event.data.message);
+                } else if (event.data.type === 'updateCurrentTime') {
+                    currentTimePopout.textContent = event.data.time;
+                }
+            }
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (window.opener) {
+                window.opener.postMessage({ type: 'popoutClosed' }, window.location.origin);
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+             updateCurrentTimePopout(); // Atualiza uma vez ao carregar
+             setInterval(updateCurrentTimePopout, 1000); // Atualiza a cada segundo
+             if (window.opener) {
+                window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
+            }
+        });
+    </script>
 </body>
 </html>
