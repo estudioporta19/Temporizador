@@ -14,7 +14,7 @@
             color: #ecf0f1; /* Texto claro para contraste geral */
             display: flex;
             flex-direction: column;
-            min-height: 100vh;
+            min-height: 10vh;
         }
 
         header {
@@ -71,7 +71,7 @@
         .participant-sub-column {
             display: flex;
             flex-direction: column;
-            flex: 1; /* Faz com que cada sub-coluna ocupe o mesmo espaço */
+            flex: 1; /* Faz que cada sub-coluna ocupe o mesmo espaço */
             min-width: 0; /* Permite o encolhimento correto em telas pequenas */
         }
 
@@ -110,7 +110,7 @@
             flex-shrink: 0; /* Impede que o grupo de botões encolha */
         }
 
-        /* Estilo para os botões específicos no header da lista */
+        /* Estilos para os botões específicos no header da lista */
         #clearAllParticipantsButton,
         #toggleDebateModeBtn { /* Aplicar estilo a ambos os botões */
             background-color: #e74c3c; /* Vermelho para ação de apagar */
@@ -635,8 +635,8 @@
         }
         
         let initialTotalSeconds = data.initialTime || calculateTotalSeconds(initialMinutesInput.value, initialSecondsInput.value);
-        let customYellow = data.yellow;
-        let customRed = data.red;
+        let customYellow = data.yellowThreshold; // Use yellowThreshold from data
+        let customRed = data.redThreshold;     // Use redThreshold from data
 
         if (!name) {
             name = `Participante ${nextParticipantNumber}`;
@@ -667,15 +667,15 @@
             </div>
             <div class="participant-line-2-buttons">
                 <div class="controls">
-                    <button id="start-${id}">Inic.</button>
-                    <button id="pause-${id}" disabled>Pausar</button>
-                    <button id="reset-${id}" disabled>Reset</button>
+                    <button id="start-${id}" data-action="start" data-id="${id}">Inic.</button>
+                    <button id="pause-${id}" data-action="pause" data-id="${id}" disabled>Pausar</button>
+                    <button id="reset-${id}" data-action="reset" data-id="${id}" disabled>Reset</button>
                 </div>
                 <div class="adjust-time-buttons">
-                    <button id="add-min-${id}">+1min</button>
-                    <button id="sub-min-${id}">-1min</button>
+                    <button id="add-min-${id}" data-action="add-min" data-id="${id}">+1min</button>
+                    <button id="sub-min-${id}" data-action="sub-min" data-id="${id}">-1min</button>
                 </div>
-                <button class="remove-participant-btn" data-id="${id}">X</button>
+                <button class="remove-participant-btn" data-action="remove" data-id="${id}">X</button>
             </div>
         `;
 
@@ -700,14 +700,6 @@
 
         timers.push(timer);
         reorderParticipantsInColumns(); // Adiciona o card à coluna correta e reordena
-
-        // Adiciona os Event Listeners APÓS o elemento ser criado e adicionado ao DOM
-        timer.startButton.addEventListener('click', () => startTimer(timer));
-        timer.pauseButton.addEventListener('click', () => pauseTimer(timer));
-        timer.resetButton.addEventListener('click', () => resetTimer(timer));
-        timer.addMinButton.addEventListener('click', () => adjustTime(timer, 60));
-        timer.subMinButton.addEventListener('click', () => adjustTime(timer, -60));
-        participantCard.querySelector('.remove-participant-btn').addEventListener('click', () => removeParticipant(id));
 
         timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
 
@@ -759,7 +751,7 @@
 
     function adjustTime(timer, secondsToAdd) {
         // Permite ajuste se for o timer ativo OU se não houver timer ativo E este estiver parado
-        if ((activeTimer && activeTimer.id === timer.id) || (!activeTimer && timer.isPaused)) {
+        if ((activeTimer && activeTimer.id === timer.id) || (!activeTimer && timer.isPaused && !isDebateModeActive)) {
             timer.timeLeft += secondsToAdd;
             if (timer.timeLeft < -5940) { // Limite de -99:00
                 timer.timeLeft = -5940;
@@ -977,7 +969,7 @@
             popoutWindow.focus();
             popoutReady = false; // Reset ready state until popout confirms it's ready
         } else {
-            alert('Falha ao abrir a janela pop-up. Por favor, verifique se os bloqueadores de pop-up estão desativados.');
+            // No alert needed, as browser usually handles pop-up blocking feedback
         }
     }
 
@@ -1006,7 +998,7 @@
                 name: timer.name,
                 timeLeft: timer.timeLeft,
                 color: getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold),
-                isActive: activeTimer && activeTimer.id === timer.id
+                isActive: activeTimer && activeTimer.id === timer.id // Adiciona esta propriedade
             }));
         } else if (activeTimer) {
             dataToSend.activeSpeakerName = activeTimer.name;
@@ -1023,10 +1015,9 @@
         popoutWindow.postMessage(dataToSend, window.location.origin);
     }
 
-    function sendMessageToPopout(message) {
+    function sendMessageToPopout() {
         // This function will now simply trigger a full updateClocks,
         // as updateClocks already sends the message state.
-        // This makes sure the message is always in sync with other states.
         updateClocks();
     }
 
@@ -1034,12 +1025,7 @@
     function saveConferenceSession() {
         const sessionName = sessionNameInput.value.trim();
         if (!sessionName) {
-            alert('Por favor, insira um nome para a sessão.');
-            return;
-        }
-
-        if (conferenceSessions[sessionName] && !confirm(`Uma sessão com o nome "${sessionName}" já existe. Deseja sobrescrevê-la?`)) {
-            return;
+            return; // Do nothing if no name
         }
 
         const sessionTimers = timers.map(timer => ({
@@ -1063,79 +1049,87 @@
 
         localStorage.setItem('conferenceSessions', JSON.stringify(conferenceSessions));
         populateSessionSelect();
-        alert(`Sessão "${sessionName}" salva com sucesso!`);
+        // Removed alert
     }
 
     function loadConferenceSession() {
         const selectedSessionName = loadSessionSelect.value;
         if (!selectedSessionName) {
-            alert('Por favor, selecione uma sessão para carregar.');
-            return;
+            return; // Do nothing if no session selected
         }
 
-        if (confirm('Carregar esta sessão irá limpar todos os participantes atuais. Deseja continuar?')) {
-            // Clear all current timers and their intervals
-            timers.forEach(timer => clearInterval(timer.intervalId));
-            timers = [];
-            activeTimer = null;
-            nextParticipantNumber = 1;
+        // Clear all current timers and their intervals
+        timers.forEach(timer => clearInterval(timer.intervalId));
+        timers = [];
+        activeTimer = null;
+        
+        // Clear the visual columns
+        participantColumn1.innerHTML = '';
+        participantColumn2.innerHTML = '';
+
+        noParticipantsMessage.style.display = 'block';
+
+        const sessionData = conferenceSessions[selectedSessionName];
+        if (sessionData) {
+            // Restore global alert settings
+            yellowTimeInput.value = sessionData.globalYellow;
+            redTimeInput.value = sessionData.globalRed;
+            GLOBAL_YELLOW_THRESHOLD_SECONDS = parseInt(yellowTimeInput.value);
+            GLOBAL_RED_THRESHOLD_SECONDS = parseInt(redTimeInput.value);
+
+            // Restore debate mode state
+            isDebateModeActive = sessionData.isDebateModeActive;
+            updateDebateModeButtonText();
+
+            // Restore speaker message
+            speakerMessageInput.value = sessionData.speakerMessage || '';
+
+            // Add participants from session data
+            sessionData.timers.forEach(timerData => {
+                addParticipant(timerData, true); // Pass true for fromSession
+            });
             
-            // Clear the visual columns
-            participantColumn1.innerHTML = '';
-            participantColumn2.innerHTML = '';
-
-            noParticipantsMessage.style.display = 'block';
-
-            const sessionData = conferenceSessions[selectedSessionName];
-            if (sessionData) {
-                // Restore global alert settings
-                yellowTimeInput.value = sessionData.globalYellow;
-                redTimeInput.value = sessionData.globalRed;
-                GLOBAL_YELLOW_THRESHOLD_SECONDS = parseInt(yellowTimeInput.value);
-                GLOBAL_RED_THRESHOLD_SECONDS = parseInt(redTimeInput.value);
-
-                // Restore debate mode state
-                isDebateModeActive = sessionData.isDebateModeActive;
-                updateDebateModeButtonText();
-
-                // Restore speaker message
-                speakerMessageInput.value = sessionData.speakerMessage || '';
-
-                // Add participants from session data
-                sessionData.timers.forEach(timerData => {
-                    addParticipant(timerData, true); // Pass true for fromSession
-                });
-                
-                // Re-evaluate the active timer after all participants are added
-                const savedActiveTimerData = sessionData.timers.find(t => t.isActive && !t.isPaused);
-                if (savedActiveTimerData) {
-                    activeTimer = timers.find(t => t.id === savedActiveTimerData.id);
-                    if (activeTimer) {
-                        startTimer(activeTimer); // Restart the active timer
-                    }
-                } else {
-                    updateAllTimerButtons(); // Just update buttons if no active timer
+            // Re-evaluate the active timer after all participants are added
+            const savedActiveTimerData = sessionData.timers.find(t => t.isActive && !t.isPaused);
+            if (savedActiveTimerData) {
+                activeTimer = timers.find(t => t.id === savedActiveTimerData.id);
+                if (activeTimer) {
+                    startTimer(activeTimer); // Restart the active timer
                 }
-
-                alert(`Sessão "${selectedSessionName}" carregada com sucesso!`);
             } else {
-                alert('Sessão não encontrada.');
+                updateAllTimerButtons(); // Just update buttons if no active timer
             }
+
+            // Recalculate nextParticipantNumber based on existing participants after loading
+            let maxNum = 0;
+            timers.forEach(timer => {
+                const match = timer.name.match(/Participante (\d+)/);
+                if (match) {
+                    const num = parseInt(match[1]);
+                    if (num > maxNum) {
+                        maxNum = num;
+                    }
+                }
+            });
+            nextParticipantNumber = maxNum + 1;
+
+            updateAllTimerButtons(); // Ensure all buttons are correctly enabled/disabled based on current state
+        } else {
+            // Removed alert
         }
     }
 
     function deleteConferenceSession() {
         const selectedSessionName = loadSessionSelect.value;
         if (!selectedSessionName) {
-            alert('Por favor, selecione uma sessão para apagar.');
-            return;
+            return; // Do nothing if no session selected
         }
 
         if (confirm(`Tem certeza de que deseja apagar a sessão "${selectedSessionName}"?`)) {
             delete conferenceSessions[selectedSessionName];
             localStorage.setItem('conferenceSessions', JSON.stringify(conferenceSessions));
             populateSessionSelect();
-            alert(`Sessão "${selectedSessionName}" apagada com sucesso!`);
+            // Removed alert
         }
     }
 
@@ -1173,18 +1167,54 @@
     }
 
 
-    // --- Event Listeners ---
+    // --- Delegação de Eventos para Botões de Participantes ---
+    // Adicione o listener aos containers pais que não são recriados
+    [participantColumn1, participantColumn2].forEach(column => {
+        column.addEventListener('click', (event) => {
+            const target = event.target;
+            const action = target.dataset.action;
+            const id = parseInt(target.dataset.id); // Converte para número
+
+            if (!action || isNaN(id)) return; // Se não houver ação ou ID inválido, ignore
+
+            const timer = timers.find(t => t.id === id);
+            if (!timer) return; // Se o timer não for encontrado, ignore
+
+            switch (action) {
+                case 'start':
+                    startTimer(timer);
+                    break;
+                case 'pause':
+                    pauseTimer(timer);
+                    break;
+                case 'reset':
+                    resetTimer(timer);
+                    break;
+                case 'add-min':
+                    adjustTime(timer, 60);
+                    break;
+                case 'sub-min':
+                    adjustTime(timer, -60);
+                    break;
+                case 'remove':
+                    removeParticipant(id);
+                    break;
+            }
+        });
+    });
+
+
+    // --- Outros Event Listeners ---
     addParticipantButton.addEventListener('click', () => addParticipant());
     openPopoutClockBtn.addEventListener('click', openPopoutClock);
     sendMessageButton.addEventListener('click', () => {
-        // Send message and clear input field
-        sendMessageToPopout(speakerMessageInput.value.trim());
+        sendMessageToPopout();
         speakerMessageInput.value = ''; // Clear input after sending
         speakerMessageInput.focus(); // Keep focus for quick sending
     });
     clearMessageButton.addEventListener('click', () => {
         speakerMessageInput.value = '';
-        sendMessageToPopout('');
+        sendMessageToPopout(); // Send empty message
     });
 
     // NOVO: Enviar mensagem ao pressionar "Enter" na textarea
