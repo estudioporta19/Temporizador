@@ -43,6 +43,7 @@
             width: 100%;
             height: 100%;
             box-sizing: border-box;
+            /* Inicia como flex, será hidden se o modo debate estiver ativo */
         }
 
         #speakerName {
@@ -92,7 +93,7 @@
 
         /* --- Estilos para o Modo Debate --- */
         #debateModeContainer {
-            display: none;
+            display: none; /* Começa oculto */
             flex-direction: column;
             align-items: center;
             flex-grow: 1;
@@ -290,6 +291,7 @@
         const debateParticipantsList = document.getElementById('debateParticipantsList');
 
         let intervalId = null;
+        let isDebateModeActivePopout = false; // Estado local para o pop-up
 
         function formatTime(seconds) {
             const isNegative = seconds < 0;
@@ -308,6 +310,7 @@
             clockDisplay.classList.remove('green', 'yellow', 'red');
             clockDisplay.classList.add(colorClass);
 
+            // Garante que o modo normal está visível e o debate está oculto
             normalModeContainer.style.display = 'flex';
             debateModeContainer.style.display = 'none';
             
@@ -364,7 +367,7 @@
                 });
             }
 
-            // Garante que o modo debate está visível
+            // Garante que o modo debate está visível e o normal está oculto
             normalModeContainer.style.display = 'none';
             debateModeContainer.style.display = 'flex';
         }
@@ -390,10 +393,10 @@
 
             if (event.data) {
                 if (event.data.type === 'updateClock') {
-                    // Modo normal: exibe um único orador
+                    isDebateModeActivePopout = false; // Desativa o modo debate no popout
                     updateClockDisplay(event.data.name, event.data.timeLeft, event.data.color);
                 } else if (event.data.type === 'updateAllClocks') {
-                    // Modo Debate: exibe a lista de oradores
+                    isDebateModeActivePopout = true; // Ativa o modo debate no popout
                     updateAllClocksDisplay(event.data.timers);
                 } else if (event.data.type === 'updateMessage') {
                     updateSpeakerMessage(event.data.message);
@@ -410,9 +413,9 @@
         });
 
         document.addEventListener('DOMContentLoaded', () => {
-             updateCurrentTimePopout(); // Atualiza uma vez ao carregar
-             setInterval(updateCurrentTimePopout, 1000); // Atualiza a cada segundo
-             if (window.opener) {
+            updateCurrentTimePopout(); // Atualiza uma vez ao carregar
+            setInterval(updateCurrentTimePopout, 1000); // Atualiza a cada segundo
+            if (window.opener) {
                 window.opener.postMessage({ type: 'popoutReady' }, window.location.origin);
             }
         });
