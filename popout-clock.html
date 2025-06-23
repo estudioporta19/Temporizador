@@ -16,16 +16,17 @@
             color: #ecf0f1;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             overflow: hidden; /* Remove scrollbars */
-            padding-bottom: 5vh; /* Adiciona um padding na parte inferior do body */
+            padding-bottom: 3vh; /* Reduz padding na parte inferior para mais espaço */
             box-sizing: border-box; /* Garante que o padding seja incluído na altura total */
         }
 
         #currentTimePopout {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            font-size: 3vw;
-            color: rgba(255, 255, 255, 0.7);
+            top: 15px; /* Mais perto do topo */
+            right: 15px; /* Mais perto da direita */
+            font-size: 2.5vw; /* Ligeiramente menor para ser discreto */
+            color: rgba(255, 255, 255, 0.6);
+            z-index: 10; /* Garante que fica por cima de tudo */
         }
 
         /* Container principal para o display do relógio e nome (MODO NORMAL) */
@@ -36,33 +37,37 @@
             justify-content: center;
             flex-grow: 1; /* Ocupa o espaço disponível */
             width: 100%;
-            padding-top: 5vh; /* Adiciona um padding no topo para o relógio/nome */
+            padding-top: 5vh; /* Padding no topo para o relógio/nome */
+            box-sizing: border-box;
         }
 
         #speakerName {
-            font-size: 8vw; /* Tamanho responsivo para o nome */
+            font-size: clamp(8vw, 10vw, 120px); /* Tamanho responsivo para o nome, com limite máximo */
             font-weight: bold;
             margin-bottom: 2vh; /* Espaço abaixo do nome */
             color: #ffffff;
             text-align: center;
             padding: 0 2vw; /* Pequeno padding para evitar que toque nas bordas */
             word-break: break-word; /* Quebra palavras longas */
+            line-height: 1.1; /* Ajusta a altura da linha */
         }
 
         #clockDisplay {
-            font-size: 25vw; /* Tamanho responsivo para o relógio */
+            font-size: clamp(25vw, 30vw, 400px); /* Tamanho responsivo maior para o relógio, com limite máximo */
             font-weight: bold;
             text-align: center;
             padding: 0 2vw;
-            border-radius: 20px; /* Bordas arredondadas para o display */
-            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5); /* Sombra suave */
-            transition: background-color 0.5s ease, color 0.5s ease; /* Transição suave de cores */
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+            transition: background-color 0.5s ease, color 0.5s ease;
             min-width: 90vw; /* Garante que o relógio não fique muito pequeno */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 40vh; /* Altura fixa para o display do relógio */
-            box-sizing: border-box; /* Inclui padding e border na largura/altura */
+            flex-grow: 1; /* Permite que o relógio ocupe mais altura no modo normal */
+            height: 100%; /* Ocupa a altura disponível do container */
+            max-height: 50vh; /* Limita a altura máxima para deixar espaço para mensagem/nome */
+            box-sizing: border-box;
         }
 
         #clockDisplay.green { background-color: #28a745; color: white; } /* Verde vibrante */
@@ -70,16 +75,16 @@
         #clockDisplay.red { background-color: #dc3545; color: white; } /* Vermelho vibrante */
 
         #speakerMessage {
-            font-size: 5vw; /* Tamanho responsivo para a mensagem */
+            font-size: clamp(4vw, 5vw, 80px); /* Tamanho responsivo para a mensagem */
             color: #ffffff;
             text-align: center;
             padding: 0 3vw;
             word-wrap: break-word; /* Quebra de linha para mensagens longas */
-            min-height: 10vh; /* Altura mínima para a mensagem */
+            min-height: 8vh; /* Altura mínima para a mensagem */
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 2vh; 
+            margin-top: 2vh; /* Espaço acima da mensagem */
         }
 
         /* --- Estilos para o Modo Debate --- */
@@ -89,14 +94,14 @@
             align-items: center;
             flex-grow: 1;
             width: 100%;
-            padding: 3vh 2vw; /* Padding reduzido para dar mais espaço à grelha */
+            padding: 2vh 1.5vw; /* Padding reduzido para dar mais espaço à grelha */
             box-sizing: border-box;
-            overflow: hidden; /* Garantir que não haja scroll aqui */
+            overflow: hidden; /* Garantir que não haja scroll aqui, o scroll será na lista se necessário */
             height: 100vh; /* Ocupa a altura total do viewport */
         }
 
         #debateModeContainer h2 {
-            font-size: clamp(3vw, 3.5vw, 4vw); /* Título responsivo */
+            font-size: clamp(3vw, 4vw, 60px); /* Título responsivo */
             color: #ffffff;
             margin-bottom: 2vh; /* Margem reduzida */
             text-align: center;
@@ -106,102 +111,91 @@
 
         #debateParticipantsList {
             display: grid;
-            gap: 15px; /* Espaçamento entre cards reduzido */
+            gap: 12px; /* Espaçamento entre cards reduzido */
             width: 100%;
             max-width: 100%;
             flex-grow: 1; /* Ocupa o espaço vertical disponível */
             align-items: stretch; /* Garante que os itens se estendam para preencher a célula */
             justify-content: center;
             height: 100%; /* Essencial para que os itens possam usar o espaço vertical */
-            padding-bottom: 2vh; /* Pequeno padding na parte inferior da lista */
+            padding-bottom: 1vh; /* Pequeno padding na parte inferior da lista */
             overflow-y: auto; /* Permite scroll SOMENTE SE NECESSÁRIO dentro da lista */
         }
 
-        /* Layout para 1 participante: 1 linha, 1 coluna grande */
+        /* Layouts para 1 a 8 participantes (otimizados para não ter scroll) */
         #debateParticipantsList.layout-1 {
             grid-template-columns: 1fr;
-            grid-template-rows: 1fr;
+            grid-template-rows: 1fr; /* Ocupa todo o espaço vertical */
         }
-
-        /* Layout para 2 participantes: 1 linha, 2 colunas */
         #debateParticipantsList.layout-2 {
             grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: 1fr;
+            grid-template-rows: 1fr; /* Ocupa todo o espaço vertical */
         }
-
-        /* Layout para 3-4 participantes: 2 linhas, 2 colunas */
         #debateParticipantsList.layout-3-4 {
             grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(2, 1fr); 
+            grid-template-rows: repeat(2, 1fr); /* Divide em 2 linhas iguais */
         }
-
-        /* Layout para 5-6 participantes: 3 linhas, 2 colunas */
         #debateParticipantsList.layout-5-6 {
             grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(3, 1fr); 
+            grid-template-rows: repeat(3, 1fr); /* Divide em 3 linhas iguais */
         }
-
-        /* Layout para 7-8 participantes: 4 linhas, 2 colunas */
         #debateParticipantsList.layout-7-8 {
             grid-template-columns: repeat(2, 1fr);
-            grid-template-rows: repeat(4, 1fr); 
+            grid-template-rows: repeat(4, 1fr); /* Divide em 4 linhas iguais */
         }
         
-        /* Fallback/Default para mais de 8 */
+        /* Fallback/Default para mais de 8, pode gerar scroll */
         #debateParticipantsList.layout-default {
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Min-width menor */
-            grid-auto-rows: minmax(min-content, max-content);
+            grid-auto-rows: minmax(min-content, max-content); /* Altura adaptável */
         }
-
 
         .debate-participant-card {
             background-color: #3a3a3a;
             border-radius: 10px;
-            padding: 1vw; /* Padding responsivo para que o conteúdo não cole nas bordas */
+            padding: 1.2vw; /* Aumenta o padding para mais espaço interno */
             display: flex;
             flex-direction: row; /* Nome e tempo lado a lado */
             justify-content: space-between; /* Espaçamento entre nome e tempo */
             align-items: center; /* Centraliza verticalmente o conteúdo */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
             transition: transform 0.2s ease, border 0.2s ease;
-            min-height: 10vh; /* Altura mínima responsiva para o card */
             box-sizing: border-box;
             height: 100%; /* Ocupa a altura da célula da grelha */
+            min-height: 80px; /* Altura mínima para o card */
         }
 
         .debate-participant-card.active-speaker {
-            border: 3px solid #3498db; /* Borda azul para o orador ativo */
-            transform: scale(1.02);
+            border: 4px solid #3498db; /* Borda mais grossa para o orador ativo */
+            transform: scale(1.03); /* Levemente maior */
         }
 
         .debate-participant-name {
-            /* Tamanho de fonte maior para o nome, com clamp para responsividade */
-            font-size: clamp(2.8vw, 3.8vw, 5.5vw); 
+            font-size: clamp(3vw, 4.5vw, 70px); /* Fonte maior para o nome, responsiva */
             font-weight: bold;
             color: #ecf0f1;
             text-align: left; /* Nome alinhado à esquerda */
             flex-grow: 1; /* Ocupa o espaço disponível */
-            margin-right: 1vw; /* Espaço entre nome e relógio */
+            margin-right: 1.5vw; /* Mais espaço entre nome e relógio */
             white-space: nowrap; 
             overflow: hidden; 
             text-overflow: ellipsis; 
-            line-height: 1.2; 
+            line-height: 1.1; /* Reduz altura da linha do nome */
         }
 
         .debate-participant-time {
-            /* Tamanho de fonte maior para o tempo, com clamp para responsividade */
-            font-size: clamp(4.5vw, 6vw, 9vw); 
+            font-size: clamp(5vw, 7.5vw, 120px); /* Fonte MAIOR para o tempo, responsiva */
             font-weight: bold;
-            padding: 0.5vh 0.8vw; /* Padding ajustado */
-            border-radius: 8px;
-            min-width: 12vw; /* Largura mínima para o relógio, para evitar que encolha demais */
+            padding: 1vh 1vw; /* Padding ajustado */
+            border-radius: 10px; /* Bordas mais arredondadas */
+            min-width: 14vw; /* Largura mínima maior para o relógio */
             text-align: center;
             color: white; 
             display: flex;
             justify-content: center;
             align-items: center;
             box-sizing: border-box;
-            height: clamp(6vh, 9vh, 14vh); /* Altura da caixa do relógio */
+            height: clamp(8vh, 12vh, 160px); /* Altura da caixa do relógio aumentada */
             flex-shrink: 0; /* Impede que o relógio encolha */
         }
 
@@ -209,47 +203,59 @@
         .debate-participant-time.yellow { background-color: #ffc107; color: #333; } /* Texto escuro para amarelo */
         .debate-participant-time.red { background-color: #dc3545; }
 
-        /* Media queries para ajustar tamanhos de fonte em telas muito pequenas ou muito grandes */
-        @media (max-width: 600px) {
-            #speakerName { font-size: 10vw; }
-            #clockDisplay { font-size: 30vw; }
-            #speakerMessage { font-size: 6vw; }
-            #currentTimePopout { font-size: 4vw; }
+        /* Media queries para ajustar tamanhos em telas muito pequenas ou muito grandes */
+        @media (max-width: 768px) {
+            #currentTimePopout { font-size: 3vw; top: 10px; right: 10px; }
+            #speakerName { font-size: 8vw; margin-bottom: 1.5vh; }
+            #clockDisplay { font-size: 25vw; max-height: 40vh; }
+            #speakerMessage { font-size: 4vw; min-height: 6vh; margin-top: 1.5vh; }
             
-            #debateModeContainer h2 { font-size: 6vw; }
-            /* Em telas muito pequenas, voltamos ao layout de coluna para nome/tempo */
-            .debate-participant-card { flex-direction: column; padding: 10px; min-height: 100px; } 
-            .debate-participant-name { font-size: 5vw; margin-bottom: 5px; margin-right: 0; }
-            .debate-participant-time { 
-                font-size: 10vw; /* Ajuste para telas muito pequenas */
-                min-width: 150px;
-                height: 70px;
-            }
+            #debateModeContainer { padding: 1.5vh 1vw; }
+            #debateModeContainer h2 { font-size: 5vw; margin-bottom: 1.5vh; }
             #debateParticipantsList { 
+                gap: 8px; /* Reduz espaço em mobile */
                 grid-template-columns: 1fr !important; /* Força 1 coluna em mobile */
                 grid-template-rows: repeat(auto-fit, minmax(min-content, 1fr)) !important; /* Permite scroll vertical */
+            }
+            .debate-participant-card { 
+                flex-direction: column; /* Nome acima do tempo em mobile */
+                padding: 10px; 
+                min-height: 90px;
+            } 
+            .debate-participant-name { 
+                font-size: 4.5vw; 
+                margin-bottom: 5px; 
+                margin-right: 0;
+                white-space: normal; /* Permite quebra de linha para nomes longos em mobile */
+                text-overflow: clip; /* Remove ellipsis em mobile */
+            }
+            .debate-participant-time { 
+                font-size: 8vw; /* Ajuste para telas muito pequenas */
+                min-width: 140px;
+                height: 60px;
+                padding: 0.8vh 0.8vw;
             }
         }
 
         @media (min-width: 1920px) {
-            #speakerName { font-size: 6vw; }
-            #clockDisplay { font-size: 18vw; }
-            #speakerMessage { font-size: 4vw; }
-            #currentTimePopout { font-size: 2vw; }
+            #currentTimePopout { font-size: 1.5vw; }
+            #speakerName { font-size: 5vw; margin-bottom: 1.5vh; }
+            #clockDisplay { font-size: 18vw; max-height: 60vh; }
+            #speakerMessage { font-size: 3vw; min-height: 7vh; margin-top: 1.5vh; }
 
             #debateModeContainer h2 { font-size: 2.5vw; }
-            .debate-participant-name { font-size: 2vw; } 
+            .debate-participant-name { font-size: 2.5vw; margin-right: 1vw; } 
             .debate-participant-time { 
-                font-size: 3.5vw; 
-                min-width: 150px;
-                height: 80px;
+                font-size: 4.5vw; 
+                min-width: 160px;
+                height: 90px;
             }
-            /* Em telas muito grandes, podemos ajustar ainda mais as colunas */
-            #debateParticipantsList.layout-1 { grid-template-columns: 0.5fr; } 
-            #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
-            #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
-            #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
-            #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, minmax(400px, 1fr)); }
+            /* Ajustes para telas muito grandes */
+            #debateParticipantsList.layout-1 { grid-template-columns: 0.7fr; } /* Centraliza um único card grande */
+            #debateParticipantsList.layout-2 { grid-template-columns: repeat(2, minmax(350px, 1fr)); } 
+            #debateParticipantsList.layout-3-4 { grid-template-columns: repeat(2, minmax(350px, 1fr)); }
+            #debateParticipantsList.layout-5-6 { grid-template-columns: repeat(2, minmax(350px, 1fr)); }
+            #debateParticipantsList.layout-7-8 { grid-template-columns: repeat(2, minmax(350px, 1fr)); }
         }
     </style>
 </head>
@@ -275,6 +281,7 @@
         const speakerMessageDisplay = document.getElementById('speakerMessage');
         const currentTimePopout = document.getElementById('currentTimePopout');
 
+        // Elementos do Modo Debate
         const normalModeContainer = document.getElementById('normalModeContainer');
         const debateModeContainer = document.getElementById('debateModeContainer');
         const debateParticipantsList = document.getElementById('debateParticipantsList');
