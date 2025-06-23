@@ -458,138 +458,58 @@
         </div>
     </div>
 <script>
-    const addSpeakerBtn = document.getElementById('addSpeakerBtn');
-    const speakerNameInput = document.getElementById('speakerNameInput');
-    const speakerList = document.getElementById('speakerList');
-    const toggleDebateModeBtn = document.getElementById('toggleDebateModeBtn');
+    const participantNameInput = document.getElementById('participantName');
+    const initialMinutesInput = document.getElementById('initialMinutes');
+    const initialSecondsInput = document.getElementById('initialSeconds');
+    const addParticipantButton = document.getElementById('addParticipantButton');
+    const participantColumn1 = document.getElementById('participantColumn1');
+    const participantColumn2 = document.getElementById('participantColumn2');
+    const noParticipantsMessage = document.getElementById('noParticipantsMessage');
+
+    const openPopoutClockBtn = document.getElementById('openPopoutClockBtn');
+    const toggleDebateModeBtn = document.getElementById('toggleDebateModeBtn'); // NOVO: Botão Modo Debate
+
+    const add1MinuteBtn = document.getElementById('add1Minute');
+    const add5MinutesBtn = document.getElementById('add5Minutes');
+    const add10MinutesBtn = document.getElementById('add10Minutes');
+    const add30MinutesBtn = document.getElementById('add30Minutes');
+    const clearTimeInputsBtn = document.getElementById('clearTimeInputsBtn');
+
+    const yellowTimeInput = document.getElementById('yellowTime');
+    const redTimeInput = document.getElementById('redTime');
+
     const speakerMessageInput = document.getElementById('speakerMessageInput');
-    const popoutBtn = document.getElementById('popoutBtn');
-    const currentLocalTimeSpan = document.getElementById('currentLocalTime');
+    const sendMessageButton = document.getElementById('sendMessageButton');
+    const clearMessageButton = document.getElementById('clearMessageButton');
+
+    const currentTimeMain = document.getElementById('currentTimeMain');
+
+    const sessionNameInput = document.getElementById('sessionNameInput');
+    const saveSessionButton = document.getElementById('saveSessionButton');
+    const loadSessionSelect = document.getElementById('loadSessionSelect');
+    const loadSelectedSessionButton = document.getElementById('loadSelectedSessionButton');
+    const deleteSelectedSessionButton = document.getElementById('deleteSelectedSessionButton');
+
+    const clearAllParticipantsButton = document.getElementById('clearAllParticipantsButton');
 
     let timers = [];
+    let nextParticipantNumber = 1;
     let activeTimer = null;
-    let timerInterval = null;
     let popoutWindow = null;
-    let isDebateModeActive = false; // Estado do modo debate
+    let popoutReady = false;
+    let pendingPopoutUpdate = null;
+    let pendingMessageUpdate = null;
 
-    // Função para abrir o pop-up
-    function openPopout() {
-        if (!popoutWindow || popoutWindow.closed) {
-            popoutWindow = window.open('popout-clock.html', 'PopoutClock', 'width=800,height=600,resizable=yes');
-            if (popoutWindow) {
-                popoutWindow.focus();
-                // Enviar estado inicial para o pop-up
-                popoutWindow.onload = () => {
-                    updateClocks(activeTimer); // Envia o estado atual dos relógios
-                    sendMessageToSpeaker(speakerMessageInput.value.trim()); // Envia a mensagem atual
-                };
-            } else {
-                alert('O pop-up foi bloqueado. Por favor, permita pop-ups para este site.');
-            }
-        } else {
-            popoutWindow.focus();
-        }
-    }
+    let GLOBAL_YELLOW_THRESHOLD_SECONDS = 60;
+    let GLOBAL_RED_THRESHOLD_SECONDS = 10;
 
-    // Função para adicionar um orador
-    addSpeakerBtn.addEventListener('click', () => {
-        const name = speakerNameInput.value.trim();
-        if (name) {
-            const newTimer = {
-                id: Date.now(),
-                name: name,
-                initialTime: 0, // Tempo inicial
-                timeLeft: 0, // Tempo restante
-                isRunning: false,
-                color: 'green', // Cor inicial
-                cardElement: null // Referência ao elemento HTML
-            };
-            timers.push(newTimer);
-            renderSpeakerList();
-            speakerNameInput.value = ''; // Limpa o campo
-            updateAllTimerButtons();
-            updateClocks(activeTimer); // Atualiza o pop-up
-        }
-    });
+    let conferenceSessions = {};
 
-    // Função para renderizar a lista de oradores
-    function renderSpeakerList() {
-        speakerList.innerHTML = '';
-        timers.forEach(timer => {
-            const card = document.createElement('div');
-            card.classList.add('speaker-card');
-            if (timer.isRunning) {
-                card.classList.add('running');
-            }
-            if (timer === activeTimer) {
-                card.classList.add('active');
-            }
+    const PARTICIPANTS_PER_COLUMN = 6;
 
-            // Guardar a referência para o elemento HTML no objeto timer
-            timer.cardElement = card;
+    // NOVO: Variável para controlar o Modo Debate
+    let isDebateModeActive = false;
 
-            card.innerHTML = `
-                <div class="speaker-info">
-                    <span class="speaker-name">${timer.name}</span>
-                    <span class="speaker-time">${formatTime(timer.timeLeft)}</span>
-                </div>
-                <div class="speaker-controls">
-                    <input type="number" class="set-time-input" placeholder="Segundos" value="${timer.initialTime || ''}">
-                    <button class="set-time-btn">Definir</button>
-                    <button class="start-btn" ${timer.isRunning ? 'disabled' : ''}>Iniciar</button>
-                    <button class="pause-btn" ${!timer.isRunning ? 'disabled' : ''}>Pausar</button>
-                    <button class="reset-btn">Reiniciar</button>
-                    <button class="edit-btn">Editar</button>
-                    <button class="delete-btn">X</button>
-                </div>
-            `;
-
-            speakerList.appendChild(card);
-
-            // Adicionar event listeners aos botões dentro do card
-            card.querySelector('.set-time-btn').addEventListener('click', () => {
-                const input = card.querySelector('.set-time-input');
-                let timeInSeconds = parseInt(input.value);
-                if (!isNaN(timeInSeconds) && timeInSeconds >= 0) {
-                    timer.initialTime = timeInSeconds;
-                    timer.timeLeft = timeInSeconds;
-                    timer.color = 'green';
-                    updateTimeDisplay(timer);
-                    updateClocks(activeTimer); // Atualiza o pop-up
-                } else {
-                    alert('Por favor, insira um número válido para o tempo.');
-                }
-            });
-
-            card.querySelector('.start-btn').addEventListener('click', () => {
-                startTimer(timer);
-            });
-
-            card.querySelector('.pause-btn').addEventListener('click', () => {
-                pauseTimer(timer);
-            });
-
-            card.querySelector('.reset-btn').addEventListener('click', () => {
-                resetTimer(timer);
-            });
-
-            card.querySelector('.edit-btn').addEventListener('click', () => {
-                editSpeakerName(timer);
-            });
-
-            card.querySelector('.delete-btn').addEventListener('click', () => {
-                deleteSpeaker(timer);
-            });
-
-             // Preencher o input com o initialTime ao renderizar
-            const setTimeInput = card.querySelector('.set-time-input');
-            if (timer.initialTime > 0) {
-                setTimeInput.value = timer.initialTime;
-            }
-        });
-    }
-
-    // Função para formatar o tempo
     function formatTime(seconds) {
         const isNegative = seconds < 0;
         const absSeconds = Math.abs(seconds);
@@ -599,249 +519,749 @@
         return `${sign}${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
     }
 
-    // Função para iniciar um timer
-    function startTimer(timerToStart) {
-        if (activeTimer && activeTimer !== timerToStart) {
-            pauseTimer(activeTimer); // Pausa o timer atualmente ativo
-        }
-        
-        activeTimer = timerToStart;
-        activeTimer.isRunning = true;
-
-        // Limpa qualquer intervalo anterior para evitar múltiplos timers
-        if (timerInterval) {
-            clearInterval(timerInterval);
-        }
-
-        timerInterval = setInterval(() => {
-            if (activeTimer.timeLeft > 0) {
-                activeTimer.timeLeft--;
-            } else {
-                activeTimer.timeLeft--; // Permite que o tempo seja negativo após zero
-            }
-            updateTimeDisplay(activeTimer); // Atualiza o display no painel de controlo
-            updateClocks(activeTimer); // Atualiza o pop-up
-        }, 1000);
-
-        updateAllTimerButtons();
-        activeTimer.cardElement.classList.add('running', 'active');
-        updateClocks(activeTimer); // Atualiza o pop-up ao iniciar
+    function calculateTotalSeconds(minutes, seconds) {
+        return (parseInt(minutes) || 0) * 60 + (parseInt(seconds) || 0);
     }
 
-    // Função para pausar um timer
-    function pauseTimer(timerToPause) {
-        if (timerToPause.isRunning) {
-            timerToPause.isRunning = false;
-            if (activeTimer === timerToPause) { // Só limpa o intervalo se for o timer ativo
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-            timerToPause.cardElement.classList.remove('running');
-            updateAllTimerButtons(); // Reativa botões de iniciar
-            updateClocks(activeTimer); // Atualiza o pop-up
-        }
-    }
+    function getDisplayColorCustom(timeLeft, yellow, red) {
+        yellow = yellow !== undefined ? yellow : GLOBAL_YELLOW_THRESHOLD_SECONDS;
+        red = red !== undefined ? red : GLOBAL_RED_THRESHOLD_SECONDS;
 
-    // Função para reiniciar um timer
-    function resetTimer(timerToReset) {
-        if (activeTimer === timerToReset) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-            activeTimer = null; // Remove o timer ativo se for o reiniciado
-        }
-        timerToReset.isRunning = false;
-        timerToReset.timeLeft = timerToReset.initialTime;
-        timerToReset.color = 'green';
-        updateTimeDisplay(timerToReset);
-        timerToReset.cardElement.classList.remove('running', 'active');
-        updateAllTimerButtons();
-        updateClocks(activeTimer); // Atualiza o pop-up
-    }
-
-    // Função para atualizar o display de tempo e cor
-    function updateTimeDisplay(timer) {
-        const timeDisplay = timer.cardElement.querySelector('.speaker-time');
-        timeDisplay.textContent = formatTime(timer.timeLeft);
-
-        // Atualiza a cor
-        let newColor = 'green';
-        if (timer.timeLeft <= 10 && timer.timeLeft > 0) {
-            newColor = 'yellow';
-        } else if (timer.timeLeft <= 0) {
-            newColor = 'red';
-        }
-        timer.color = newColor; // Guarda a cor no objeto timer
-
-        // Remover classes de cor anteriores
-        timeDisplay.classList.remove('green', 'yellow', 'red');
-        timeDisplay.classList.add(newColor);
-    }
-
-    // Função para atualizar o estado dos botões (iniciar/pausar/ativar)
-    function updateAllTimerButtons() {
-        timers.forEach(timer => {
-            const card = timer.cardElement;
-            const startBtn = card.querySelector('.start-btn');
-            const pauseBtn = card.querySelector('.pause-btn');
-
-            if (timer.isRunning) {
-                startBtn.disabled = true;
-                pauseBtn.disabled = false;
-                card.classList.add('running', 'active');
-            } else {
-                startBtn.disabled = false;
-                pauseBtn.disabled = true;
-                card.classList.remove('running');
-                // Remove a classe 'active' se não for o timer em execução ou se não houver um timer ativo
-                if (activeTimer !== timer) {
-                    card.classList.remove('active');
-                }
-            }
-        });
-        // Se não houver nenhum timer ativo, nenhum card deve ter a classe 'active'
-        if (!activeTimer) {
-            timers.forEach(timer => timer.cardElement.classList.remove('active'));
-        }
-    }
-
-    // Função para editar o nome do orador
-    function editSpeakerName(timerToEdit) {
-        const newName = prompt('Editar nome do orador:', timerToEdit.name);
-        if (newName !== null && newName.trim() !== '') {
-            timerToEdit.name = newName.trim();
-            timerToEdit.cardElement.querySelector('.speaker-name').textContent = timerToEdit.name;
-            updateClocks(activeTimer); // Atualiza o pop-up
-        }
-    }
-
-    // Função para apagar um orador
-    function deleteSpeaker(timerToDelete) {
-        if (confirm(`Tem certeza que deseja remover ${timerToDelete.name}?`)) {
-            if (activeTimer === timerToDelete) {
-                pauseTimer(activeTimer); // Pausa se estiver ativo
-                activeTimer = null; // Remove a referência
-            }
-            timers = timers.filter(timer => timer.id !== timerToDelete.id);
-            renderSpeakerList(); // Renderiza a lista atualizada
-            updateAllTimerButtons();
-            updateClocks(activeTimer); // Atualiza o pop-up
-        }
-    }
-
-    // Função para enviar dados do relógio para o pop-up
-    function updateClocks(currentActiveTimer) {
-        if (popoutWindow && !popoutWindow.closed) {
-            if (isDebateModeActive) {
-                // No modo debate, enviamos todos os timers com o seu estado atual
-                const allTimersData = timers.map(timer => ({
-                    id: timer.id,
-                    name: timer.name,
-                    timeLeft: timer.timeLeft,
-                    color: timer.color,
-                    isActive: timer === currentActiveTimer // Indica qual é o ativo, se houver
-                }));
-                popoutWindow.postMessage({ type: 'updateAllClocks', timers: allTimersData }, window.location.origin);
-            } else {
-                // No modo singular, enviamos apenas o timer ativo ou um estado padrão
-                if (currentActiveTimer) {
-                    popoutWindow.postMessage({ 
-                        type: 'updateClock', 
-                        name: currentActiveTimer.name, 
-                        timeLeft: currentActiveTimer.timeLeft, 
-                        color: currentActiveTimer.color 
-                    }, window.location.origin);
-                } else {
-                    // Se não houver timer ativo no modo singular
-                    popoutWindow.postMessage({ 
-                        type: 'updateClock', 
-                        name: "Nenhum Ativo", 
-                        timeLeft: 0, 
-                        color: 'green' 
-                    }, window.location.origin);
-                }
-            }
-        }
-    }
-
-    // Função para enviar mensagem geral para o pop-up
-    function sendMessageToSpeaker(message) {
-        if (popoutWindow && !popoutWindow.closed) {
-            popoutWindow.postMessage({ type: 'updateMessage', message: message }, window.location.origin);
-        }
-    }
-
-    // Event listener para o botão de toggle do modo debate
-    toggleDebateModeBtn.addEventListener('click', () => {
-        isDebateModeActive = !isDebateModeActive;
-        if (isDebateModeActive) {
-            toggleDebateModeBtn.textContent = 'Desativar Modo Debate';
-            toggleDebateModeBtn.style.backgroundColor = '#27ae60'; // Cor verde para indicar que está ativo
-            // NÃO PAUSAMOS O ACTIVE TIMER AO ENTRAR NO MODO DEBATE
-            // O activeTimer continua a correr em segundo plano
+        if (timeLeft <= red) {
+            return 'red';
+        } else if (timeLeft <= yellow) {
+            return 'yellow';
         } else {
-            toggleDebateModeBtn.textContent = 'Ativar Modo Debate';
-            toggleDebateModeBtn.style.backgroundColor = '#8e44ad'; // Cor roxa original
+            return 'green';
         }
-        // Força uma atualização do pop-up com o novo modo.
-        // Se houver um activeTimer, ele será enviado para o modo singular.
-        // Se estiver no modo debate, todos os timers são enviados.
-        updateClocks(activeTimer); 
-        sendMessageToSpeaker(speakerMessageInput.value.trim()); // Garante que a mensagem geral ainda é mostrada se houver
-    });
+    }
 
-    // Enviar mensagem para o popout quando Enter é pressionado
-    speakerMessageInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            event.preventDefault(); // Impede a quebra de linha padrão do Enter
-            const message = speakerMessageInput.value.trim();
-            sendMessageToSpeaker(message);
-            speakerMessageInput.value = ''; // Apaga a mensagem após o envio
-        }
-    });
-
-    // Event listener para o botão de abrir popout
-    popoutBtn.addEventListener('click', openPopout);
-
-    // Receber mensagens do pop-up (ex: quando o pop-up é fechado)
-    window.addEventListener('message', (event) => {
-        const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
-        if (!isLocalOrigin && !event.origin.startsWith('file://')) {
-            console.warn('Index: Mensagem bloqueada de origem desconhecida:', event.origin);
-            return;
-        }
-
-        if (event.data && event.data.type === 'popoutClosed') {
-            popoutWindow = null; // Reseta a referência ao pop-up
-        } else if (event.data && event.data.type === 'popoutReady') {
-             // O pop-up está pronto, envia os dados iniciais
-            updateClocks(activeTimer); 
-            sendMessageToSpeaker(speakerMessageInput.value.trim());
-        }
-    });
-
-    // Função para atualizar a hora local
-    function updateLocalTime() {
+    function updateCurrentTimeMain() {
         const now = new Date();
         const hours = String(now.getHours()).padStart(2, '0');
         const minutes = String(now.getMinutes()).padStart(2, '0');
         const seconds = String(now.getSeconds()).padStart(2, '0');
-        currentLocalTimeSpan.textContent = `${hours}:${minutes}:${seconds}`;
+        currentTimeMain.textContent = `${hours}:${minutes}:${seconds}`;
+    }
 
-        // Envia a hora atual para o pop-up
-        if (popoutWindow && !popoutWindow.closed) {
-            popoutWindow.postMessage({ type: 'updateCurrentTime', time: `${hours}:${minutes}:${seconds}` }, window.location.origin);
+    function addParticipant(data = {}, fromSession = false) {
+        let name = data.name || participantNameInput.value.trim();
+        const minutesValue = parseInt(initialMinutesInput.value);
+        const secondsValue = parseInt(initialSecondsInput.value);
+        
+        if (!fromSession) {
+            const totalEnteredSeconds = calculateTotalSeconds(initialMinutesInput.value, initialSecondsInput.value);
+            if (totalEnteredSeconds <= 0 && name === '') {
+                return;
+            }
+            if (isNaN(minutesValue) && isNaN(secondsValue) && name === '') {
+                 return;
+            }
+        }
+        
+        let initialTotalSeconds = data.initialTime || calculateTotalSeconds(initialMinutesInput.value, initialSecondsInput.value);
+        let customYellow = data.yellow;
+        let customRed = data.red;
+
+        if (!name) {
+            name = `Participante ${nextParticipantNumber}`;
+            if (!fromSession) {
+                 nextParticipantNumber++;
+            }
+        } else if (!fromSession) {
+             const match = name.match(/Participante (\d+)/);
+             if (match && parseInt(match[1]) >= nextParticipantNumber) {
+                 nextParticipantNumber = parseInt(match[1]) + 1;
+             } else if (!match) {
+                 nextParticipantNumber++;
+             }
+        }
+
+        noParticipantsMessage.style.display = 'none';
+
+        const id = Date.now() + Math.floor(Math.random() * 1000); 
+        const participantCard = document.createElement('div');
+        participantCard.className = 'participant-card';
+        participantCard.setAttribute('data-id', id);
+
+        participantCard.innerHTML = `
+            <div class="participant-line-1">
+                <div class="participant-name-container">${name}</div>
+                <div class="display" id="display-${id}">${formatTime(initialTotalSeconds)}</div>
+            </div>
+            <div class="participant-line-2-buttons">
+                <div class="controls">
+                    <button id="start-${id}">Inic.</button>
+                    <button id="pause-${id}" disabled>Pausar</button>
+                    <button id="reset-${id}" disabled>Reset</button>
+                </div>
+                <div class="adjust-time-buttons">
+                    <button id="add-min-${id}">+1min</button>
+                    <button id="sub-min-${id}">-1min</button>
+                </div>
+                <button class="remove-participant-btn" data-id="${id}">X</button>
+            </div>
+        `;
+
+        if (timers.length < PARTICIPANTS_PER_COLUMN) {
+            participantColumn1.appendChild(participantCard);
+        } else {
+            participantColumn2.appendChild(participantCard);
+        }
+
+        const timer = {
+            id: id,
+            name: name,
+            initialTime: initialTotalSeconds,
+            timeLeft: initialTotalSeconds,
+            intervalId: null,
+            isPaused: true,
+            displayElement: document.getElementById(`display-${id}`),
+            startButton: document.getElementById(`start-${id}`),
+            pauseButton: document.getElementById(`pause-${id}`),
+            resetButton: document.getElementById(`reset-${id}`),
+            addMinButton: document.getElementById(`add-min-${id}`),
+            subMinButton: document.getElementById(`sub-min-${id}`),
+            cardElement: participantCard,
+            alertedZero: false,
+            yellowThreshold: customYellow !== undefined ? customYellow : GLOBAL_YELLOW_THRESHOLD_SECONDS,
+            redThreshold: customRed !== undefined ? customRed : GLOBAL_RED_THRESHOLD_SECONDS
+        };
+
+        timers.push(timer);
+
+        timer.startButton.addEventListener('click', () => startTimer(timer));
+        timer.pauseButton.addEventListener('click', () => pauseTimer(timer));
+        timer.resetButton.addEventListener('click', () => resetTimer(timer));
+        timer.addMinButton.addEventListener('click', () => adjustTime(timer, 60));
+        timer.subMinButton.addEventListener('click', () => adjustTime(timer, -60));
+        participantCard.querySelector('.remove-participant-btn').addEventListener('click', () => removeParticipant(id));
+
+        timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
+
+        if (!fromSession) {
+            initialMinutesInput.value = '0'; 
+            initialSecondsInput.value = '0';  
+            participantNameInput.value = '';
         }
     }
 
-    // Iniciar a atualização da hora local
-    setInterval(updateLocalTime, 1000);
+    function updateAllTimerButtons() {
+        timers.forEach(t => {
+            if (activeTimer && activeTimer.id === t.id) {
+                toggleTimerButtons(t, true, false, false);
+                t.addMinButton.disabled = false;
+                t.subMinButton.disabled = false;
+            } else {
+                toggleTimerButtons(t, false, true, true);
+                t.addMinButton.disabled = !(t.isPaused && t.timeLeft === t.initialTime);
+                t.subMinButton.disabled = !(t.isPaused && t.timeLeft === t.initialTime);
+            }
+        });
+    }
 
-    // Renderizar a lista inicial ao carregar a página
-    document.addEventListener('DOMContentLoaded', () => {
-        renderSpeakerList();
-        updateLocalTime(); // Garante que a hora é exibida ao carregar
+    function toggleTimerButtons(timer, startDisabled, pauseDisabled, resetDisabled) {
+        if (timer) {
+            timer.startButton.disabled = startDisabled;
+            timer.pauseButton.disabled = pauseDisabled;
+            timer.resetButton.disabled = resetDisabled;
+        }
+    }
+
+    function adjustTime(timer, secondsToAdd) {
+        if ((activeTimer && activeTimer.id === timer.id) || (timer.isPaused && timer.timeLeft === timer.initialTime)) {
+            timer.timeLeft += secondsToAdd;
+            if (timer.timeLeft < -5940) { // Limite de -99:00
+                timer.timeLeft = -5940;
+            }
+            timer.displayElement.textContent = formatTime(timer.timeLeft);
+            timer.displayElement.classList.remove('red', 'yellow', 'green');
+            timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
+            timer.alertedZero = false;
+            updateClocks(timer);
+        }
+    }
+
+    function startTimer(timerToStart) {
+        if (timerToStart.isPaused) {
+            if (activeTimer && activeTimer.id !== timerToStart.id) {
+                pauseTimer(activeTimer);
+                activeTimer.cardElement.classList.remove('active-timer');
+            }
+
+            activeTimer = timerToStart;
+            activeTimer.cardElement.classList.add('active-timer');
+
+            timerToStart.isPaused = false;
+            
+            updateAllTimerButtons();
+
+            updateClocks(timerToStart); // Atualiza o pop-up
+
+            timerToStart.intervalId = setInterval(() => {
+                timerToStart.timeLeft--;
+                timerToStart.displayElement.textContent = formatTime(timerToStart.timeLeft);
+
+                timerToStart.displayElement.classList.remove('red', 'yellow', 'green');
+                timerToStart.displayElement.classList.add(getDisplayColorCustom(timerToStart.timeLeft, timerToStart.yellowThreshold, timerToStart.redThreshold));
+
+                updateClocks(timerToStart); // Atualiza o pop-up a cada segundo
+            }, 1000);
+        }
+    }
+
+    function pauseTimer(timerToPause) {
+        if (!timerToPause.isPaused) {
+            timerToPause.isPaused = true;
+            clearInterval(timerToPause.intervalId);
+            updateAllTimerButtons();
+            updateClocks(timerToPause); // Atualiza o pop-up
+        }
+    }
+
+    function resetTimer(timerToReset) {
+        clearInterval(timerToReset.intervalId);
+        timerToReset.isPaused = true;
+        timerToReset.timeLeft = timerToReset.initialTime;
+        timerToReset.displayElement.textContent = formatTime(timerToReset.timeLeft);
+
+        timerToReset.displayElement.classList.remove('red', 'yellow', 'green');
+        timerToReset.displayElement.classList.add(getDisplayColorCustom(timerToReset.timeLeft, timerToReset.yellowThreshold, timerToReset.redThreshold));
+        
+        timerToReset.alertedZero = false;
+        if (activeTimer && activeTimer.id === timerToReset.id) {
+            clearClocksFocus(); // Se o ativo for resetado, limpa o foco
+        } else {
+             updateAllTimerButtons(); // Se não for o ativo, apenas atualiza botões
+        }
+    }
+
+    function removeParticipant(id) {
+        timers = timers.filter(timer => {
+            if (timer.id === id) {
+                clearInterval(timer.intervalId);
+                if (activeTimer && activeTimer.id === timer.id) {
+                    clearClocksFocus();
+                }
+                timer.cardElement.remove();
+                return false;
+            }
+            return true;
+        });
+
+        reorderParticipantsInColumns();
+
+        if (timers.length === 0) {
+            noParticipantsMessage.style.display = 'block';
+            nextParticipantNumber = 1;
+        } else {
+            let maxNum = 0;
+            timers.forEach(timer => {
+                const match = timer.name.match(/Participante (\d+)/);
+                if (match) {
+                    const num = parseInt(match[1]);
+                    if (num > maxNum) {
+                        maxNum = num;
+                    }
+                }
+            });
+            nextParticipantNumber = maxNum + 1;
+        }
+        updateAllTimerButtons();
+        updateClocks(activeTimer); // Atualiza o pop-up após remover
+    }
+
+    function reorderParticipantsInColumns() {
+        participantColumn1.innerHTML = '';
+        participantColumn2.innerHTML = '';
+        
+        if (timers.length === 0) {
+            participantColumn1.appendChild(noParticipantsMessage);
+            noParticipantsMessage.style.display = 'block';
+        } else {
+            noParticipantsMessage.style.display = 'none';
+        }
+
+        timers.forEach((timer, index) => {
+            if (index < PARTICIPANTS_PER_COLUMN) {
+                participantColumn1.appendChild(timer.cardElement);
+            } else {
+                participantColumn2.appendChild(timer.cardElement);
+            }
+        });
+    }
+
+    function clearAllParticipants() {
+        timers.forEach(timer => {
+            clearInterval(timer.intervalId);
+            timer.cardElement.remove();
+        });
+        timers = [];
+        activeTimer = null;
+        nextParticipantNumber = 1;
+
+        participantColumn1.innerHTML = '';
+        participantColumn2.innerHTML = '';
+        participantColumn1.appendChild(noParticipantsMessage);
+        noParticipantsMessage.style.display = 'block';
+        updateClocks(null); // Limpa o pop-up
+        updateAllTimerButtons();
+    }
+
+    // MODIFICADO: Função updateClocks para lidar com o Modo Debate
+    function updateClocks(timerToDisplay = null) {
+        if (popoutWindow && !popoutWindow.closed && popoutReady) {
+            if (isDebateModeActive) {
+                const allTimersData = timers.map(t => ({
+                    id: t.id,
+                    name: t.name,
+                    timeLeft: t.timeLeft,
+                    color: getDisplayColorCustom(t.timeLeft, t.yellowThreshold, t.redThreshold),
+                    isActive: activeTimer && activeTimer.id === t.id // Para destacar o ativo no pop-up
+                }));
+                popoutWindow.postMessage({
+                    type: 'updateAllClocks', // NOVO tipo de mensagem
+                    timers: allTimersData
+                }, window.location.origin);
+                sendMessageToSpeaker(speakerMessageInput.value.trim()); // Reenvia a mensagem geral
+            } else {
+                const displayTimer = timerToDisplay || activeTimer;
+                
+                const name = displayTimer ? displayTimer.name : "Nenhum Ativo";
+                const timeLeft = displayTimer ? displayTimer.timeLeft : 0;
+                const color = displayTimer ? 
+                              getDisplayColorCustom(displayTimer.timeLeft, displayTimer.yellowThreshold, displayTimer.redThreshold) : 
+                              getDisplayColorCustom(0, GLOBAL_YELLOW_THRESHOLD_SECONDS, GLOBAL_RED_THRESHOLD_SECONDS);
+
+                popoutWindow.postMessage({
+                    type: 'updateClock', // Tipo de mensagem original
+                    name: name,
+                    timeLeft: timeLeft,
+                    color: color
+                }, window.location.origin);
+                sendMessageToSpeaker(speakerMessageInput.value.trim()); // Reenvia a mensagem geral
+            }
+            pendingPopoutUpdate = null; // Já enviou, limpa o pending
+        } else {
+            // Se o pop-up não estiver pronto, armazena para enviar depois
+            if (isDebateModeActive) {
+                pendingPopoutUpdate = { type: 'updateAllClocks', timers: timers.map(t => ({
+                    id: t.id, name: t.name, timeLeft: t.timeLeft, 
+                    color: getDisplayColorCustom(t.timeLeft, t.yellowThreshold, t.redThreshold),
+                    isActive: activeTimer && activeTimer.id === t.id
+                }))};
+            } else {
+                const displayTimer = timerToDisplay || activeTimer;
+                pendingPopoutUpdate = { type: 'updateClock', name: displayTimer ? displayTimer.name : "Nenhum Ativo",
+                                        timeLeft: displayTimer ? displayTimer.timeLeft : 0,
+                                        color: displayTimer ? getDisplayColorCustom(displayTimer.timeLeft, displayTimer.yellowThreshold, displayTimer.redThreshold) : 'green' };
+            }
+        }
+    }
+
+    function sendMessageToSpeaker(message) {
+        if (popoutWindow && !popoutWindow.closed) {
+            if (popoutReady) {
+                popoutWindow.postMessage({
+                    type: 'updateMessage',
+                    message: message
+                }, window.location.origin);
+                // Não limpa o input aqui, para que a mensagem permaneça na caixa de texto
+                // até que o utilizador a limpe explicitamente.
+                pendingMessageUpdate = null;
+            } else {
+                pendingMessageUpdate = message;
+            }
+        } else {
+            pendingMessageUpdate = null;
+        }
+    }
+
+    function clearClocksFocus() {
+        if (activeTimer) {
+            pauseTimer(activeTimer);
+            activeTimer.cardElement.classList.remove('active-timer');
+            activeTimer = null;
+        }
+        updateClocks(null);
+        updateAllTimerButtons();
+    }
+
+    function openPopoutClock() {
+        if (popoutWindow && !popoutWindow.closed) {
+            popoutWindow.focus();
+            return;
+        }
+
+        popoutReady = false;
+        pendingPopoutUpdate = null;
+        pendingMessageUpdate = null;
+
+        let screenX = 0;
+        let screenY = 0;
+        let width = screen.width;
+        let height = screen.height;
+
+        if (window.screenX === 0 && window.screenY === 0 && window.screen.isExtended) {
+            screenX = screen.availWidth;
+            screenY = 0;
+        } else {
+            screenX = window.screenX + (window.innerWidth / 2);
+            screenY = window.screenY;
+        }
+        
+        const features = `width=${width},height=${height},left=${screenX},top=${screenY},resizable,scrollbars=no,status=no,toolbar=no,menubar=no`;
+
+        popoutWindow = window.open('popout-clock.html', 'PopoutClock', features);
+
+        if (!popoutWindow) {
+            alert("Não foi possível abrir a nova janela. Verifique se pop-ups estão bloqueados.");
+        } else {
+            popoutWindow.addEventListener('load', () => {
+                if (popoutWindow && !popoutWindow.closed) {
+                    try {
+                        if (popoutWindow.document.documentElement.requestFullscreen) {
+                            popoutWindow.document.documentElement.requestFullscreen();
+                        } else if (popoutWindow.document.documentElement.mozRequestFullScreen) {
+                            popoutWindow.document.documentElement.mozRequestFullScreen();
+                        } else if (popoutWindow.document.documentElement.webkitRequestFullscreen) {
+                            popoutWindow.document.documentElement.webkitRequestFullscreen();
+                        } else if (popoutWindow.document.documentElement.msRequestFullscreen) {
+                            popoutWindow.document.documentElement.msRequestFullscreen();
+                        }
+                    } catch (e) {
+                        console.warn("Falha ao tentar colocar em fullscreen. Provavelmente bloqueado pelo navegador.", e);
+                    }
+                }
+            });
+
+            // Pequeno atraso para garantir que o popout esteja minimamente pronto
+            setTimeout(() => {
+                if (popoutWindow && !popoutWindow.closed) {
+                    // updateClocks e sendMessageToSpeaker serão chamados no 'popoutReady'
+                    // para garantir que o popout está a ouvir as mensagens.
+                }
+            }, 100);
+        }
+    }
+
+    // NOVO: Função para alternar o modo debate
+     function toggleDebateMode() {
+            isDebateModeActive = !isDebateModeActive;
+            if (isDebateModeActive) {
+                toggleDebateModeBtn.textContent = 'Desativar Modo Debate';
+                toggleDebateModeBtn.style.backgroundColor = '#27ae60'; // Cor verde para indicar que está ativo
+                // REMOVIDO: Não pausamos mais o activeTimer ao entrar no modo debate
+                // if (activeTimer) {
+                //     pauseTimer(activeTimer); 
+                //     activeTimer.cardElement.classList.remove('active-timer');
+                //     activeTimer = null; // Isso também é removido para que o activeTimer continue válido
+                //     updateAllTimerButtons();
+                // }
+            } else {
+                toggleDebateModeBtn.textContent = 'Ativar Modo Debate';
+                toggleDebateModeBtn.style.backgroundColor = '#8e44ad'; // Cor roxa original
+            }
+            // Força uma atualização do pop-up com o novo modo.
+            // Se houver um activeTimer, ele será enviado para o modo singular.
+            // Se estiver no modo debate, todos os timers são enviados.
+            updateClocks(activeTimer); 
+            sendMessageToSpeaker(speakerMessageInput.value.trim()); // Garante que a mensagem geral ainda é mostrada se houver
+        }
+    function loadSessionsFromLocalStorage() {
+        const storedSessions = localStorage.getItem('conferenceSessions');
+        if (storedSessions) {
+            conferenceSessions = JSON.parse(storedSessions);
+        } else {
+            conferenceSessions = {};
+        }
+        populateSessionSelect();
+    }
+
+    function saveSessionsToLocalStorage() {
+        localStorage.setItem('conferenceSessions', JSON.stringify(conferenceSessions));
+    }
+
+    function populateSessionSelect() {
+        loadSessionSelect.innerHTML = '<option value="">-- Selecione uma sessão --</option>';
+        const sessionNames = Object.keys(conferenceSessions).sort();
+        sessionNames.forEach(sessionName => {
+            const option = document.createElement('option');
+            option.value = sessionName;
+            option.textContent = sessionName;
+            loadSessionSelect.appendChild(option);
+        });
+        const hasSessions = Object.keys(conferenceSessions).length > 0;
+        loadSelectedSessionButton.disabled = !hasSessions;
+        deleteSelectedSessionButton.disabled = !hasSessions;
+        loadSessionSelect.disabled = !hasSessions;
+    }
+
+    function saveCurrentSession() {
+        const sessionName = sessionNameInput.value.trim();
+        if (!sessionName) {
+            alert("Por favor, digite um nome para a sessão.");
+            return;
+        }
+
+        if (timers.length === 0) {
+            alert("Não há participantes para salvar nesta sessão.");
+            return;
+        }
+
+        const currentGlobalYellow = parseInt(yellowTimeInput.value || GLOBAL_YELLOW_THRESHOLD_SECONDS);
+        const currentGlobalRed = parseInt(redTimeInput.value || GLOBAL_RED_THRESHOLD_SECONDS);
+
+        const sessionParticipants = timers.map(timer => ({
+            name: timer.name,
+            initialTime: timer.initialTime,
+            yellow: timer.yellowThreshold !== undefined ? timer.yellowThreshold : currentGlobalYellow,
+            red: timer.redThreshold !== undefined ? timer.redThreshold : currentGlobalRed
+        }));
+
+        conferenceSessions[sessionName] = {
+            participants: sessionParticipants,
+            globalYellow: currentGlobalYellow,
+            globalRed: currentGlobalRed
+        };
+        saveSessionsToLocalStorage();
+        populateSessionSelect();
+        alert(`Sessão "${sessionName}" salva com sucesso!`);
+        sessionNameInput.value = '';
+    }
+
+    function loadSession() {
+        const selectedSessionName = loadSessionSelect.value;
+        if (!selectedSessionName) {
+            alert("Por favor, selecione uma sessão para carregar.");
+            return;
+        }
+
+        const sessionDataToLoad = conferenceSessions[selectedSessionName];
+        if (!sessionDataToLoad || !sessionDataToLoad.participants) {
+            alert("Sessão não encontrada ou inválida.");
+            return;
+        }
+
+        timers.forEach(timer => {
+            clearInterval(timer.intervalId);
+            timer.cardElement.remove();
+        });
+        timers = [];
+        activeTimer = null;
+        nextParticipantNumber = 1;
+
+        participantColumn1.innerHTML = '';
+        participantColumn2.innerHTML = '';
+        participantColumn1.appendChild(noParticipantsMessage);
+        noParticipantsMessage.style.display = 'block';
+
+        GLOBAL_YELLOW_THRESHOLD_SECONDS = sessionDataToLoad.globalYellow !== undefined ? sessionDataToLoad.globalYellow : 60;
+        GLOBAL_RED_THRESHOLD_SECONDS = sessionDataToLoad.globalRed !== undefined ? sessionDataToLoad.globalRed : 10;
+        
+        yellowTimeInput.value = GLOBAL_YELLOW_THRESHOLD_SECONDS;
+        redTimeInput.value = GLOBAL_RED_THRESHOLD_SECONDS;
+
+        let maxNumInSession = 0;
+        sessionDataToLoad.participants.forEach(p => {
+            addParticipant({ name: p.name, initialTime: p.initialTime, yellow: p.yellow, red: p.red }, true);
+            const match = p.name.match(/Participante (\d+)/);
+            if (match) {
+                const num = parseInt(match[1]);
+                if (num > maxNumInSession) {
+                    maxNumInSession = num;
+                }
+            }
+        });
+        nextParticipantNumber = maxNumInSession + 1;
+
+        if (timers.length > 0) {
+            noParticipantsMessage.style.display = 'none';
+        }
+        reorderParticipantsInColumns();
+
+        updateClocks(null);
+        updateAllTimerButtons();
+    }
+
+    function deleteSession() {
+        const selectedSessionName = loadSessionSelect.value;
+        if (!selectedSessionName) {
+            alert("Por favor, selecione uma sessão para apagar.");
+            return;
+        }
+
+        if (confirm(`Tem certeza que deseja apagar a sessão "${selectedSessionName}"? Esta ação não pode ser desfeita.`)) {
+            delete conferenceSessions[selectedSessionName];
+            saveSessionsToLocalStorage();
+            populateSessionSelect();
+            alert(`Sessão "${selectedSessionName}" apagada.`);
+        }
+    }
+
+    // --- LISTENERS DE EVENTOS ---
+    addParticipantButton.addEventListener('click', () => addParticipant({}, false));
+    participantNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addParticipant({}, false);
+    });
+    initialMinutesInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addParticipant({}, false);
+    });
+    initialSecondsInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') addParticipant({}, false);
     });
 
+    add1MinuteBtn.addEventListener('click', () => {
+        initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 1;
+        initialMinutesInput.focus();
+    });
+    add5MinutesBtn.addEventListener('click', () => {
+        initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 5;
+        initialMinutesInput.focus();
+    });
+    add10MinutesBtn.addEventListener('click', () => {
+        initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 10;
+        initialMinutesInput.focus();
+    });
+    add30MinutesBtn.addEventListener('click', () => {
+        initialMinutesInput.value = parseInt(initialMinutesInput.value || 0) + 30;
+        initialMinutesInput.focus();
+    });
+
+    clearTimeInputsBtn.addEventListener('click', () => {
+        initialMinutesInput.value = '0'; 
+        initialSecondsInput.value = '0';
+        initialMinutesInput.focus();
+    });
+
+    yellowTimeInput.addEventListener('change', () => {
+        const val = parseInt(yellowTimeInput.value);
+        if (!isNaN(val) && val >= 0) {
+            GLOBAL_YELLOW_THRESHOLD_SECONDS = val;
+            timers.forEach(timer => {
+                if (timer.yellowThreshold === undefined || timer.yellowThreshold === null) {
+                    timer.yellowThreshold = val;
+                }
+                timer.displayElement.classList.remove('red', 'yellow', 'green');
+                timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
+            });
+            updateClocks(activeTimer);
+        } else {
+            yellowTimeInput.value = GLOBAL_YELLOW_THRESHOLD_SECONDS;
+        }
+    });
+
+    redTimeInput.addEventListener('change', () => {
+        const val = parseInt(redTimeInput.value);
+        if (!isNaN(val) && val >= 0) {
+            GLOBAL_RED_THRESHOLD_SECONDS = val;
+            timers.forEach(timer => {
+                if (timer.redThreshold === undefined || timer.redThreshold === null) {
+                    timer.redThreshold = val;
+                }
+                timer.displayElement.classList.remove('red', 'yellow', 'green');
+                timer.displayElement.classList.add(getDisplayColorCustom(timer.timeLeft, timer.yellowThreshold, timer.redThreshold));
+            });
+            updateClocks(activeTimer);
+        } else {
+            redTimeInput.value = GLOBAL_RED_THRESHOLD_SECONDS;
+        }
+    });
+
+    sendMessageButton.addEventListener('click', () => {
+        const message = speakerMessageInput.value.trim();
+        sendMessageToSpeaker(message);
+    });
+
+    speakerMessageInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            const message = speakerMessageInput.value.trim();
+            sendMessageToSpeaker(message);
+        }
+    });
+
+    clearMessageButton.addEventListener('click', () => {
+        speakerMessageInput.value = '';
+        sendMessageToSpeaker('');
+    });
+
+    openPopoutClockBtn.addEventListener('click', openPopoutClock);
+    toggleDebateModeBtn.addEventListener('click', toggleDebateMode); // NOVO: Listener para o botão do Modo Debate
+    clearAllParticipantsButton.addEventListener('click', clearAllParticipants);
+
+    window.addEventListener('message', (event) => {
+        const isLocalOrigin = ['null', window.location.origin].includes(event.origin);
+        if (!isLocalOrigin && !event.origin.startsWith('file://')) {
+            console.warn('Main: Mensagem bloqueada de origem desconhecida:', event.origin);
+            return;
+        }
+
+        if (event.data && event.data.type === 'popoutClosed') {
+            popoutWindow = null;
+            popoutReady = false;
+            pendingPopoutUpdate = null;
+            pendingMessageUpdate = null;
+        }
+        if (event.data && event.data.type === 'popoutReady') {
+             popoutReady = true;
+
+             updateCurrentTimePopout();
+
+             if (pendingPopoutUpdate) {
+                // Se houver uma atualização pendente (seja modo normal ou debate)
+                popoutWindow.postMessage(pendingPopoutUpdate, window.location.origin);
+                pendingPopoutUpdate = null;
+             } else {
+                // Se não houver pendente, envia o estado atual
+                updateClocks(activeTimer);
+             }
+
+             if (pendingMessageUpdate !== null) {
+                 popoutWindow.postMessage({
+                    type: 'updateMessage',
+                    message: pendingMessageUpdate
+                }, window.location.origin);
+                pendingMessageUpdate = null;
+             } else if (speakerMessageInput.value.trim() !== '') {
+                sendMessageToSpeaker(speakerMessageInput.value.trim());
+             }
+        }
+    });
+
+    function updateCurrentTimePopout() {
+        if (popoutWindow && !popoutWindow.closed && popoutReady) {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            popoutWindow.postMessage({
+                type: 'updateCurrentTime',
+                time: `${hours}:${minutes}:${seconds}`
+            }, window.location.origin);
+        }
+    }
+
+    saveSessionButton.addEventListener('click', saveCurrentSession);
+    loadSelectedSessionButton.addEventListener('click', loadSession);
+    deleteSelectedSessionButton.addEventListener('click', deleteSession);
+
+    // Inicialização
+    loadSessionsFromLocalStorage();
+    updateCurrentTimeMain();
+    setInterval(updateCurrentTimeMain, 1000);
+    setInterval(updateCurrentTimePopout, 1000);
+
+    // Estado inicial dos botões ao carregar a página
+    if (timers.length === 0) {
+        noParticipantsMessage.style.display = 'block';
+    }
+    updateClocks(null);
+    updateAllTimerButtons();
+
+    // Define o texto inicial e cor do botão do modo debate
+    toggleDebateModeBtn.textContent = isDebateModeActive ? 'Desativar Modo Debate' : 'Ativar Modo Debate';
+    toggleDebateModeBtn.style.backgroundColor = isDebateModeActive ? '#27ae60' : '#8e44ad';
 </script>
   
 </body>
